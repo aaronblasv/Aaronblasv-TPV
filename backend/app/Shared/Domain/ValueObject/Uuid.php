@@ -32,7 +32,7 @@ class Uuid
         return self::create($uuid);
     }
 
-    public function value(): string
+    public function getValue(): string
     {
         return $this->value;
     }
