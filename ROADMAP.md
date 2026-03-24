@@ -119,6 +119,7 @@ Ampliaciones funcionales o técnicas del sistema. Puedes elegir las que más te 
 - **Diseño interactivo del salón** — colocar mesas en un plano con su posición y tamaño reales
 - **Integración con impresoras de tickets** — impresión real del ticket al cierre de venta
 - **Generación de imágenes de productos** — sugerir imágenes automáticamente al crear un producto usando un servicio externo
+- **Personalización de familias** - poder añadir distintivos visuales a las familias (imagen, color, icono...) para facilitar su identificación en el TPV
 
 #### Mejoras técnicas
 
