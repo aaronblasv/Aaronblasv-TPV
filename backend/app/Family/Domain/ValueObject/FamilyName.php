@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Tax\Domain\ValueObject;
+namespace App\Family\Domain\ValueObject;
 
-class TaxName
+class FamilyName
 {
+
     private function __construct(
         private string $value,
     ) {}
@@ -11,7 +12,7 @@ class TaxName
     public static function create(string $value): self
     {
         if (empty($value)) {
-            throw new \InvalidArgumentException('Tax name cannot be empty.');
+            throw new \InvalidArgumentException('Family name cannot be empty.');
         }
         return new self($value);
     }
@@ -20,4 +21,5 @@ class TaxName
     {
         return $this->value;
     }
+
 }
