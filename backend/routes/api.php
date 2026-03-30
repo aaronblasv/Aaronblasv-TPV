@@ -26,7 +26,7 @@ use App\User\Infrastructure\Entrypoint\Http\LoginController;
 use App\User\Infrastructure\Entrypoint\Http\LogoutController;
 
 
-Route::post('/login', LoginController::class);
+Route::post('/auth/login', LoginController::class);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users', PostController::class);
     Route::get('/taxes', GetAllTaxesController::class);
@@ -49,5 +49,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', CreateProductController::class);
     Route::put('/products/{uuid}', UpdateProductController::class);
     Route::delete('/products/{uuid}', DeleteProductController::class);
-    Route::post('/logout', LogoutController::class)->middleware('auth:sanctum');
+    Route::post('/auth/logout', LogoutController::class)->middleware('auth:sanctum');
 });
