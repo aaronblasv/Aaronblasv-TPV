@@ -33,7 +33,7 @@ class EloquentZoneRepository implements ZoneRepositoryInterface
             ['uuid' => $zone->getUuid()->getValue()],
             [
                 'name' => $zone->getName()->getValue(),
-                'restaurant_id' => 1,
+                'restaurant_id' => auth()->user()->restaurant_id,
             ]
         );
     }

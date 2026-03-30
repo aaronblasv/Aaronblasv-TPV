@@ -33,7 +33,7 @@ class EloquentFamilyRepository implements FamilyRepositoryInterface
             [
                 'name' => $family->getName()->getValue(),
                 'active' => $family->isActive(),
-                'restaurant_id' => 1,
+                'restaurant_id' => auth()->user()->restaurant_id,
             ]
         );
     }

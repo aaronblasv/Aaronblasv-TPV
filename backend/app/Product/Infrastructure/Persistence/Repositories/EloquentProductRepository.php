@@ -53,7 +53,7 @@ class EloquentProductRepository implements ProductRepositoryInterface
                 'active' => $product->isActive(),
                 'family_id' => $family->id,
                 'tax_id' => $tax->id,
-                'restaurant_id' => 1,
+                'restaurant_id' => auth()->user()->restaurant_id,
             ]
         );
     }

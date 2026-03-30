@@ -38,7 +38,7 @@ class EloquentTableRepository implements TableRepositoryInterface
             [
                 'name' => $table->getName()->getValue(),
                 'zone_id' => $zone->id,
-                'restaurant_id' => 1,
+                'restaurant_id' => auth()->user()->restaurant_id,
             ]
         );
     }
