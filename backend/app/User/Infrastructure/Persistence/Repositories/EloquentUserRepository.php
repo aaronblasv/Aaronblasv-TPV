@@ -20,8 +20,8 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'name' => $user->name(),
                 'email' => $user->email()->getValue(),
                 'password' => $user->passwordHash(),
-                'role' => 'waiter',
-                'restaurant_id' => auth()->user()?->restaurant_id ?? 1,
+                'role' => $user->role()->getValue(),
+                'restaurant_id' => $user->restaurantId(),
                 'created_at' => $user->createdAt()->getValue(),
                 'updated_at' => $user->updatedAt()->getValue(),
             ]
@@ -33,16 +33,16 @@ class EloquentUserRepository implements UserRepositoryInterface
         return $this->model->newQuery()
             ->where('restaurant_id', auth()->user()?->restaurant_id)
             ->get()
-            ->map(
-                fn(EloquentUser $model) => User::fromPersistence(
-                    $model->uuid,
-                    $model->name,
-                    $model->email,
-                    $model->password,
-                    $model->created_at->toDateTimeImmutable(),
-                    $model->updated_at->toDateTimeImmutable(),
-            )
-        )->toArray();
+            ->map(fn(EloquentUser $model) => User::fromPersistence(
+                $model->uuid,
+                $model->name,
+                $model->email,
+                $model->password,
+                $model->role,
+                $model->restaurant_id,
+                $model->created_at->toDateTimeImmutable(),
+                $model->updated_at->toDateTimeImmutable(),
+            ))->toArray();
     }
 
     public function findById(string $id): ?User
@@ -58,6 +58,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             $model->name,
             $model->email,
             $model->password,
+            $model->role,
+            $model->restaurant_id,
             $model->created_at->toDateTimeImmutable(),
             $model->updated_at->toDateTimeImmutable(),
         );
@@ -76,13 +78,15 @@ class EloquentUserRepository implements UserRepositoryInterface
             $model->name,
             $model->email,
             $model->password,
+            $model->role,
+            $model->restaurant_id,
             $model->created_at->toDateTimeImmutable(),
             $model->updated_at->toDateTimeImmutable(),
         );
     }
 
     public function delete(User $user): void
-{
-    $this->model->newQuery()->where('uuid', $user->id()->getValue())->delete();
-}
+    {
+        $this->model->newQuery()->where('uuid', $user->id()->getValue())->delete();
+    }
 }

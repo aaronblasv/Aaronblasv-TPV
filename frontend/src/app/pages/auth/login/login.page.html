@@ -27,6 +27,7 @@
       <button class="btn-primary" (click)="login()" [disabled]="loading">
         {{ loading ? 'Logging in...' : 'Login' }}
       </button>
+      <p class="login-link">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
     </div>
   </div>
 </ion-content>
