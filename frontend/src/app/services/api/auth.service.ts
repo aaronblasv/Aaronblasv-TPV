@@ -32,4 +32,8 @@ export class AuthService extends BaseApiService {
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   }
+
+  register(name: string, email: string, password: string, passwordConfirmation: string): Observable<any> {
+    return this.httpCall('/users', { name, email, password, password_confirmation: passwordConfirmation }, 'post');
+    }
 }

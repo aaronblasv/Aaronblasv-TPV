@@ -27,17 +27,17 @@ test:
 	docker compose exec api php artisan test
 
 test-frontend:
-	docker compose exec frontend npx ng test --watch=false --browsers=ChromeHeadlessCI
+	docker compose exec frontend npm test -- --watch=false --browsers=ChromeHeadlessCI
 
 build-frontend:
-	docker compose exec frontend npx ng build
+	docker compose exec frontend npm run build
 
 # Servidor de desarrollo con live reload (watch) en primer plano. Abre http://localhost:4200 en el navegador.
 # Si el frontend ya está en marcha (make start), lo detiene antes para liberar el puerto 4200.
 # Para abrir el navegador automáticamente: cd frontend && npm start -- --open
 serve-frontend:
 	docker compose stop frontend 2>/dev/null || true
-	docker compose run --rm -p 4200:4200 frontend sh -c "npm install && npx ng serve --host 0.0.0.0"
+	docker compose run --rm -p 4200:4200 frontend sh -c "npm install && npm start -- --host 0.0.0.0"
 
 lint:
 	docker compose exec api vendor/bin/pint

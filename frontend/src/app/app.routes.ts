@@ -12,6 +12,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.page').then(m => m.LoginPage),
   },
   {
+    path: 'register',
+    loadComponent: () => import('./pages/auth/register/register.page').then(m => m.RegisterPage),
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./pages/backoffice/dashboard/dashboard.page').then(m => m.DashboardPage),
     canActivate: [authGuard],
@@ -45,5 +49,9 @@ export const routes: Routes = [
     path: 'users',
     loadComponent: () => import('./pages/backoffice/users/users.page').then(m => m.UsersPage),
     canActivate: [authGuard],
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./pages/auth/register/register.page').then( m => m.RegisterPage)
   },
 ];

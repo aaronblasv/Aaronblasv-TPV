@@ -23,8 +23,7 @@ services:
       - "4200:4200"
     environment:
       CHROME_BIN: /usr/bin/chromium
-    command: bash -c "npm install && npm start"
-    #command: bash -c "npm install && ng serve --host=0.0.0.0 --port=4200"
+    command: bash -c "npm install && npm start -- --host 0.0.0.0"
 
   db:
     image: mysql:8
@@ -34,7 +33,8 @@ services:
       MYSQL_DATABASE: training
     ports:
       - "3306:3306"
-
+    volumes:
+      - db_data:/var/lib/mysql
   dbgate:
     image: dbgate/dbgate
     container_name: training_dbgate
@@ -53,3 +53,6 @@ services:
       ENGINE_training: mysql@dbgate-plugin-mysql
     volumes:
       - ./docker/dbgate-data:/root/.dbgate
+
+volumes:
+  db_data:

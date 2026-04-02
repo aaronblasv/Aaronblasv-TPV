@@ -1,0 +1,52 @@
+<ion-content [fullscreen]="true">
+  <div class="login-container">
+    <div class="login-card">
+      <h1>TPV Pro</h1>
+      <p class="subtitle">Crear cuenta</p>
+
+      <div class="form-group">
+        <label>Nombre</label>
+        <input
+          type="text"
+          [(ngModel)]="name"
+          placeholder="Introduce tu nombre"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          placeholder="Introduce tu email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          placeholder="Introduce tu contraseña"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="password_confirmation"
+          placeholder="Confirma tu contraseña"
+        />
+      </div>
+
+      <div class="error" *ngIf="error">{{ error }}</div>
+
+      <button class="btn-primary" (click)="register()" [disabled]="loading">
+        {{ loading ? 'Registrando...' : 'Registrarse' }}
+      </button>
+
+      <p class="login-link">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+  </div>
+</ion-content>
