@@ -5,26 +5,22 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/c
 @Injectable()
 export class InterceptorProvider implements HttpInterceptor {
 
-  /**
-   * Intercepta las peticiones HTTP y les añade las cabeceras por defecto
-   * 
-   */
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(this.setHeader(request));
   }
 
-
-  /**
-   * Clona la petición añadiendo las cabeceras
-   * 
-   */
   private setHeader(request: HttpRequest<any>): HttpRequest<any> {
-    return request.clone({
-      setHeaders: {
-        Accept: 'application/json',
-        'Accept-Language': 'es',
-      }
-    });
-  }
+    const token = localStorage.getItem('token');
 
+    const headers: any = {
+      Accept: 'application/json',
+      'Accept-Language': 'es',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return request.clone({ setHeaders: headers });
+  }
 }

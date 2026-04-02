@@ -1,0 +1,27 @@
+meta {
+  name: Update User
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/users/b38dc3a5-9345-44b3-a59e-ab86bf05d3ad
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "Aarón Modificado",
+      "email": "aaronblvi@tpv.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Create Table
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/tables
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "Mesa 1",
+      "zone_id": "1627260b-a373-4eb2-80e9-791a257b2817"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

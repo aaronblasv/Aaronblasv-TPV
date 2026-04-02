@@ -1,0 +1,20 @@
+meta {
+  name: Delete Zone
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/zones/129c4637-7f8c-46ce-982f-0ba2cf2f9e39
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Update Zone
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/zones/129c4637-7f8c-46ce-982f-0ba2cf2f9e39
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "Terraza Modificado"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

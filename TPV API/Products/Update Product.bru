@@ -1,0 +1,31 @@
+meta {
+  name: Update Product
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/products/6cac2998-fff1-4d92-9415-a678cdc02ea5
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "Ensalada Valenciana Modificada",
+      "stock": 50,
+      "price": 850,
+      "active": true,
+      "family_id": "cc66f9fc-ecc4-47f2-b31b-9f00b84e8e51",
+      "tax_id": "974cd26e-b685-4a79-866f-c52f9e65b29e"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

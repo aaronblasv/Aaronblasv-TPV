@@ -1,0 +1,20 @@
+meta {
+  name: Get All Tables
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/tables
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

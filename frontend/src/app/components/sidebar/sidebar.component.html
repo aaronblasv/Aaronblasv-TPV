@@ -1,0 +1,25 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <ion-icon name="restaurant-outline" class="logo-icon"></ion-icon>
+      <span class="logo-text">TPV Pro</span>
+    </div>
+    <p class="logo-subtitle">Backoffice</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (item of menuItems; track item.route) {
+      <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+        <ion-icon [name]="item.icon"></ion-icon>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <span>Cerrar sesión</span>
+    </button>
+  </div>
+</div>

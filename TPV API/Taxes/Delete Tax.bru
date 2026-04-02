@@ -1,0 +1,20 @@
+meta {
+  name: Delete Tax
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/taxes/3522f220-9404-4595-b11a-cbb8cfe6d40d
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

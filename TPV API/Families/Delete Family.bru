@@ -1,0 +1,20 @@
+meta {
+  name: Delete Family
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/families/cc66f9fc-ecc4-47f2-b31b-9f00b84e8e51
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

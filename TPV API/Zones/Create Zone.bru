@@ -1,0 +1,26 @@
+meta {
+  name: Create Zone
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/zones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "Terraza"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

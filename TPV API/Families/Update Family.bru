@@ -1,0 +1,28 @@
+meta {
+  name: Update Family
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/families/cc66f9fc-ecc4-47f2-b31b-9f00b84e8e51
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "Bebidas Modificado",
+      "tax_id": "3522f220-9404-4595-b11a-cbb8cfe6d40d",
+      "active": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

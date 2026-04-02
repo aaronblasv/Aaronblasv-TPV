@@ -1,0 +1,31 @@
+meta {
+  name: Create Product
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "opa",
+      "price": 2.50,
+      "stock": 100,
+      "active": true,
+      "family_id": "155cbf08-b976-4bd2-b097-d601387aa10d",
+      "tax_id": "82087de1-09cf-4610-937d-680056fe35db"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

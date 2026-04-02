@@ -1,0 +1,23 @@
+<ion-content>
+  <div class="layout">
+    <app-sidebar></app-sidebar>
+
+    <div class="main-content">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Bienvenido al Panel de Administración</p>
+      </div>
+
+      <div class="stats-grid">
+        @for (stat of stats; track stat.label) {
+          <div class="stat-card">
+            <div class="stat-info">
+              <p class="stat-label">{{ stat.label }}</p>
+              <p class="stat-value">{{ stat.value }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</ion-content>

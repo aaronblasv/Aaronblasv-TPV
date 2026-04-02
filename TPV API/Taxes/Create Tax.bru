@@ -1,0 +1,27 @@
+meta {
+  name: Create Tax
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/taxes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "jhvjhf",
+      "percentage": 21
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

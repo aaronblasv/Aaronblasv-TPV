@@ -1,0 +1,20 @@
+meta {
+  name: Get User By Id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/users/b38dc3a5-9345-44b3-a59e-ab86bf05d3ad
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

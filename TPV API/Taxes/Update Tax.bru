@@ -1,0 +1,27 @@
+meta {
+  name: Update Tax
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/taxes/3522f220-9404-4595-b11a-cbb8cfe6d40d
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+      "name": "IVA General Modificado",
+      "percentage": 21
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
