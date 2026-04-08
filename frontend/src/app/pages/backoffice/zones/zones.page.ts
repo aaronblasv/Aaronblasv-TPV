@@ -6,13 +6,14 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { ZoneService } from '../../../services/api/zone.service';
 import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
 import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
 
 @Component({
   selector: 'app-zones',
   templateUrl: './zones.page.html',
   styleUrls: ['./zones.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent]
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent]
 })
 export class ZonesPage implements OnInit {
 
@@ -23,6 +24,8 @@ export class ZonesPage implements OnInit {
   showConfirm = false;
   editingZone: any = null;
   pendingDeleteUuid: string | null = null;
+  errors: { [key: string]: string } = {};
+
 
   form = { name: '' };
 
@@ -46,16 +49,24 @@ export class ZonesPage implements OnInit {
   closeForm() {
     this.showForm = false;
     this.editingZone = null;
+    this.errors = {};
   }
 
   save() {
+    this.errors = {};
     const action = this.editingZone
       ? this.zoneService.update(this.editingZone.uuid, this.form.name)
       : this.zoneService.create(this.form.name);
 
     action.subscribe({
       next: () => { this.loadZones(); this.closeForm(); },
-      error: (err: any) => console.error(err)
+      error: (err: any) => {
+        if (err.status === 422) {
+          Object.keys(err.error.errors).forEach(key => {
+            this.errors[key] = err.error.errors[key][0];
+          });
+        }
+      }
     });
   }
 

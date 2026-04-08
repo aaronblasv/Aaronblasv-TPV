@@ -8,13 +8,14 @@ import { ZoneService } from '../../../services/api/zone.service';
 import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
 import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
 import { forkJoin } from 'rxjs';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
 
 @Component({
   selector: 'app-tables',
   templateUrl: './tables.page.html',
   styleUrls: ['./tables.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent]
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent]
 })
 export class TablesPage implements OnInit {
 
@@ -27,6 +28,7 @@ export class TablesPage implements OnInit {
   showConfirm = false;
   editingTable: any = null;
   pendingDeleteUuid: string | null = null;
+  errors: { [key: string]: string } = {};
 
   form = {
     name: '',
@@ -69,16 +71,24 @@ export class TablesPage implements OnInit {
   closeForm() {
     this.showForm = false;
     this.editingTable = null;
+    this.errors = {};
   }
 
   save() {
+    this.errors = {};
     const action = this.editingTable
       ? this.tableService.update(this.editingTable.uuid, this.form)
       : this.tableService.create(this.form);
 
     action.subscribe({
       next: () => { this.loadData(); this.closeForm(); },
-      error: (err: any) => console.error(err)
+      error: (err: any) => {
+        if (err.status === 422) {
+          Object.keys(err.error.errors).forEach(key => {
+            this.errors[key] = err.error.errors[key][0];
+          });
+        }
+      }
     });
   }
 

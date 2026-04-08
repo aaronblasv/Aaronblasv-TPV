@@ -14,11 +14,13 @@ class CreateTaxController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $name = $request->input('name');
-        $percentage = $request->input('percentage');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'percentage' => 'required|numeric|min:0|max:100',
+        ]);
 
-        $tax = ($this->useCase)($name, $percentage);
+        $tax = ($this->useCase)($validated['name'], $validated['percentage']);
 
-        return new JsonResponse($tax);
+        return new JsonResponse($tax, 201);
     }
 }

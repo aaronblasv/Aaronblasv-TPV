@@ -39,33 +39,39 @@
         </div>
       }
 
-      @if (showForm) {
-        <div class="modal-overlay" (click)="closeForm()">
-          <div class="modal" (click)="$event.stopPropagation()">
-            <h2>{{ editingTable ? 'Editar Mesa' : 'Nueva Mesa' }}</h2>
-
-            <div class="form-group">
-              <label>Nombre</label>
-              <input type="text" [(ngModel)]="form.name" placeholder="Nombre de la mesa" />
-            </div>
-
-            <div class="form-group">
-              <label>Zona</label>
-              <select [(ngModel)]="form.zone_id">
-                <option value="">Selecciona una zona</option>
-                @for (zone of zones; track zone.uuid) {
-                  <option [value]="zone.uuid">{{ zone.name }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="modal-actions">
-              <button class="btn-secondary" (click)="closeForm()">Cancelar</button>
-              <button class="btn-primary" (click)="save()">Guardar</button>
-            </div>
-          </div>
+      <app-form-modal
+        [visible]="showForm"
+        [title]="editingTable ? 'Editar Mesa' : 'Nueva Mesa'"
+        [errors]="errors"
+        (onSave)="save()"
+        (onCancel)="closeForm()"
+      >
+        <div class="form-group">
+          <label>Nombre</label>
+          <input
+            type="text"
+            [(ngModel)]="form.name"
+            placeholder="Nombre de la mesa"
+            [class.input-error]="errors['name']"
+          />
+          @if (errors['name']) {
+            <span class="error-msg">{{ errors['name'] }}</span>
+          }
         </div>
-      }
+
+        <div class="form-group">
+          <label>Zona</label>
+          <select [(ngModel)]="form.zone_id" [class.input-error]="errors['zone_id']">
+            <option value="">Selecciona una zona</option>
+            @for (zone of zones; track zone.uuid) {
+              <option [value]="zone.uuid">{{ zone.name }}</option>
+            }
+          </select>
+          @if (errors['zone_id']) {
+            <span class="error-msg">{{ errors['zone_id'] }}</span>
+          }
+        </div>
+      </app-form-modal>
 
       <app-confirm-modal
         [visible]="showConfirm"

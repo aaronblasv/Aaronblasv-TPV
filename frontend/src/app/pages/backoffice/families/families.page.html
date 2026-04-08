@@ -44,23 +44,26 @@
         </table>
       </div>
 
-      @if (showForm) {
-        <div class="modal-overlay" (click)="closeForm()">
-          <div class="modal" (click)="$event.stopPropagation()">
-            <h2>{{ editingFamily ? 'Editar Familia' : 'Nueva Familia' }}</h2>
-
-            <div class="form-group">
-              <label>Nombre</label>
-              <input type="text" [(ngModel)]="form.name" placeholder="Nombre de la familia" />
-            </div>
-
-            <div class="modal-actions">
-              <button class="btn-secondary" (click)="closeForm()">Cancelar</button>
-              <button class="btn-primary" (click)="save()">Guardar</button>
-            </div>
-          </div>
+      <app-form-modal
+        [visible]="showForm"
+        [title]="editingFamily ? 'Editar Familia' : 'Nueva Familia'"
+        [errors]="errors"
+        (onSave)="save()"
+        (onCancel)="closeForm()"
+      >
+        <div class="form-group">
+          <label>Nombre</label>
+          <input
+            type="text"
+            [(ngModel)]="form.name"
+            placeholder="Nombre de la familia"
+            [class.input-error]="errors['name']"
+          />
+          @if (errors['name']) {
+            <span class="error-msg">{{ errors['name'] }}</span>
+          }
         </div>
-      }
+      </app-form-modal>
 
       <app-confirm-modal
         [visible]="showConfirm"

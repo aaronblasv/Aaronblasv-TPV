@@ -14,14 +14,19 @@ class CreateUserController
 
     public function __invoke(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role' => 'sometimes|in:admin,supervisor,waiter',
+        ]);
         $user = ($this->useCase)(
-            $request->input('email'),
-            $request->input('name'),
-            $request->input('password'),
-            $request->input('role', 'waiter'),
+            $validated['email'],
+            $validated['name'],
+            $validated['password'],
+            $validated['role'] ?? 'waiter',
             auth()->user()->restaurant_id,
         );
-
         return new JsonResponse($user, 201);
     }
 }

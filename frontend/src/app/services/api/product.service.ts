@@ -32,4 +32,12 @@ export class ProductService {
   delete(uuid: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${uuid}`);
   }
+
+  activate(uuid: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${uuid}/activate`, {});
+    }
+
+    deactivate(uuid: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${uuid}/deactivate`, {});
+    }
 }

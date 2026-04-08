@@ -1,0 +1,14 @@
+@if (visible) {
+  <div class="modal-overlay" (click)="onCancel.emit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>{{ title }}</h2>
+
+      <ng-content />
+
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="onCancel.emit()">Cancelar</button>
+        <button class="btn-primary" (click)="onSave.emit()">Guardar</button>
+      </div>
+    </div>
+  </div>
+}

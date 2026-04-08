@@ -17,8 +17,11 @@ class CreateTableController
         $name = $request->input('name');
         $zoneId = $request->input('zone_id');
 
-        $table = ($this->useCase)($name, $zoneId);
-
-        return new JsonResponse($table);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'zone_id' => 'required|string',
+        ]);
+        $table = ($this->useCase)($validated['name'], $validated['zone_id']);
+        return new JsonResponse($table, 201);
     }
 }

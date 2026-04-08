@@ -6,13 +6,15 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { FamilyService } from '../../../services/api/family.service';
 import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
 import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+
 
 @Component({
   selector: 'app-families',
   templateUrl: './families.page.html',
   styleUrls: ['./families.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent]
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent]
 })
 export class FamiliesPage implements OnInit {
 
@@ -21,6 +23,7 @@ export class FamiliesPage implements OnInit {
   editingFamily: any = null;
   pendingDeleteUuid: string | null = null;
   showConfirm = false;
+  errors: { [key: string]: string } = {};
 
   form = { name: '' };
 
@@ -65,16 +68,25 @@ export class FamiliesPage implements OnInit {
   closeForm() {
     this.showForm = false;
     this.editingFamily = null;
+    this.errors = {};
   }
 
   save() {
+    this.errors = {};
     const action = this.editingFamily
       ? this.familyService.update(this.editingFamily.uuid, this.form.name)
       : this.familyService.create(this.form.name);
 
     action.subscribe({
       next: () => { this.loadFamilies(); this.closeForm(); },
-      error: (err) => console.error(err)
+      error: (err: any) => {
+        if (err.status === 422) {
+          const apiErrors = err.error.errors;
+          Object.keys(apiErrors).forEach(key => {
+            this.errors[key] = apiErrors[key][0];
+          });
+        }
+      }
     });
   }
 

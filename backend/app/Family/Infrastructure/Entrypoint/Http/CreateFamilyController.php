@@ -18,8 +18,12 @@ class CreateFamilyController
         $name = $request->input('name');
         $active = $request->input('active', true);
 
-        $family = ($this->useCase)($name, $active);
+        $validate = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
 
-        return new JsonResponse($family);
+        $family = ($this->useCase)($validate['name'], $request->input('active', true));
+
+        return new JsonResponse($family, 201);
     }
 }

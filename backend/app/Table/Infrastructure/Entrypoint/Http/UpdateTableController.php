@@ -17,8 +17,11 @@ class UpdateTableController
         $name = $request->input('name');
         $zoneId = $request->input('zone_id');
 
-        $table = ($this->useCase)($uuid, $name, $zoneId);
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'zone_id' => 'required|string',
+        ]);
+        $table = ($this->useCase)($uuid, $validated['name'], $validated['zone_id']);
         return new JsonResponse($table);
     }
 }

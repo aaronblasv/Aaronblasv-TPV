@@ -35,12 +35,14 @@
                       {{ product.active ? 'Activo' : 'Inactivo' }}
                     </span>
                   </td>
-                  <td class="actions">
-                    <button class="btn-toggle" (click)="toggle(product.uuid)">
-                      {{ product.active ? 'Desactivar' : 'Activar' }}
-                    </button>
-                    <button class="btn-edit" (click)="openForm(product)">Editar</button>
-                    <button class="btn-delete" (click)="delete(product.uuid)">Eliminar</button>
+                  <td>
+                    <app-action-buttons
+                      [showToggle]="true"
+                      [isActive]="product.active"
+                      (onEdit)="openForm(product)"
+                      (onDelete)="requestDelete(product.uuid)"
+                      (onToggle)="toggle(product.uuid)"
+                    />
                   </td>
                 </tr>
               }
@@ -49,53 +51,85 @@
         </div>
       }
 
-      @if (showForm) {
-        <div class="modal-overlay" (click)="closeForm()">
-          <div class="modal" (click)="$event.stopPropagation()">
-            <h2>{{ editingProduct ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
-
-            <div class="form-group">
-              <label>Nombre</label>
-              <input type="text" [(ngModel)]="form.name" placeholder="Nombre del producto" />
-            </div>
-
-            <div class="form-group">
-              <label>Precio (€)</label>
-              <input type="number" [(ngModel)]="form.price" placeholder="0" />
-            </div>
-
-            <div class="form-group">
-              <label>Stock</label>
-              <input type="number" [(ngModel)]="form.stock" placeholder="0" />
-            </div>
-
-            <div class="form-group">
-              <label>Familia</label>
-              <select [(ngModel)]="form.familyId">
-                <option value="">Selecciona una familia</option>
-                @for (family of families; track family.uuid) {
-                  <option [value]="family.uuid">{{ family.name }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Impuesto</label>
-              <select [(ngModel)]="form.taxId">
-                <option value="">Selecciona un impuesto</option>
-                @for (tax of taxes; track tax.uuid) {
-                  <option [value]="tax.uuid">{{ tax.name }} ({{ tax.percentage }}%)</option>
-                }
-              </select>
-            </div>
-
-            <div class="modal-actions">
-              <button class="btn-secondary" (click)="closeForm()">Cancelar</button>
-              <button class="btn-primary" (click)="save()">Guardar</button>
-            </div>
-          </div>
+      <app-form-modal
+        [visible]="showForm"
+        [title]="editingProduct ? 'Editar Producto' : 'Nuevo Producto'"
+        [errors]="errors"
+        (onSave)="save()"
+        (onCancel)="closeForm()"
+      >
+        <div class="form-group">
+          <label>Nombre</label>
+          <input
+            type="text"
+            [(ngModel)]="form.name"
+            placeholder="Nombre del producto"
+            [class.input-error]="errors['name']"
+          />
+          @if (errors['name']) {
+            <span class="error-msg">{{ errors['name'] }}</span>
+          }
         </div>
-      }
+
+        <div class="form-group">
+          <label>Precio (céntimos)</label>
+          <input
+            type="number"
+            [(ngModel)]="form.price"
+            placeholder="0"
+            [class.input-error]="errors['price']"
+          />
+          @if (errors['price']) {
+            <span class="error-msg">{{ errors['price'] }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Stock</label>
+          <input
+            type="number"
+            [(ngModel)]="form.stock"
+            placeholder="0"
+            [class.input-error]="errors['stock']"
+          />
+          @if (errors['stock']) {
+            <span class="error-msg">{{ errors['stock'] }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Familia</label>
+          <select [(ngModel)]="form.familyId" [class.input-error]="errors['family_id']">
+            <option value="">Selecciona una familia</option>
+            @for (family of families; track family.uuid) {
+              <option [value]="family.uuid">{{ family.name }}</option>
+            }
+          </select>
+          @if (errors['family_id']) {
+            <span class="error-msg">{{ errors['family_id'] }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Impuesto</label>
+          <select [(ngModel)]="form.taxId" [class.input-error]="errors['tax_id']">
+            <option value="">Selecciona un impuesto</option>
+            @for (tax of taxes; track tax.uuid) {
+              <option [value]="tax.uuid">{{ tax.name }} ({{ tax.percentage }}%)</option>
+            }
+          </select>
+          @if (errors['tax_id']) {
+            <span class="error-msg">{{ errors['tax_id'] }}</span>
+          }
+        </div>
+      </app-form-modal>
+      <app-confirm-modal
+          [visible]="showConfirm"
+          title="¿Eliminar producto?"
+          message="Esta acción eliminará el producto permanentemente."
+          (onConfirm)="confirmDelete()"
+          (onCancel)="closeConfirm()"
+        />
     </div>
   </div>
 </ion-content>

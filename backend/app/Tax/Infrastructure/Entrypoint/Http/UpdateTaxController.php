@@ -14,10 +14,12 @@ class UpdateTaxController
 
     public function __invoke(Request $request, string $uuid): JsonResponse
     {
-        $name = $request->input('name');
-        $percentage = $request->input('percentage');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'percentage' => 'required|numeric|min:0|max:100',
+        ]);
 
-        $tax = ($this->useCase)($uuid, $name, $percentage);
+        $tax = ($this->useCase)($uuid, $validated['name'], $validated['percentage']);
 
         return new JsonResponse($tax);
     }

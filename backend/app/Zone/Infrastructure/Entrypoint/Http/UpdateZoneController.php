@@ -16,8 +16,10 @@ class UpdateZoneController
     {
         $name = $request->input('name');
 
-        $zone = ($this->useCase)($uuid, $name);
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+        $zone = ($this->useCase)($uuid, $validated['name']);
         return new JsonResponse($zone);
     }
 }

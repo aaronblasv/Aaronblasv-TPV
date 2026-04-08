@@ -7,13 +7,16 @@ import { ProductService } from '../../../services/api/product.service';
 import { FamilyService } from '../../../services/api/family.service';
 import { TaxService } from '../../../services/api/tax.service';
 import { forkJoin } from 'rxjs';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
+import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
 
 @Component({
   selector: 'app-products',
   templateUrl: './products.page.html',
   styleUrls: ['./products.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent]
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, FormModalComponent, ConfirmModalComponent, ActionButtonsComponent]
 })
 export class ProductsPage implements OnInit {
 
@@ -26,6 +29,9 @@ export class ProductsPage implements OnInit {
   taxes: any[] = [];
   showForm = false;
   editingProduct: any = null;
+  errors: { [key: string]: string } = {};
+  pendingDeleteUuid: string | null = null;
+  showConfirm = false;
 
   form = {
     name: '',
@@ -38,6 +44,12 @@ export class ProductsPage implements OnInit {
   ngOnInit() {
     this.loadData();
   }
+
+  requestDelete(uuid: string) {
+    this.pendingDeleteUuid = uuid;
+    this.showConfirm = true;
+  }
+
 
   loadData() {
     forkJoin({
@@ -79,32 +91,50 @@ export class ProductsPage implements OnInit {
   closeForm() {
     this.showForm = false;
     this.editingProduct = null;
+    this.errors = {};
   }
 
   save() {
+    this.errors = {};
     const action = this.editingProduct
       ? this.productService.update(this.editingProduct.uuid, this.form)
       : this.productService.create(this.form);
 
     action.subscribe({
       next: () => { this.loadData(); this.closeForm(); },
-      error: (err: any) => console.error(err)
+      error: (err: any) => {
+        if (err.status === 422) {
+          Object.keys(err.error.errors).forEach(key => {
+            this.errors[key] = err.error.errors[key][0];
+          });
+        }
+      }
     });
   }
 
+
   toggle(uuid: string) {
-    this.productService.toggle(uuid).subscribe({
+    const product = this.products.find(p => p.uuid === uuid);
+    const action = product.active
+      ? this.productService.deactivate(uuid)
+      : this.productService.activate(uuid);
+
+    action.subscribe({
       next: () => this.loadData(),
       error: (err: any) => console.error(err)
     });
   }
 
-  delete(uuid: string) {
-    if (confirm('¿Eliminar este producto?')) {
-      this.productService.delete(uuid).subscribe({
-        next: () => this.loadData(),
-        error: (err: any) => console.error(err)
-      });
-    }
+  confirmDelete() {
+    if (!this.pendingDeleteUuid) return;
+    this.productService.delete(this.pendingDeleteUuid).subscribe({
+      next: () => { this.loadData(); this.closeConfirm(); },
+      error: (err: any) => console.error(err)
+    });
+  }
+
+  closeConfirm() {
+    this.showConfirm = false;
+    this.pendingDeleteUuid = null;
   }
 }

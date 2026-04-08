@@ -11,15 +11,21 @@ class CreateProductController
 
     public function __invoke(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'family_id' => 'required|string',
+            'tax_id' => 'required|string',
+        ]);
         $product = ($this->useCase)(
-            $request->input('name'),
-            $request->input('price'),
-            $request->input('stock'),
+            $validated['name'],
+            $validated['price'],
+            $validated['stock'],
             $request->input('active', true),
-            $request->input('family_id'),
-            $request->input('tax_id'),
+            $validated['family_id'],
+            $validated['tax_id'],
         );
-
         return new JsonResponse($product, 201);
     }
 }
