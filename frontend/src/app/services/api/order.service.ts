@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8000/api';
+  private apiUrl = environment.apiUrl;
 
   getOrderByTable(tableUuid: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/tables/${tableUuid}/order`, { observe: 'response' }).pipe(
@@ -49,7 +49,7 @@ export class OrderService {
   }
 
   getAllTpv(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/tpv/zones`);
+    return this.http.get<any[]>(`${this.apiUrl}/tpv/zones`);
   }
 
   validatePin(pin: string): Observable<any> {

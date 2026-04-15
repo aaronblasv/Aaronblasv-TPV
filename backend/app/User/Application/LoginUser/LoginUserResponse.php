@@ -18,4 +18,15 @@ final readonly class LoginUserResponse
             role: $user->role()->getValue(),
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'token' => $this->token,
+            'role' => $this->role,
+        ];
+    }
 }

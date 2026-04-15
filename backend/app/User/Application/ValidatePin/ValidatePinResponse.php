@@ -24,4 +24,17 @@ final readonly class ValidatePinResponse
             role: $user->role()->getValue(),
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'id' => $this->id,
+            'name' => $this->name,
+            'role' => $this->role,
+        ];
+    }
 }

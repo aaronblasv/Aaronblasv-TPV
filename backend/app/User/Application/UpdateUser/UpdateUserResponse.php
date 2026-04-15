@@ -20,4 +20,16 @@ final readonly class UpdateUserResponse
             email: $user->email()->getValue(),
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+    }
 }

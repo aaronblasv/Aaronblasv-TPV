@@ -20,7 +20,7 @@ class ValidatePinController
 
         try {
             $response = ($this->useCase)($validated['pin'], $request->user()->restaurant_id);
-            return new JsonResponse($response);
+            return new JsonResponse($response->toArray());
         } catch (\DomainException $e) {
             return new JsonResponse(['message' => $e->getMessage()], 401);
         }

@@ -14,8 +14,11 @@ class GetAllTablesController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $tables = ($this->useCase)($request->user()->restaurant_id);
+        $response = ($this->useCase)($request->user()->restaurant_id);
 
-        return new JsonResponse($tables);
+        return new JsonResponse(array_map(
+            static fn($item) => $item->toArray(),
+            $response,
+        ));
     }
 }

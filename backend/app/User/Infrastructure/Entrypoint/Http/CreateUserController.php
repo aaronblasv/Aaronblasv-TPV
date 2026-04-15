@@ -27,6 +27,7 @@ class CreateUserController
             $validated['role'] ?? 'waiter',
             auth()->user()->restaurant_id,
         );
-        return new JsonResponse($user, 201);
+
+        return new JsonResponse($user->toArray(), 201);
     }
 }

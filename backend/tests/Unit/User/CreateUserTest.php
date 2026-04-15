@@ -32,13 +32,15 @@ class CreateUserTest extends TestCase
         $repository->shouldReceive('save')
             ->once()
             ->with(Mockery::on(function (User $user) use ($hashedPassword) {
-                return $user->email()->value() === 'create@example.com'
-                    && $user->name() === 'Create User'
-                    && $user->passwordHash() === $hashedPassword;
+                return $user->email()->getValue() === 'create@example.com'
+                    && $user->name()->getValue() === 'Create User'
+                    && $user->passwordHash()->getValue() === $hashedPassword
+                    && $user->role()->getValue() === 'waiter'
+                    && $user->restaurantId() === 1;
             }));
 
         $createUser = new CreateUser($repository, $passwordHasher);
-        $response = $createUser('create@example.com', 'Create User', 'plain-password');
+        $response = $createUser('create@example.com', 'Create User', 'plain-password', 'waiter', 1);
 
         $this->assertInstanceOf(CreateUserResponse::class, $response);
         $this->assertSame('create@example.com', $response->email);

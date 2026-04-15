@@ -44,6 +44,7 @@ class User
     {
         $this->name = $name;
         $this->email = $email;
+        $this->updatedAt = DomainDateTime::now();
     }
 
     public static function fromPersistence(

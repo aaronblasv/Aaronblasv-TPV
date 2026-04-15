@@ -28,4 +28,19 @@ final readonly class GetAllOpenOrdersResponse
             $order->openedAt()->format('Y-m-d H:i:s'),
         );
     }
+
+    /**
+     * @return array<string, string|int>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'status' => $this->status,
+            'table_id' => $this->tableId,
+            'opened_by_user_id' => $this->openedByUserId,
+            'diners' => $this->diners,
+            'opened_at' => $this->openedAt,
+        ];
+    }
 }

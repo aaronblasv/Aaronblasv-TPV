@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { SidebarComponent } from './sidebar.component';
@@ -9,8 +12,8 @@ describe('SidebarComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SidebarComponent ],
-      imports: [IonicModule.forRoot()]
+      imports: [IonicModule.forRoot(), SidebarComponent],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SidebarComponent);

@@ -16,6 +16,6 @@ class GetUserByIdController
     {
         $response = ($this->getUserById)($uuid);
 
-        return new JsonResponse($response);
+        return new JsonResponse($response->toArray());
     }
 }

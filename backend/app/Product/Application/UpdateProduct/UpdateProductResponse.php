@@ -30,4 +30,21 @@ final readonly class UpdateProductResponse
             $product->imageSrc(),
         );
     }
+
+    /**
+     * @return array<string, string|int|bool|null>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'name' => $this->name,
+            'price' => $this->price,
+            'stock' => $this->stock,
+            'active' => $this->active,
+            'family_id' => $this->familyId,
+            'tax_id' => $this->taxId,
+            'image_src' => $this->imageSrc,
+        ];
+    }
 }

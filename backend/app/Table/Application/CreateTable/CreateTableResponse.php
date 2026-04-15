@@ -20,4 +20,16 @@ final readonly class CreateTableResponse
             $table->zoneId()->getValue(),
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'name' => $this->name,
+            'zone_id' => $this->zoneId,
+        ];
+    }
 }

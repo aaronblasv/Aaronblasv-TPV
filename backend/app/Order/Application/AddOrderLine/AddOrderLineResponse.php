@@ -28,4 +28,19 @@ final readonly class AddOrderLineResponse
             $line->taxPercentage(),
         );
     }
+
+    /**
+     * @return array<string, string|int>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'product_id' => $this->productId,
+            'user_id' => $this->userId,
+            'quantity' => $this->quantity,
+            'price' => $this->price,
+            'tax_percentage' => $this->taxPercentage,
+        ];
+    }
 }

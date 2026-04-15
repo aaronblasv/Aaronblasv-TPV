@@ -12,25 +12,27 @@ final readonly class GetAuthenticatedUserResponse
         public string $email,
         public string $role,
         public int $restaurantId,
+        public string $restaurantName,
         public string $createdAt,
         public string $updatedAt,
     ) {}
 
-    public static function create(User $user): self
+    public static function create(User $user, ?string $restaurantName = null): self
     {
         return new self(
             id: $user->id()->getValue(),
             name: $user->name()->getValue(),
             email: $user->email()->getValue(),
             role: $user->role()->getValue(),
-            restaurantId: (string) $user->restaurantId(),
+            restaurantId: $user->restaurantId(),
+            restaurantName: $restaurantName ?? '',
             createdAt: $user->createdAt()->format(\DateTimeInterface::ATOM),
             updatedAt: $user->updatedAt()->format(\DateTimeInterface::ATOM),
         );
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, string|int>
      */
     public function toArray(): array
     {
@@ -40,6 +42,7 @@ final readonly class GetAuthenticatedUserResponse
             'email' => $this->email,
             'role' => $this->role,
             'restaurant_id' => $this->restaurantId,
+            'restaurant_name' => $this->restaurantName,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
         ];

@@ -12,4 +12,17 @@ final readonly class GetDashboardStatsResponse
         public array $topProducts,
         public array $salesByDay,
     ) {}
+
+    /**
+     * @return array<string, array>
+     */
+    public function toArray(): array
+    {
+        return [
+            'stats' => $this->stats,
+            'sales_this_month' => $this->salesThisMonth,
+            'top_products' => $this->topProducts,
+            'sales_by_day' => $this->salesByDay,
+        ];
+    }
 }

@@ -18,6 +18,9 @@ class GetAllSalesController
     {
         $response = ($this->useCase)($request->user()->restaurant_id);
 
-        return new JsonResponse($response);
+        return new JsonResponse(array_map(
+            static fn($item) => $item->toArray(),
+            $response,
+        ));
     }
 }

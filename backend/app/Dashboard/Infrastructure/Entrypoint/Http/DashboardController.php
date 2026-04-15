@@ -18,6 +18,6 @@ class DashboardController
     {
         $response = ($this->useCase)($request->user()->restaurant_id);
 
-        return new JsonResponse($response);
+        return new JsonResponse($response->toArray());
     }
 }

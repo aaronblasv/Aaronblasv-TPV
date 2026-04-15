@@ -20,4 +20,16 @@ final readonly class UpdateTaxResponse
             $tax->percentage()->getValue(),
         );
     }
+
+    /**
+     * @return array<string, string|int>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'name' => $this->name,
+            'percentage' => $this->percentage,
+        ];
+    }
 }

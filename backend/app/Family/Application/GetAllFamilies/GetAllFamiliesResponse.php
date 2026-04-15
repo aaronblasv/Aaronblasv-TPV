@@ -20,4 +20,16 @@ final readonly class GetAllFamiliesResponse
             $family->active(),
         );
     }
+
+    /**
+     * @return array<string, string|bool>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'name' => $this->name,
+            'active' => $this->active,
+        ];
+    }
 }

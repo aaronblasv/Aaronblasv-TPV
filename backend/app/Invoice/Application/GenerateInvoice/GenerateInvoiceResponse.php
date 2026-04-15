@@ -26,4 +26,19 @@ final readonly class GenerateInvoiceResponse
             $invoice->issuedAt()->format('Y-m-d H:i:s'),
         );
     }
+
+    /**
+     * @return array<string, string|int>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'invoice_number' => $this->invoiceNumber,
+            'subtotal' => $this->subtotal,
+            'tax_amount' => $this->taxAmount,
+            'total' => $this->total,
+            'issued_at' => $this->issuedAt,
+        ];
+    }
 }

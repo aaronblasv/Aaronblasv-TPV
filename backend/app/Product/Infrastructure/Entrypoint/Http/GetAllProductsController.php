@@ -14,6 +14,11 @@ class GetAllProductsController
 
     public function __invoke(Request $request): JsonResponse
     {
-        return new JsonResponse(($this->useCase)($request->user()->restaurant_id));
+        $response = ($this->useCase)($request->user()->restaurant_id);
+
+        return new JsonResponse(array_map(
+            static fn($item) => $item->toArray(),
+            $response,
+        ));
     }
 }

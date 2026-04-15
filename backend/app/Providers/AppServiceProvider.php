@@ -22,6 +22,8 @@ use App\Payment\Domain\Interfaces\PaymentRepositoryInterface;
 use App\Payment\Infrastructure\Persistence\Repositories\EloquentPaymentRepository;
 use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 use App\Product\Infrastructure\Persistence\Repositories\EloquentProductRepository;
+use App\Restaurant\Domain\Interfaces\RestaurantRepositoryInterface;
+use App\Restaurant\Infrastructure\Persistence\Repositories\EloquentRestaurantRepository;
 use App\Sale\Domain\Interfaces\SaleRepositoryInterface;
 use App\Sale\Infrastructure\Persistence\Repositories\EloquentSaleRepository;
 use App\Table\Domain\Interfaces\TableRepositoryInterface;
@@ -49,6 +51,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
         $this->app->bind(PasswordHasherInterface::class, LaravelPasswordHasher::class);
         $this->app->bind(TokenGeneratorInterface::class, LaravelTokenGenerator::class);
+
+        // Restaurant
+        $this->app->bind(RestaurantRepositoryInterface::class, EloquentRestaurantRepository::class);
 
         // Catalogue
         $this->app->bind(TaxRepositoryInterface::class, EloquentTaxRepository::class);

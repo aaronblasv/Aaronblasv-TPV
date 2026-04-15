@@ -18,4 +18,15 @@ final readonly class CreateZoneResponse
             $zone->name()->getValue(),
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'name' => $this->name,
+        ];
+    }
 }

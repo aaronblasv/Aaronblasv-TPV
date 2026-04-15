@@ -28,4 +28,19 @@ final readonly class CloseOrderResponse
             $order->closedAt()->format('Y-m-d H:i:s'),
         );
     }
+
+    /**
+     * @return array<string, string|int>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'status' => $this->status,
+            'total' => $this->total,
+            'ticket_number' => $this->ticketNumber,
+            'closed_by_user_id' => $this->closedByUserId,
+            'closed_at' => $this->closedAt,
+        ];
+    }
 }

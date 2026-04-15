@@ -26,4 +26,19 @@ final readonly class GetAllUsersResponse
             updatedAt: $user->updatedAt()->format(\DateTimeInterface::ATOM),
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'role' => $this->role,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+        ];
+    }
 }

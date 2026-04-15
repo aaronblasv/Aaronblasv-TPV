@@ -14,8 +14,11 @@ class GetAllZonesController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $zones = ($this->useCase)($request->user()->restaurant_id);
+        $response = ($this->useCase)($request->user()->restaurant_id);
 
-        return new JsonResponse($zones);
+        return new JsonResponse(array_map(
+            static fn($item) => $item->toArray(),
+            $response,
+        ));
     }
 }

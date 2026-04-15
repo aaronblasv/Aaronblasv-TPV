@@ -32,6 +32,6 @@ class UpdateUserController
             return new JsonResponse(['message' => $e->getMessage()], 404);
         }
 
-        return new JsonResponse($response);
+        return new JsonResponse($response->toArray());
     }
 }

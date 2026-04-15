@@ -27,4 +27,15 @@ final readonly class GetLogsResponse
             $total,
         );
     }
+
+    /**
+     * @return array{logs: array<int, array<string, mixed>>, total: int}
+     */
+    public function toArray(): array
+    {
+        return [
+            'logs' => $this->logs,
+            'total' => $this->total,
+        ];
+    }
 }

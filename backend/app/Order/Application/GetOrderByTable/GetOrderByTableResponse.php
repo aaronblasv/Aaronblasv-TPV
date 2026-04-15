@@ -38,4 +38,27 @@ final readonly class GetOrderByTableResponse
             ], $lines),
         );
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'status' => $this->status,
+            'table_id' => $this->tableId,
+            'opened_by_user_id' => $this->openedByUserId,
+            'diners' => $this->diners,
+            'opened_at' => $this->openedAt,
+            'lines' => array_map(static fn(array $line) => [
+                'uuid' => $line['uuid'] ?? null,
+                'product_id' => $line['productId'] ?? null,
+                'user_id' => $line['userId'] ?? null,
+                'quantity' => $line['quantity'] ?? null,
+                'price' => $line['price'] ?? null,
+                'tax_percentage' => $line['taxPercentage'] ?? null,
+            ], $this->lines),
+        ];
+    }
 }

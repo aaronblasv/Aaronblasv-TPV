@@ -20,6 +20,6 @@ class GetOrderByTableController
             return new JsonResponse(null, 204);
         }
 
-        return new JsonResponse($response);
+        return new JsonResponse($response->toArray());
     }
 }

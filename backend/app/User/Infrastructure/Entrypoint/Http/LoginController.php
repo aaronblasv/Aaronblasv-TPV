@@ -24,6 +24,6 @@ class LoginController
             $validated['password'],
         );
 
-        return new JsonResponse($response);
+        return new JsonResponse($response->toArray());
     }
 }

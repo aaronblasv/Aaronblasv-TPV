@@ -26,4 +26,19 @@ final readonly class RegisterPaymentResponse
             $payment->description(),
         );
     }
+
+    /**
+     * @return array<string, string|int|null>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'order_uuid' => $this->orderUuid,
+            'amount' => $this->amount,
+            'method' => $this->method,
+            'total_paid' => $this->totalPaid,
+            'description' => $this->description,
+        ];
+    }
 }

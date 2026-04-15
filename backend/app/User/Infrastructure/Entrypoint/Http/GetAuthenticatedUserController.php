@@ -18,12 +18,6 @@ class GetAuthenticatedUserController
 
         $response = ($this->getAuthenticatedUser)($user->uuid);
 
-        $restaurantName = \DB::table('restaurants')
-            ->where('id', $user->restaurant_id)
-            ->value('name');
-
-        return new JsonResponse(array_merge($response->toArray(), [
-            'restaurant_name' => $restaurantName,
-        ]));
+        return new JsonResponse($response->toArray());
     }
 }

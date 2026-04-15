@@ -30,4 +30,20 @@ final readonly class GetAllSalesResponse
             $sale->total(),
         );
     }
+
+    /**
+     * @return array<string, string|int>
+     */
+    public function toArray(): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'restaurant_id' => $this->restaurantId,
+            'order_id' => $this->orderId,
+            'user_id' => $this->userId,
+            'ticket_number' => $this->ticketNumber,
+            'value_date' => $this->valueDate,
+            'total' => $this->total,
+        ];
+    }
 }
