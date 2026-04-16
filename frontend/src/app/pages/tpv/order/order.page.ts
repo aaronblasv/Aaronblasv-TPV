@@ -9,10 +9,18 @@ import { FamilyService } from '../../../services/api/family.service';
 import { TaxService } from '../../../services/api/tax.service';
 import { TableService } from '../../../services/api/table.service';
 import { PaymentService } from '../../../services/api/payment.service';
+import { LoggerService } from '../../../services/logger.service';
 import { PinModalComponent } from '../../../components/pin-modal/pin-modal.component';
 import { PaymentModalComponent } from '../../../components/payment-modal/payment-modal.component';
 import { SuccessModalComponent } from '../../../components/success-modal/success-modal.component';
 import { WaiterModalComponent } from '../../../components/waiter-modal/waiter-modal.component';
+import { Order, OrderLine } from '../../../types/order.model';
+import { Product } from '../../../types/product.model';
+import { Family } from '../../../types/family.model';
+import { Tax } from '../../../types/tax.model';
+import { Table } from '../../../types/table.model';
+import { User } from '../../../types/user.model';
+import { PaymentData } from '../../../types/payment.model';
 import localeEs from '@angular/common/locales/es';
 
 registerLocaleData(localeEs);
@@ -33,22 +41,23 @@ export class OrderPage implements OnInit {
   private taxService = inject(TaxService);
   private tableService = inject(TableService);
   private paymentService = inject(PaymentService);
+  private logger = inject(LoggerService);
 
   tableUuid = '';
   tableName = '';
-  order: any = null;
-  products: any[] = [];
-  families: any[] = [];
-  taxes: any[] = [];
-  tables: any[] = [];
-  currentUser: any = null;
+  order: Order | null = null;
+  products: Product[] = [];
+  families: Family[] = [];
+  taxes: Tax[] = [];
+  tables: Table[] = [];
+  currentUser: User | null = null;
 
   selectedFamilyUuid: string | null = null;
   showPaymentModal = false;
   showSuccessModal = false;
   showCloseWaiterModal = false;
   showClosePinModal = false;
-  closeSelectedWaiter: any = null;
+  closeSelectedWaiter: User | null = null;
   totalPaid = 0;
   lastInvoiceNumber = '';
   lastTotalAmount = 0;
@@ -64,7 +73,6 @@ export class OrderPage implements OnInit {
       return;
     }
 
-    // Reset all state when entering a new table
     this.resetState();
     this.loadData();
   }
@@ -90,17 +98,17 @@ export class OrderPage implements OnInit {
       tables: this.tableService.getAllTpv(),
     }).subscribe({
       next: ({ products, families, taxes, tables }) => {
-        this.products = products.filter((p: any) => p.active);
+        this.products = products.filter(p => p.active);
         this.families = families;
         this.taxes = taxes;
         this.tables = tables;
-        this.tableName = tables.find((t: any) => t.uuid === this.tableUuid)?.name || '';
+        this.tableName = tables.find(t => t.uuid === this.tableUuid)?.name || '';
         if (this.families.length > 0) {
           this.selectedFamilyUuid = this.families[0].uuid;
         }
         this.loadOrder();
       },
-      error: (err) => console.error(err),
+      error: (err) => this.logger.error(err),
     });
   }
 
@@ -119,9 +127,9 @@ export class OrderPage implements OnInit {
     });
   }
 
-  get filteredProducts() {
+  get filteredProducts(): Product[] {
     if (!this.selectedFamilyUuid) return this.products;
-    return this.products.filter(p => p.familyId === this.selectedFamilyUuid);
+    return this.products.filter(p => p.family_id === this.selectedFamilyUuid);
   }
 
   selectFamily(uuid: string | null) {
@@ -136,104 +144,89 @@ export class OrderPage implements OnInit {
     return this.products.find(p => p.uuid === productId)?.name ?? 'Producto';
   }
 
-  getLineSubtotal(line: any): number {
+  getLineSubtotal(line: OrderLine): number {
     return line.price * line.quantity;
   }
 
-  getLineTax(line: any): number {
-    return this.getLineSubtotal(line) * line.taxPercentage / 100;
+  getLineTax(line: OrderLine): number {
+    return this.getLineSubtotal(line) * line.tax_percentage / 100;
   }
 
-  getLineTotal(line: any): number {
+  getLineTotal(line: OrderLine): number {
     return this.getLineSubtotal(line) + this.getLineTax(line);
   }
 
   get orderSubtotal(): number {
     if (!this.order?.lines) return 0;
-    return this.order.lines.reduce((sum: number, l: any) => sum + this.getLineSubtotal(l), 0);
+    return this.order.lines.reduce((sum, l) => sum + this.getLineSubtotal(l), 0);
   }
 
   get orderTax(): number {
     if (!this.order?.lines) return 0;
-    return this.order.lines.reduce((sum: number, l: any) => sum + this.getLineTax(l), 0);
+    return this.order.lines.reduce((sum, l) => sum + this.getLineTax(l), 0);
   }
 
   get orderTotal(): number {
     return this.orderSubtotal + this.orderTax;
   }
 
-  addProduct(product: any) {
-    const existingLine = this.order?.lines?.find((l: any) => l.productId === product.uuid);
+  addProduct(product: Product) {
+    const existingLine = this.order?.lines?.find(l => l.product_id === product.uuid);
 
     if (existingLine) {
       const newQty = existingLine.quantity + 1;
-      this.orderService.updateLineQuantity(this.order.uuid, existingLine.uuid, newQty).subscribe({
-        next: () => {
-          existingLine.quantity = newQty;
-        },
-        error: (err) => console.error('Error updating line:', err),
+      this.orderService.updateLineQuantity(this.order!.uuid, existingLine.uuid, newQty).subscribe({
+        next: () => { existingLine.quantity = newQty; },
+        error: (err) => this.logger.error('Error updating line:', err),
       });
     } else {
-      const taxPercentage = this.getTaxPercentage(product.taxId);
-      this.orderService.addLine(this.order.uuid, product.uuid, this.currentUser.id, 1, product.price, taxPercentage).subscribe({
-        next: (line) => {
-          this.order.lines.push(line);
-        },
-        error: (err) => console.error('Error adding line:', err),
+      const taxPercentage = this.getTaxPercentage(product.tax_id);
+      this.orderService.addLine(this.order!.uuid, product.uuid, this.currentUser!.id, 1, product.price, taxPercentage).subscribe({
+        next: (line: OrderLine) => { this.order!.lines.push(line); },
+        error: (err) => this.logger.error('Error adding line:', err),
       });
     }
   }
 
-  incrementLine(line: any) {
+  incrementLine(line: OrderLine) {
     const newQty = line.quantity + 1;
-    this.orderService.updateLineQuantity(this.order.uuid, line.uuid, newQty).subscribe({
-      next: () => {
-        line.quantity = newQty;
-      },
-      error: (err) => console.error('Error updating line:', err),
+    this.orderService.updateLineQuantity(this.order!.uuid, line.uuid, newQty).subscribe({
+      next: () => { line.quantity = newQty; },
+      error: (err) => this.logger.error('Error updating line:', err),
     });
   }
 
-  decrementLine(line: any) {
+  decrementLine(line: OrderLine) {
     if (line.quantity <= 1) {
       this.removeLine(line);
       return;
     }
     const newQty = line.quantity - 1;
-    this.orderService.updateLineQuantity(this.order.uuid, line.uuid, newQty).subscribe({
-      next: () => {
-        line.quantity = newQty;
-      },
-      error: (err) => console.error('Error updating line:', err),
+    this.orderService.updateLineQuantity(this.order!.uuid, line.uuid, newQty).subscribe({
+      next: () => { line.quantity = newQty; },
+      error: (err) => this.logger.error('Error updating line:', err),
     });
   }
 
-  removeLine(line: any) {
-    this.orderService.removeLine(this.order.uuid, line.uuid).subscribe({
-      next: () => {
-        this.order.lines = this.order.lines.filter((l: any) => l.uuid !== line.uuid);
-      },
-      error: (err) => console.error('Error removing line:', err),
+  removeLine(line: OrderLine) {
+    this.orderService.removeLine(this.order!.uuid, line.uuid).subscribe({
+      next: () => { this.order!.lines = this.order!.lines.filter(l => l.uuid !== line.uuid); },
+      error: (err) => this.logger.error('Error removing line:', err),
     });
   }
 
   cancelOrder() {
-    this.orderService.cancelOrder(this.order.uuid).subscribe({
-      next: () => {
-        this.router.navigate(['/tpv'], { 
-          replaceUrl: true
-        });
-      },
-      error: (err) => console.error('Error cancelling order:', err),
+    this.orderService.cancelOrder(this.order!.uuid).subscribe({
+      next: () => { this.router.navigate(['/tpv'], { replaceUrl: true }); },
+      error: (err) => this.logger.error('Error cancelling order:', err),
     });
   }
 
-  // Cerrar y cobrar: paso 1 → waiter modal
   requestClose() {
     this.showCloseWaiterModal = true;
   }
 
-  onCloseWaiterSelected(waiter: any) {
+  onCloseWaiterSelected(waiter: User) {
     this.closeSelectedWaiter = waiter;
     this.showCloseWaiterModal = false;
     this.showClosePinModal = true;
@@ -244,13 +237,11 @@ export class OrderPage implements OnInit {
     this.closeSelectedWaiter = null;
   }
 
-  // Cerrar y cobrar: paso 2 → PIN validado → payment modal
-  onClosePinValidated(user: any) {
-    console.log('onClosePinValidated called with user:', user);
+  onClosePinValidated(user: User) {
+    this.logger.log('onClosePinValidated called with user:', user);
     this.showClosePinModal = false;
     this.closeSelectedWaiter = null;
     this.currentUser = user;
-    console.log('currentUser set to:', this.currentUser);
     this.showPaymentModal = true;
   }
 
@@ -259,92 +250,70 @@ export class OrderPage implements OnInit {
     this.closeSelectedWaiter = null;
   }
 
-  // Cerrar y cobrar: paso 3 → pagos
-  onPaymentRegistered(payment: any) {
-    console.log('onPaymentRegistered called with payment:', payment, 'type:', typeof payment.amount);
-    // Register payment in the backend
+  onPaymentRegistered(payment: PaymentData) {
+    this.logger.log('onPaymentRegistered:', payment);
     this.paymentService.registerPayment(
-      this.order.uuid,
-      parseInt(payment.amount), // Ensure it's an integer
+      this.order!.uuid,
+      Math.round(payment.amount),
       payment.method,
-      payment.description
+      payment.description,
     ).subscribe({
       next: () => {
-        console.log('Payment registered successfully');
-        const paymentAmount = parseInt(payment.amount);
-        console.log('Adding payment amount:', paymentAmount, 'totalPaid before:', this.totalPaid);
-        this.totalPaid += paymentAmount;
-        console.log('totalPaid after:', this.totalPaid, 'orderTotal:', this.orderTotal);
-        console.log('Comparison: totalPaid >= orderTotal?', this.totalPaid, '>=', this.orderTotal, '=', this.totalPaid >= this.orderTotal);
-        // Check if order is fully paid after this payment
+        this.logger.log('Payment registered successfully');
+        this.totalPaid += Math.round(payment.amount);
+        this.logger.log('totalPaid:', this.totalPaid, '/ orderTotal:', this.orderTotal);
         if (this.totalPaid >= this.orderTotal) {
-          console.log('✓ Order is fully paid, calling onPaymentComplete');
+          this.logger.log('Order fully paid — proceeding to close');
           this.onPaymentComplete();
-        } else {
-          console.log('✗ Order NOT fully paid yet. Still pending:', this.orderTotal - this.totalPaid);
         }
       },
-      error: (err) => {
-        console.error('Error registering payment:', err);
-      },
+      error: (err) => this.logger.error('Error registering payment:', err),
     });
   }
 
   onPaymentComplete() {
-    console.log('onPaymentComplete called', { totalPaid: this.totalPaid, orderTotal: this.orderTotal });
-    console.log('Closing payment modal and proceeding to close order');
-    
+    this.logger.log('onPaymentComplete', { totalPaid: this.totalPaid, orderTotal: this.orderTotal });
     this.showPaymentModal = false;
     this.lastTotalAmount = this.orderTotal;
 
-    if (!this.order || !this.order.uuid) {
-      console.error('Order not found or invalid');
+    if (!this.order?.uuid) {
+      this.logger.error('Order not found or invalid');
       this.showSuccessModal = true;
       return;
     }
 
-    console.log('Calling generateInvoice for order:', this.order.uuid);
     this.paymentService.generateInvoice(this.order.uuid).subscribe({
-      next: (response: any) => {
-        console.log('Invoice generated successfully:', response);
-        this.lastInvoiceNumber = response.invoice_number || 'INV-XXXXXX-XXXX';
+      next: (invoice) => {
+        this.logger.log('Invoice generated:', invoice);
+        this.lastInvoiceNumber = invoice.invoice_number || 'INV-XXXXXX-XXXX';
 
-        if (!this.currentUser || !this.currentUser.uuid) {
-          console.error('Current user not found or invalid');
+        if (!this.currentUser?.uuid) {
+          this.logger.error('Current user not found or invalid');
           this.showSuccessModal = true;
           return;
         }
 
-        console.log('Calling closeOrder for order:', this.order.uuid, 'by user:', this.currentUser.uuid);
-        this.orderService.closeOrder(this.order.uuid, this.currentUser.uuid).subscribe({
-          next: (response) => {
-            console.log('Order closed successfully:', response);
-            console.log('✓ Order status changed to closed, mesa is now LIBRE');
+        this.orderService.closeOrder(this.order!.uuid, this.currentUser.uuid).subscribe({
+          next: () => {
+            this.logger.log('Order closed successfully');
             this.showSuccessModal = true;
           },
           error: (err) => {
-            console.error('Error closing order:', err);
-            // Still show success even if close fails
+            this.logger.error('Error closing order:', err);
             this.showSuccessModal = true;
           },
         });
       },
       error: (err) => {
-        console.error('Error generating invoice:', err);
-        // Still try to close even if invoice fails
-        if (!this.currentUser || !this.currentUser.uuid) {
-          console.error('Current user not found or invalid');
+        this.logger.error('Error generating invoice:', err);
+        if (!this.currentUser?.uuid) {
           this.showSuccessModal = true;
           return;
         }
-
-        this.orderService.closeOrder(this.order.uuid, this.currentUser.uuid).subscribe({
-          next: (response) => {
-            console.log('Order closed successfully (after invoice error):', response);
-            this.showSuccessModal = true;
-          },
+        this.orderService.closeOrder(this.order!.uuid, this.currentUser.uuid).subscribe({
+          next: () => { this.showSuccessModal = true; },
           error: (closeErr) => {
-            console.error('Error closing order:', closeErr);
+            this.logger.error('Error closing order:', closeErr);
             this.showSuccessModal = true;
           },
         });
@@ -354,10 +323,7 @@ export class OrderPage implements OnInit {
 
   onSuccessModalClose() {
     this.showSuccessModal = false;
-    // Usar queryParamsHandling para forzar la recarga de la página
-    this.router.navigate(['/tpv'], { 
-      replaceUrl: true
-    });
+    this.router.navigate(['/tpv'], { replaceUrl: true });
   }
 
   onPaymentCancelled() {
@@ -365,8 +331,6 @@ export class OrderPage implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/tpv'], { 
-      replaceUrl: true
-    });
+    this.router.navigate(['/tpv'], { replaceUrl: true });
   }
 }

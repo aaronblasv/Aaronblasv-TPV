@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Product } from '../../types/product.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,35 +12,31 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAll(): Observable<Product[]> {
+    return this.http.get<Product[]>(this.apiUrl);
   }
 
-  getAllTpv(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/tpv/products`);
+  getAllTpv(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${environment.apiUrl}/tpv/products`);
   }
 
-  create(data: any): Observable<any> {
-    return this.http.post(this.apiUrl, data);
+  create(data: Partial<Product>): Observable<Product> {
+    return this.http.post<Product>(this.apiUrl, data);
   }
 
-  update(uuid: string, data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${uuid}`, data);
+  update(uuid: string, data: Partial<Product>): Observable<Product> {
+    return this.http.put<Product>(`${this.apiUrl}/${uuid}`, data);
   }
 
-  toggle(uuid: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${uuid}/toggle`, {});
+  activate(uuid: string): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/${uuid}/activate`, {});
   }
 
-  delete(uuid: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${uuid}`);
+  deactivate(uuid: string): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/${uuid}/deactivate`, {});
   }
 
-  activate(uuid: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${uuid}/activate`, {});
-    }
-
-    deactivate(uuid: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${uuid}/deactivate`, {});
-    }
+  delete(uuid: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${uuid}`);
+  }
 }

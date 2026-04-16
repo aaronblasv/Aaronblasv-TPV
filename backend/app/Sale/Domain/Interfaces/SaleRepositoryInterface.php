@@ -13,4 +13,13 @@ interface SaleRepositoryInterface
     public function saveLine(SaleLine $line): void;
     public function getNextTicketNumber(int $restaurantId): int;
     public function findAll(int $restaurantId): array;
+
+    /** @return array<int, array<string, mixed>> */
+    public function findFiltered(int $restaurantId, ?string $from, ?string $to): array;
+
+    /** @return array<int, array<string, mixed>> */
+    public function findLinesBySaleUuid(int $restaurantId, string $saleUuid): array;
+
+    /** @return array{by_day: array, by_zone: array, by_product: array, by_user: array} */
+    public function getGroupedReport(int $restaurantId, ?string $from, ?string $to): array;
 }

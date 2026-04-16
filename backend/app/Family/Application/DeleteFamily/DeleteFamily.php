@@ -2,6 +2,7 @@
 
 namespace App\Family\Application\DeleteFamily;
 
+use App\Family\Domain\Exception\FamilyNotFoundException;
 use App\Family\Domain\Interfaces\FamilyRepositoryInterface;
 
 class DeleteFamily
@@ -15,7 +16,7 @@ class DeleteFamily
         $family = $this->repository->findById($uuid, $restaurantId);
 
         if ($family === null) {
-            throw new \Exception('Family not found');
+            throw new FamilyNotFoundException($uuid);
         }
 
         $this->repository->delete($uuid, $restaurantId);

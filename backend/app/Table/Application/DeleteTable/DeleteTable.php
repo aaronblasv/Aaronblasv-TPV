@@ -2,6 +2,7 @@
 
 namespace App\Table\Application\DeleteTable;
 
+use App\Table\Domain\Exception\TableNotFoundException;
 use App\Table\Domain\Interfaces\TableRepositoryInterface;
 
 class DeleteTable
@@ -15,7 +16,7 @@ class DeleteTable
         $table = $this->repository->findById($uuid, $restaurantId);
 
         if ($table === null) {
-            throw new \Exception('Table not found');
+            throw new TableNotFoundException($uuid);
         }
 
         $this->repository->delete($uuid, $restaurantId);

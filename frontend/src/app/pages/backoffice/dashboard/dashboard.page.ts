@@ -24,19 +24,19 @@ export class DashboardPage implements OnInit {
   salesByDay: any[] = [];
 
   quickActions = [
-    { label: 'Nuevo producto', icon: '📦', route: '/products' },
-    { label: 'Nuevo usuario', icon: '👤', route: '/users' },
-    { label: 'Nueva mesa', icon: '🪑', route: '/tables' },
-    { label: 'Nueva zona', icon: '📍', route: '/zones' },
+    { label: 'Nuevo producto', icon: '', route: '/products' },
+    { label: 'Nuevo usuario', icon: '', route: '/users' },
+    { label: 'Nueva mesa', icon: '', route: '/tables' },
+    { label: 'Nueva zona', icon: '', route: '/zones' },
   ];
 
   ngOnInit() {
     this.dashboardService.getStats().subscribe({
       next: (data: any) => {
         this.stats = data.stats;
-        this.salesThisMonth = data.salesThisMonth;
-        this.topProducts = data.topProducts;
-        this.salesByDay = data.salesByDay;
+        this.salesThisMonth = data.sales_this_month;
+        this.topProducts = data.top_products;
+        this.salesByDay = data.sales_by_day;
         this.loading = false;
       },
       error: () => { this.loading = false; }

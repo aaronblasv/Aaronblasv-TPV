@@ -32,6 +32,6 @@ class AddOrderLineController
             $validated['tax_percentage'],
         );
 
-        return new JsonResponse($response, 201);
+        return new JsonResponse($response->toArray(), 201);
     }
 }

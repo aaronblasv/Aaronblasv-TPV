@@ -2,6 +2,7 @@
 
 namespace App\User\Application\GetUserById;
 
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Interfaces\UserRepositoryInterface;
 use App\User\Application\GetUserById\GetUserByIdResponse;
 
@@ -15,8 +16,8 @@ class GetUserById
     {
         $user = $this->userRepository->findById($uuid);
 
-        if($user === null) {
-            throw new \Exception('User not found');
+        if ($user === null) {
+            throw new UserNotFoundException($uuid);
         }
 
         return GetUserByIdResponse::create($user);

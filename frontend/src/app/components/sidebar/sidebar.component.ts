@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/api/auth.service';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { homeOutline, settingsOutline, closeOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, menuOutline, documentTextOutline, cashOutline } from 'ionicons/icons';
+import { homeOutline, settingsOutline, closeOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, menuOutline, documentTextOutline, cashOutline, barChartOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,7 +20,7 @@ export class SidebarComponent implements OnInit {
   currentUser: any = null;
 
   menuItems = [
-    { label: 'Dashboard', route: '/dashboard', icon: 'home-outline' },
+    { label: 'General', route: '/dashboard', icon: 'home-outline' },
     { label: 'Impuestos', route: '/taxes', icon: 'receipt-outline' },
     { label: 'Familias', route: '/families', icon: 'folder-outline' },
     { label: 'Productos', route: '/products', icon: 'cube-outline' },
@@ -28,6 +28,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Mesas', route: '/tables', icon: 'grid-outline' },
     { label: 'Usuarios', route: '/users', icon: 'people-outline' },
     { label: 'Ventas', route: '/sales', icon: 'cash-outline' },
+    { label: 'Informes', route: '/reports', icon: 'bar-chart-outline' },
     { label: 'Registro', route: '/logs', icon: 'document-text-outline' },
     { label: 'Ajustes', route: '/settings', icon: 'settings-outline' },
 ];
@@ -36,7 +37,7 @@ export class SidebarComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
 ) {
-    addIcons({ homeOutline, settingsOutline, closeOutline, menuOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, cashOutline });
+    addIcons({ homeOutline, settingsOutline, closeOutline, menuOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, cashOutline, barChartOutline });
 }
 
   ngOnInit() {

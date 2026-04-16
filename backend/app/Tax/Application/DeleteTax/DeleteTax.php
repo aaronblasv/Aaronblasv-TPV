@@ -2,6 +2,7 @@
 
 namespace App\Tax\Application\DeleteTax;
 
+use App\Tax\Domain\Exception\TaxNotFoundException;
 use App\Tax\Domain\Interfaces\TaxRepositoryInterface;
 
 class DeleteTax
@@ -15,7 +16,7 @@ class DeleteTax
         $tax = $this->repository->findById($uuid, $restaurantId);
 
         if ($tax === null) {
-            throw new \Exception('Tax not found');
+            throw new TaxNotFoundException($uuid);
         }
 
         $this->repository->delete($uuid, $restaurantId);

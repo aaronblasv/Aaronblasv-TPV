@@ -31,10 +31,10 @@
         (click)="onTableClick(table)"
       >
         <div class="table-name">{{ table.name }}</div>
-        <div class="table-zone">{{ getZoneName(table.zoneId) }}</div>
+        <div class="table-zone">{{ getZoneName(table.zone_id) }}</div>
         @if (isOccupied(table.uuid)) {
           <div class="table-info">
-            <span class="table-diners">{{ getOrder(table.uuid).diners }} 👤</span>
+            <span class="table-diners">{{ getOrder(table.uuid)?.diners }} 👤</span>
           </div>
           <div class="table-status">Ocupada</div>
         } @else {

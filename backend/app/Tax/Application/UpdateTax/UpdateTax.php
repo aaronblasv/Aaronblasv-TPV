@@ -2,6 +2,7 @@
 
 namespace App\Tax\Application\UpdateTax;
 
+use App\Tax\Domain\Exception\TaxNotFoundException;
 use App\Tax\Domain\Interfaces\TaxRepositoryInterface;
 use App\Tax\Domain\ValueObject\TaxName;
 use App\Tax\Domain\ValueObject\TaxPercentage;
@@ -17,7 +18,7 @@ class UpdateTax
         $tax = $this->repository->findById($uuid, $restaurantId);
 
         if ($tax === null) {
-            throw new \Exception('Tax not found');
+            throw new TaxNotFoundException($uuid);
         }
 
         $tax->dddUpdate(

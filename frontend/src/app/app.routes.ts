@@ -48,6 +48,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'sales',
+    loadComponent: () => import('./pages/backoffice/sales/sales.page').then(m => m.SalesPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'reports',
+    loadComponent: () => import('./pages/backoffice/reports/reports.page').then(m => m.ReportsPage),
+    canActivate: [authGuard],
+  },
+  {
     path: 'logs',
     loadComponent: () => import('./pages/backoffice/logs/logs.page').then(m => m.LogsPage),
     canActivate: [authGuard],

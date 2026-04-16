@@ -2,8 +2,8 @@
 
 namespace App\User\Application\UpdateUser;
 
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Interfaces\UserRepositoryInterface;
-use App\User\Domain\Entity\User;
 use App\Shared\Domain\ValueObject\Email;
 use App\User\Domain\ValueObject\UserName;
 use App\User\Application\UpdateUser\UpdateUserResponse;
@@ -19,7 +19,7 @@ class UpdateUser
         $user = $this->userRepository->findById($uuid);
 
         if ($user === null || $user->restaurantId() !== $restaurantId) {
-            throw new \DomainException('User not found');
+            throw new UserNotFoundException($uuid);
         }
 
         $user->dddUpdate(UserName::create($name), Email::create($email));

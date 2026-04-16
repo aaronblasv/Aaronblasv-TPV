@@ -46,6 +46,6 @@ class OpenOrderController
             $request->ip(),
         );
 
-        return new JsonResponse($response, 201);
+        return new JsonResponse($response->toArray(), 201);
     }
 }

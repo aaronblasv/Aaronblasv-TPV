@@ -1,0 +1,179 @@
+<ion-content>
+  <div class="layout">
+    <app-sidebar></app-sidebar>
+
+    <div class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>Informes</h1>
+          <p>Análisis de ventas por periodo</p>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Desde</label>
+          <input type="date" [(ngModel)]="from" />
+        </div>
+        <div class="filter-group">
+          <label>Hasta</label>
+          <input type="date" [(ngModel)]="to" />
+        </div>
+        <button class="btn-apply" (click)="applyFilter()">Filtrar</button>
+        <button class="btn-clear" (click)="clearFilter()">Limpiar</button>
+      </div>
+
+      @if (loading) {
+        <div class="loading-state">Cargando datos...</div>
+      } @else {
+
+        <!-- Gráfica evolución diaria -->
+        <div class="card chart-card">
+          <h2 class="card-title">Evolución de ventas por día</h2>
+          @if (report.by_day.length === 0) {
+            <div class="empty-chart">Sin datos en este periodo</div>
+          } @else {
+            <div class="chart-wrap">
+              <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" preserveAspectRatio="xMidYMid meet">
+                @for (label of yLabels(); track label.y) {
+                  <text [attr.x]="chartPadLeft - 6" [attr.y]="label.y + 4"
+                        text-anchor="end" class="chart-label">{{ label.value }}</text>
+                  <line [attr.x1]="chartPadLeft" [attr.y1]="label.y"
+                        [attr.x2]="chartWidth - 16" [attr.y2]="label.y"
+                        class="chart-grid" />
+                }
+                @for (day of report.by_day; track day.day; let i = $index) {
+                  <rect
+                    [attr.x]="barX(i)" [attr.y]="barY(day.total)"
+                    [attr.width]="barW()" [attr.height]="barH(day.total)"
+                    class="chart-bar" rx="3"
+                  />
+                  <text
+                    [attr.x]="barX(i) + barW() / 2"
+                    [attr.y]="chartHeight - 6"
+                    text-anchor="middle" class="chart-label chart-label--day"
+                  >{{ barLabel(day.day) }}</text>
+                }
+              </svg>
+            </div>
+          }
+        </div>
+
+        <!-- Tabs de agrupados -->
+        <div class="tabs">
+          <button class="tab" [class.active]="activeTab === 'day'" (click)="activeTab = 'day'">Por día</button>
+          <button class="tab" [class.active]="activeTab === 'zone'" (click)="activeTab = 'zone'">Por zona</button>
+          <button class="tab" [class.active]="activeTab === 'product'" (click)="activeTab = 'product'">Por producto</button>
+          <button class="tab" [class.active]="activeTab === 'user'" (click)="activeTab = 'user'">Por usuario</button>
+        </div>
+
+        <!-- Por día -->
+        @if (activeTab === 'day') {
+          <div class="card table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Día</th>
+                  <th class="text-center">N.º ventas</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of report.by_day; track row.day) {
+                  <tr>
+                    <td>{{ row.day }}</td>
+                    <td class="text-center">{{ row.count }}</td>
+                    <td class="text-right total-cell">{{ formatCurrency(row.total) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            @if (report.by_day.length === 0) {
+              <div class="empty-state">Sin datos</div>
+            }
+          </div>
+        }
+
+        <!-- Por zona -->
+        @if (activeTab === 'zone') {
+          <div class="card">
+            <div class="grouped-list">
+              @for (row of report.by_zone; track row.zone_name) {
+                <div class="grouped-row">
+                  <div class="grouped-label">{{ row.zone_name }}</div>
+                  <div class="grouped-bar-track">
+                    <div class="grouped-bar-fill"
+                         [style.width.%]="barWidthPct(row.total, maxTotal(report.by_zone))">
+                    </div>
+                  </div>
+                  <div class="grouped-stats">
+                    <span class="grouped-count">{{ row.count }} ventas</span>
+                    <span class="grouped-total">{{ formatCurrency(row.total) }}</span>
+                  </div>
+                </div>
+              }
+              @if (report.by_zone.length === 0) {
+                <div class="empty-state">Sin datos</div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Por producto -->
+        @if (activeTab === 'product') {
+          <div class="card">
+            <div class="grouped-list">
+              @for (row of report.by_product; track row.product_name; let i = $index) {
+                <div class="grouped-row">
+                  <div class="grouped-rank">{{ i + 1 }}</div>
+                  <div class="grouped-label">{{ row.product_name }}</div>
+                  <div class="grouped-bar-track">
+                    <div class="grouped-bar-fill grouped-bar-fill--product"
+                         [style.width.%]="barWidthPct(row.total_quantity, maxQty(report.by_product))">
+                    </div>
+                  </div>
+                  <div class="grouped-stats">
+                    <span class="grouped-count">{{ row.total_quantity }} ud.</span>
+                    <span class="grouped-total">{{ formatCurrency(row.total) }}</span>
+                  </div>
+                </div>
+              }
+              @if (report.by_product.length === 0) {
+                <div class="empty-state">Sin datos</div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Por usuario -->
+        @if (activeTab === 'user') {
+          <div class="card table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th class="text-center">N.º ventas</th>
+                  <th class="text-right">Total facturado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of report.by_user; track row.user_name) {
+                  <tr>
+                    <td>{{ row.user_name }}</td>
+                    <td class="text-center">{{ row.count }}</td>
+                    <td class="text-right total-cell">{{ formatCurrency(row.total) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            @if (report.by_user.length === 0) {
+              <div class="empty-state">Sin datos</div>
+            }
+          </div>
+        }
+
+      }
+    </div>
+  </div>
+</ion-content>

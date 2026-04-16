@@ -2,6 +2,7 @@
 
 namespace App\Family\Application\UpdateFamily;
 
+use App\Family\Domain\Exception\FamilyNotFoundException;
 use App\Family\Domain\Interfaces\FamilyRepositoryInterface;
 use App\Family\Domain\ValueObject\FamilyName;
 
@@ -16,7 +17,7 @@ class UpdateFamily
         $family = $this->repository->findById($uuid, $restaurantId);
 
         if ($family === null) {
-            throw new \Exception('Family not found');
+            throw new FamilyNotFoundException($uuid);
         }
 
         $family->dddUpdate(FamilyName::create($name), $active);

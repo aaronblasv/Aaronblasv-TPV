@@ -55,7 +55,7 @@ export class TablesPage implements OnInit {
   get tablesByZone(): { zone: any, tables: any[] }[] {
     return this.zones.map(zone => ({
       zone,
-      tables: this.tables.filter(t => t.zoneId === zone.uuid)
+      tables: this.tables.filter(t => t.zone_id === zone.uuid)
     })).filter(group => group.tables.length > 0);
   }
 

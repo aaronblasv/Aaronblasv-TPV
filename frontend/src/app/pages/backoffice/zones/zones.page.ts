@@ -81,7 +81,7 @@ export class ZonesPage implements OnInit {
   }
 
   requestDelete(zone: any) {
-    const tableCount = this.tables.filter(t => t.zoneId === zone.uuid).length;
+    const tableCount = this.tables.filter(t => t.zone_id === zone.uuid).length;
     this.pendingDeleteUuid = zone.uuid;
     this.confirmMessage = tableCount > 0
       ? `Se eliminará "${zone.name}" y sus mesas asociadas. Esta acción no se puede deshacer.`

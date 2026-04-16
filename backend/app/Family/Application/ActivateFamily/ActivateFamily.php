@@ -2,6 +2,7 @@
 
 namespace App\Family\Application\ActivateFamily;
 
+use App\Family\Domain\Exception\FamilyNotFoundException;
 use App\Family\Domain\Interfaces\FamilyRepositoryInterface;
 
 class ActivateFamily
@@ -15,7 +16,7 @@ class ActivateFamily
         $family = $this->repository->findById($uuid, $restaurantId);
 
         if ($family === null) {
-            throw new \Exception('Family not found');
+            throw new FamilyNotFoundException($uuid);
         }
 
         $family->dddUpdate($family->name(), true);

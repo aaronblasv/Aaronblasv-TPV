@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Order\Application\CancelOrder;
 
+use App\Order\Domain\Exception\CannotCancelOrderException;
+use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 
 class CancelOrder
@@ -16,10 +18,10 @@ class CancelOrder
     {
         $order = $this->repository->findById($orderUuid, $restaurantId);
         if (!$order) {
-            throw new \DomainException('Order not found.');
+            throw new OrderNotFoundException($orderUuid);
         }
         if (!$order->status()->isOpen()) {
-            throw new \DomainException('Cannot cancel an order that is not open.');
+            throw new CannotCancelOrderException($orderUuid);
         }
 
         $this->repository->delete($orderUuid, $restaurantId);

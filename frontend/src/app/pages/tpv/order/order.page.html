@@ -28,8 +28,8 @@
     <div class="products-grid">
       @for (product of filteredProducts; track product.uuid) {
         <button class="product-card" (click)="addProduct(product)">
-          @if (product.imageSrc) {
-            <img class="product-image" [src]="product.imageSrc" [alt]="product.name" />
+          @if (product.image_src) {
+            <img class="product-image" [src]="product.image_src" [alt]="product.name" />
           } @else {
             <div class="product-image-placeholder">📷</div>
           }
@@ -57,11 +57,11 @@
     </div>
 
     <div class="order-lines">
-      @if (order?.lines?.length) {
+      @if (order && order.lines?.length) {
         @for (line of order.lines; track line.uuid) {
           <div class="order-line">
             <div class="line-info">
-              <span class="line-name">{{ getProductName(line.productId) }}</span>
+              <span class="line-name">{{ getProductName(line.product_id) }}</span>
             </div>
             <div class="line-actions">
               <button class="qty-btn" (click)="decrementLine(line)">-</button>

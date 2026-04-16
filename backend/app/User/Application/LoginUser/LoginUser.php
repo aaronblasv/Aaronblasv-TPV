@@ -2,7 +2,7 @@
 
 namespace App\User\Application\LoginUser;
 
-use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\InvalidCredentialsException;
 use App\User\Domain\Interfaces\PasswordHasherInterface;
 use App\User\Domain\Interfaces\UserRepositoryInterface;
 use App\User\Domain\Interfaces\TokenGeneratorInterface;
@@ -21,7 +21,7 @@ class LoginUser
         $user = $this->userRepository->findByEmail($email);
 
         if ($user === null || !$this->passwordHasher->verify($password, $user->passwordHash()->getValue())) {
-            throw new \Exception('Invalid credentials');
+            throw new InvalidCredentialsException();
         }
 
         $token = $this->tokenGenerator->generateToken($user);

@@ -14,14 +14,11 @@ class GetLogsController
     {
         $action = $request->query('action');
         $userId = $request->query('user_id');
-        $limit = (int)$request->query('limit', 50);
-        $offset = (int)$request->query('offset', 0);
+        $limit = (int) $request->query('limit', 50);
+        $offset = (int) $request->query('offset', 0);
 
-        try {
-            $response = ($this->useCase)($request->user()->restaurant_id, $action, $userId, $limit, $offset);
-            return new JsonResponse($response, 200);
-        } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], 500);
-        }
+        $response = ($this->useCase)($request->user()->restaurant_id, $action, $userId, $limit, $offset);
+
+        return new JsonResponse($response, 200);
     }
 }

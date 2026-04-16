@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { UserService } from '../../services/api/user.service';
+import { LoggerService } from '../../services/logger.service';
+import { User } from '../../types/user.model';
 
 @Component({
   selector: 'app-waiter-modal',
@@ -12,12 +14,13 @@ import { UserService } from '../../services/api/user.service';
 })
 export class WaiterModalComponent implements OnInit {
   @Input() visible = false;
-  @Output() onSelected = new EventEmitter<any>();
+  @Output() onSelected = new EventEmitter<User>();
   @Output() onCancel = new EventEmitter<void>();
 
   private userService = inject(UserService);
+  private logger = inject(LoggerService);
 
-  waiters: any[] = [];
+  waiters: User[] = [];
 
   ngOnInit() {
     this.loadWaiters();
@@ -25,14 +28,14 @@ export class WaiterModalComponent implements OnInit {
 
   loadWaiters() {
     this.userService.getAllTpv().subscribe({
-      next: (users: any[]) => {
-        this.waiters = users.filter((u: any) => u.role === 'staff' || u.role === 'waiter');
+      next: (users) => {
+        this.waiters = users.filter(u => u.role === 'staff' || u.role === 'waiter');
       },
-      error: (err: any) => console.error('Error loading waiters:', err),
+      error: (err) => this.logger.error('Error loading waiters:', err),
     });
   }
 
-  selectWaiter(waiter: any) {
+  selectWaiter(waiter: User) {
     this.onSelected.emit(waiter);
   }
 

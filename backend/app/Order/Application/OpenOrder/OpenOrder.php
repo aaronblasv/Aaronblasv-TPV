@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Order\Application\OpenOrder;
 
 use App\Order\Domain\Entity\Order;
+use App\Order\Domain\Exception\TableAlreadyHasOpenOrderException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\ValueObject\Diners;
 use App\Shared\Domain\ValueObject\Uuid;
@@ -23,7 +24,7 @@ class OpenOrder
     ): OpenOrderResponse {
         $existing = $this->repository->findOpenByTableId($tableUuid, $restaurantId);
         if ($existing) {
-            throw new \DomainException('This table already has an open order.');
+            throw new TableAlreadyHasOpenOrderException($tableUuid);
         }
 
         $order = Order::dddCreate(

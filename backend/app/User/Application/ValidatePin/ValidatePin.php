@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\ValidatePin;
 
+use App\User\Domain\Exception\InvalidPinException;
 use App\User\Domain\Interfaces\UserRepositoryInterface;
 
 class ValidatePin
@@ -16,7 +17,7 @@ class ValidatePin
     {
         $user = $this->repository->findByPin($pin, $restaurantId);
         if (!$user) {
-            throw new \DomainException('Invalid PIN.');
+            throw new InvalidPinException();
         }
 
         return ValidatePinResponse::create($user);

@@ -2,6 +2,7 @@
 
 namespace App\Product\Application\ActivateProduct;
 
+use App\Product\Domain\Exception\ProductNotFoundException;
 use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 
 class ActivateProduct
@@ -15,7 +16,7 @@ class ActivateProduct
         $product = $this->repository->findById($uuid, $restaurantId);
 
         if ($product === null) {
-            throw new \Exception('Product not found');
+            throw new ProductNotFoundException($uuid);
         }
 
         $product->dddUpdate(

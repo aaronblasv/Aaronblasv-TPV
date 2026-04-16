@@ -1,33 +1,34 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { BaseApiService } from './base-api.service';
+import { environment } from '../../../environments/environment';
+import { Tax } from '../../types/tax.model';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
-export class TaxService extends BaseApiService {
+export class TaxService {
+  private apiUrl = `${environment.apiUrl}/taxes`;
 
-  constructor(injector: Injector) {
-    super(injector);
+  constructor(private http: HttpClient) {}
+
+  getAll(): Observable<Tax[]> {
+    return this.http.get<Tax[]>(this.apiUrl);
   }
 
-  getAll(): Observable<any> {
-    return this.httpCall('/taxes', null, 'get');
+  getAllTpv(): Observable<Tax[]> {
+    return this.http.get<Tax[]>(`${environment.apiUrl}/tpv/taxes`);
   }
 
-  getAllTpv(): Observable<any> {
-    return this.httpCall('/tpv/taxes', null, 'get');
+  create(name: string, percentage: number): Observable<Tax> {
+    return this.http.post<Tax>(this.apiUrl, { name, percentage });
   }
 
-  create(name: string, percentage: number): Observable<any> {
-    return this.httpCall('/taxes', { name, percentage }, 'post');
+  update(uuid: string, name: string, percentage: number): Observable<Tax> {
+    return this.http.put<Tax>(`${this.apiUrl}/${uuid}`, { name, percentage });
   }
 
-  update(uuid: string, name: string, percentage: number): Observable<any> {
-    return this.httpCall(`/taxes/${uuid}`, { name, percentage }, 'put');
-  }
-
-  delete(uuid: string): Observable<any> {
-    return this.httpCall(`/taxes/${uuid}`, null, 'delete');
+  delete(uuid: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${uuid}`);
   }
 }

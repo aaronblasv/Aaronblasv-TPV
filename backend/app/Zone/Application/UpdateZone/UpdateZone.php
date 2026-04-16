@@ -2,6 +2,7 @@
 
 namespace App\Zone\Application\UpdateZone;
 
+use App\Zone\Domain\Exception\ZoneNotFoundException;
 use App\Zone\Domain\Interfaces\ZoneRepositoryInterface;
 use App\Zone\Domain\ValueObject\ZoneName;
 
@@ -16,7 +17,7 @@ class UpdateZone
         $zone = $this->repository->findById($uuid, $restaurantId);
 
         if ($zone === null) {
-            throw new \Exception('Zone not found');
+            throw new ZoneNotFoundException($uuid);
         }
 
         $zone->dddUpdate(ZoneName::create($name));

@@ -2,6 +2,7 @@
 
 namespace App\Product\Application\UpdateProduct;
 
+use App\Product\Domain\Exception\ProductNotFoundException;
 use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 use App\Product\Domain\ValueObject\ProductName;
 use App\Product\Domain\ValueObject\ProductPrice;
@@ -28,7 +29,7 @@ class UpdateProduct
         $product = $this->repository->findById($uuid, $restaurantId);
 
         if ($product === null) {
-            throw new \Exception('Product not found');
+            throw new ProductNotFoundException($uuid);
         }
 
         $product->dddUpdate(

@@ -24,9 +24,9 @@
       <div class="form-group">
         <label>Método de pago</label>
         <select [(ngModel)]="paymentMethod" class="form-control">
-          <option value="cash">💵 Efectivo</option>
-          <option value="card">💳 Tarjeta</option>
-          <option value="bizum">📱 Bizum</option>
+          <option value="cash">Efectivo</option>
+          <option value="card">Tarjeta</option>
+          <option value="bizum">Bizum</option>
         </select>
       </div>
 
@@ -34,13 +34,13 @@
         <label>Propina</label>
         <div class="tip-buttons">
           <button class="tip-btn" (click)="addTip(5)" [class.active]="tipAmount === Math.round((originalTotal * 5) / 100)">
-            5% ({{ (originalTotal * 5) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }})
+            5% ({{ (originalTotal * 5) / 10000 | currency:'EUR':'symbol':'1.2-2':'es' }})
           </button>
           <button class="tip-btn" (click)="addTip(10)" [class.active]="tipAmount === Math.round((originalTotal * 10) / 100)">
-            10% ({{ (originalTotal * 10) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }})
+            10% ({{ (originalTotal * 10) / 10000 | currency:'EUR':'symbol':'1.2-2':'es' }})
           </button>
           <button class="tip-btn" (click)="addTip(15)" [class.active]="tipAmount === Math.round((originalTotal * 15) / 100)">
-            15% ({{ (originalTotal * 15) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }})
+            15% ({{ (originalTotal * 15) / 10000 | currency:'EUR':'symbol':'1.2-2':'es' }})
           </button>
         </div>
         @if (tipAmount > 0) {

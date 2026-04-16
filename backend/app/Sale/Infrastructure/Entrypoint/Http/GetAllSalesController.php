@@ -16,11 +16,15 @@ class GetAllSalesController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $response = ($this->useCase)($request->user()->restaurant_id);
+        $from = $request->query('from');
+        $to   = $request->query('to');
 
-        return new JsonResponse(array_map(
-            static fn($item) => $item->toArray(),
-            $response,
-        ));
+        $sales = ($this->useCase)(
+            $request->user()->restaurant_id,
+            is_string($from) ? $from : null,
+            is_string($to)   ? $to   : null,
+        );
+
+        return new JsonResponse($sales);
     }
 }

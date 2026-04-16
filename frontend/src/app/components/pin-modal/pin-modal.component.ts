@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../services/api/order.service';
+import { LoggerService } from '../../services/logger.service';
+import { User } from '../../types/user.model';
 
 @Component({
   selector: 'app-pin-modal',
@@ -11,10 +13,11 @@ import { OrderService } from '../../services/api/order.service';
 })
 export class PinModalComponent {
   private orderService = inject(OrderService);
+  private logger = inject(LoggerService);
 
   @Input() visible = false;
-  @Input() selectedWaiter: any = null;
-  @Output() onValidated = new EventEmitter<{ id: string; name: string; role: string }>();
+  @Input() selectedWaiter: User | null = null;
+  @Output() onValidated = new EventEmitter<User>();
   @Output() onCancel = new EventEmitter<void>();
 
   pin = '';
@@ -48,7 +51,7 @@ export class PinModalComponent {
     if (this.pin.length !== 4) return;
     this.loading = true;
     this.orderService.validatePin(this.pin).subscribe({
-      next: (user: any) => {
+      next: (user: User) => {
         this.loading = false;
         if (this.selectedWaiter && user.id !== this.selectedWaiter.id) {
           this.error = 'El PIN no corresponde a ' + this.selectedWaiter.name;
@@ -62,6 +65,7 @@ export class PinModalComponent {
         this.loading = false;
         this.error = 'PIN incorrecto';
         this.pin = '';
+        this.logger.error('PIN validation failed');
       },
     });
   }

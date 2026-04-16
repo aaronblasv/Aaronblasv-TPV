@@ -12,13 +12,8 @@ class GetAllSales
         private SaleRepositoryInterface $saleRepository,
     ) {}
 
-    public function __invoke(int $restaurantId): array
+    public function __invoke(int $restaurantId, ?string $from, ?string $to): array
     {
-        $sales = $this->saleRepository->findAll($restaurantId);
-
-        return array_map(
-            fn($sale) => GetAllSalesResponse::create($sale),
-            $sales
-        );
+        return $this->saleRepository->findFiltered($restaurantId, $from, $to);
     }
 }

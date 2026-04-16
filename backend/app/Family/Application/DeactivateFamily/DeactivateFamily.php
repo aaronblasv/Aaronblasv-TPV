@@ -2,6 +2,7 @@
 
 namespace App\Family\Application\DeactivateFamily;
 
+use App\Family\Domain\Exception\FamilyNotFoundException;
 use App\Family\Domain\Interfaces\FamilyRepositoryInterface;
 
 class DeactivateFamily
@@ -15,7 +16,7 @@ class DeactivateFamily
         $family = $this->repository->findById($uuid, $restaurantId);
 
         if ($family === null) {
-            throw new \Exception('Family not found');
+            throw new FamilyNotFoundException($uuid);
         }
 
         $family->dddUpdate($family->name(), false);

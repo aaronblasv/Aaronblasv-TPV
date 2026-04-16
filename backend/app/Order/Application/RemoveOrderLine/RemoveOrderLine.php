@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Order\Application\RemoveOrderLine;
 
+use App\Order\Domain\Exception\OrderLineNotFoundException;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 
 class RemoveOrderLine
@@ -16,7 +17,7 @@ class RemoveOrderLine
     {
         $line = $this->repository->findById($lineUuid, $restaurantId);
         if (!$line) {
-            throw new \DomainException('Order line not found.');
+            throw new OrderLineNotFoundException($lineUuid);
         }
 
         $this->repository->delete($lineUuid, $restaurantId);

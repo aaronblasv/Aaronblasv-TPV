@@ -4,6 +4,7 @@ namespace App\Invoice\Application\GenerateInvoice;
 
 use App\Invoice\Domain\Entity\Invoice;
 use App\Invoice\Domain\Interfaces\InvoiceRepositoryInterface;
+use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Shared\Domain\ValueObject\Uuid;
@@ -21,7 +22,7 @@ class GenerateInvoice
         $order = $this->orderRepository->findById($orderUuid, $restaurantId);
 
         if (!$order) {
-            throw new \DomainException('Order not found');
+            throw new OrderNotFoundException($orderUuid);
         }
 
         $lines = $this->lineRepository->findAllByOrderId($orderUuid, $restaurantId);

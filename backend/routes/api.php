@@ -47,6 +47,8 @@ use App\Payment\Infrastructure\Entrypoint\Http\RegisterPaymentController;
 use App\Invoice\Infrastructure\Entrypoint\Http\GenerateInvoiceController;
 use App\Log\Infrastructure\Entrypoint\Http\GetLogsController;
 use App\Sale\Infrastructure\Entrypoint\Http\GetAllSalesController;
+use App\Sale\Infrastructure\Entrypoint\Http\GetSaleLinesController;
+use App\Sale\Infrastructure\Entrypoint\Http\GetSalesReportController;
 use App\Dashboard\Infrastructure\Entrypoint\Http\DashboardController;
 
 Route::post('/auth/login', LoginController::class);
@@ -117,4 +119,6 @@ Route::middleware(['auth:sanctum', 'backoffice'])->group(function () {
     Route::get('/logs', GetLogsController::class);
 
     Route::get('/sales', GetAllSalesController::class);
+    Route::get('/sales/report', GetSalesReportController::class);
+    Route::get('/sales/{uuid}/lines', GetSaleLinesController::class);
 });

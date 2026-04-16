@@ -22,33 +22,28 @@ class RegisterPaymentController
             'description' => 'nullable|string|max:255',
         ]);
 
-        try {
-            $response = ($this->useCase)(
-                $orderUuid,
-                $request->user()->uuid,
-                $validated['amount'],
-                $validated['method'],
-                $validated['description'] ?? null,
-            );
+        $response = ($this->useCase)(
+            $orderUuid,
+            $request->user()->uuid,
+            $validated['amount'],
+            $validated['method'],
+            $validated['description'] ?? null,
+        );
 
-            // Log the action
-            ($this->createLog)(
-                $request->user()->restaurant_id,
-                $request->user()->uuid,
-                'payment.registered',
-                'order',
-                $orderUuid,
-                [
-                    'amount' => $validated['amount'],
-                    'method' => $validated['method'],
-                    'total_paid' => $response->totalPaid,
-                ],
-                $request->ip(),
-            );
+        ($this->createLog)(
+            $request->user()->restaurant_id,
+            $request->user()->uuid,
+            'payment.registered',
+            'order',
+            $orderUuid,
+            [
+                'amount'     => $validated['amount'],
+                'method'     => $validated['method'],
+                'total_paid' => $response->totalPaid,
+            ],
+            $request->ip(),
+        );
 
-            return new JsonResponse($response, 201);
-        } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], 400);
-        }
+        return new JsonResponse($response, 201);
     }
 }

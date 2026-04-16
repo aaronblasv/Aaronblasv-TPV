@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Order\Application\CloseOrder;
 
+use App\Order\Domain\Exception\CannotCloseOrderWithNoLinesException;
+use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Sale\Domain\Entity\Sale;
@@ -23,12 +25,12 @@ class CloseOrder
     {
         $order = $this->orderRepository->findById($orderUuid, $restaurantId);
         if (!$order) {
-            throw new \DomainException('Order not found.');
+            throw new OrderNotFoundException($orderUuid);
         }
 
         $lines = $this->lineRepository->findAllByOrderId($orderUuid, $restaurantId);
         if (empty($lines)) {
-            throw new \DomainException('Cannot close an order with no lines.');
+            throw new CannotCloseOrderWithNoLinesException($orderUuid);
         }
 
         $total = 0;

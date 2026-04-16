@@ -2,6 +2,7 @@
 
 namespace App\Product\Application\DeleteProduct;
 
+use App\Product\Domain\Exception\ProductNotFoundException;
 use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 
 class DeleteProduct
@@ -15,7 +16,7 @@ class DeleteProduct
         $product = $this->repository->findById($uuid, $restaurantId);
 
         if ($product === null) {
-            throw new \Exception('Product not found');
+            throw new ProductNotFoundException($uuid);
         }
 
         $this->repository->delete($uuid, $restaurantId);

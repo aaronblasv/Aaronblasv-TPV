@@ -2,8 +2,8 @@
 
 namespace App\User\Application\DeleteUser;
 
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Interfaces\UserRepositoryInterface;
-use App\User\Domain\Entity\User;
 
 class DeleteUser
 {
@@ -16,7 +16,7 @@ class DeleteUser
         $user = $this->userRepository->findById($uuid);
 
         if ($user === null || $user->restaurantId() !== $restaurantId) {
-            throw new \DomainException('User not found');
+            throw new UserNotFoundException($uuid);
         }
 
         $this->userRepository->delete($user);

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Log } from '../../types/log.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class LogService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
+  getAll(): Observable<Log[]> {
+    return this.http.get<Log[]>(this.apiUrl);
   }
 }

@@ -50,7 +50,7 @@ export class FamiliesPage implements OnInit {
   }
 
   requestDelete(family: any) {
-    const productCount = this.products.filter(p => p.familyId === family.uuid).length;
+    const productCount = this.products.filter(p => p.family_id === family.uuid).length;
     this.pendingDeleteUuid = family.uuid;
     this.confirmMessage = productCount > 0
       ? `Se eliminará "${family.name}" y sus productos asociados. Esta acción no se puede deshacer.`

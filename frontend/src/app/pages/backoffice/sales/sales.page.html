@@ -1,0 +1,119 @@
+<ion-content>
+  <div class="layout">
+    <app-sidebar></app-sidebar>
+
+    <div class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>Ventas</h1>
+          <p>{{ sales.length }} ventas registradas</p>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Desde</label>
+          <input type="date" [(ngModel)]="from" />
+        </div>
+        <div class="filter-group">
+          <label>Hasta</label>
+          <input type="date" [(ngModel)]="to" />
+        </div>
+        <button class="btn-apply" (click)="applyFilter()">Filtrar</button>
+        <button class="btn-clear" (click)="clearFilter()">Limpiar</button>
+      </div>
+
+      <div class="table-card">
+        @if (loading) {
+          <div class="empty-state">Cargando...</div>
+        } @else {
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>Mesa</th>
+                <th>Abierta por</th>
+                <th>Cerrada por</th>
+                <th>Apertura</th>
+                <th>Cierre</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sale of sales; track sale.uuid) {
+                <tr class="clickable-row" (click)="openDetail(sale)">
+                  <td class="ticket-cell">#{{ sale.ticket_number }}</td>
+                  <td>{{ sale.table_name }}</td>
+                  <td>{{ sale.open_user_name }}</td>
+                  <td>{{ sale.close_user_name }}</td>
+                  <td class="date-cell">{{ formatDate(sale.opened_at) }}</td>
+                  <td class="date-cell">{{ sale.closed_at ? formatDate(sale.closed_at) : '—' }}</td>
+                  <td class="total-cell text-right">{{ formatCurrency(sale.total) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          @if (sales.length === 0) {
+            <div class="empty-state">No hay ventas en el rango seleccionado</div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal detalle de líneas -->
+  @if (selectedSale) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Ticket #{{ selectedSale.ticket_number }}</h2>
+          <button class="modal-close" (click)="closeDetail()">✕</button>
+        </div>
+        <div class="modal-meta">
+          <span>Mesa: <strong>{{ selectedSale.table_name }}</strong></span>
+          <span>Camarero: <strong>{{ selectedSale.close_user_name }}</strong></span>
+          <span>Fecha: <strong>{{ formatDate(selectedSale.value_date) }}</strong></span>
+        </div>
+
+        @if (linesLoading) {
+          <div class="modal-loading">Cargando líneas...</div>
+        } @else {
+          <table class="lines-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="text-center">Cant.</th>
+                <th class="text-right">Precio u.</th>
+                <th class="text-right">IVA</th>
+                <th class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of saleLines; track line.uuid) {
+                <tr>
+                  <td>{{ line.product_name }}</td>
+                  <td class="text-center">{{ line.quantity }}</td>
+                  <td class="text-right">{{ formatCurrency(line.price) }}</td>
+                  <td class="text-right">{{ line.tax_percentage }}%</td>
+                  <td class="text-right">{{ formatCurrency(line.quantity * line.price) }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-right"><strong>Total</strong></td>
+                <td class="text-right total-cell"><strong>{{ formatCurrency(lineTotal) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          @if (saleLines.length === 0) {
+            <div class="modal-loading">Sin líneas registradas</div>
+          }
+        }
+      </div>
+    </div>
+  }
+</ion-content>

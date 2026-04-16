@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Order\Application\UpdateOrderDiners;
 
+use App\Order\Domain\Exception\CannotUpdateDinersOnClosedOrderException;
+use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\ValueObject\Diners;
 
@@ -17,10 +19,10 @@ class UpdateOrderDiners
     {
         $order = $this->repository->findById($orderUuid, $restaurantId);
         if (!$order) {
-            throw new \DomainException('Order not found.');
+            throw new OrderNotFoundException($orderUuid);
         }
         if (!$order->status()->isOpen()) {
-            throw new \DomainException('Cannot update diners on a closed order.');
+            throw new CannotUpdateDinersOnClosedOrderException($orderUuid);
         }
 
         $order->updateDiners(Diners::create($diners));

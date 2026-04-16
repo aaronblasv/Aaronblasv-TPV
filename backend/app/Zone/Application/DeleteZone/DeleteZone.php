@@ -2,6 +2,7 @@
 
 namespace App\Zone\Application\DeleteZone;
 
+use App\Zone\Domain\Exception\ZoneNotFoundException;
 use App\Zone\Domain\Interfaces\ZoneRepositoryInterface;
 
 class DeleteZone
@@ -15,7 +16,7 @@ class DeleteZone
         $zone = $this->repository->findById($uuid, $restaurantId);
 
         if ($zone === null) {
-            throw new \Exception('Zone not found');
+            throw new ZoneNotFoundException($uuid);
         }
 
         $this->repository->delete($uuid, $restaurantId);

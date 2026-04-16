@@ -2,14 +2,11 @@ import { Component, Input, Output, EventEmitter, inject, OnInit, OnChanges, Simp
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { LoggerService } from '../../services/logger.service';
+import { PaymentData, PaymentMethod } from '../../types/payment.model';
 
-export type PaymentMethod = 'cash' | 'card' | 'bizum';
-
-export interface PaymentData {
-  amount: number;
-  method: PaymentMethod;
-  description?: string;
-}
+export type { PaymentMethod };
+export type { PaymentData };
 
 @Component({
   selector: 'app-payment-modal',
@@ -19,6 +16,8 @@ export interface PaymentData {
   styleUrls: ['./payment-modal.component.scss'],
 })
 export class PaymentModalComponent implements OnInit, OnChanges {
+  private logger = inject(LoggerService);
+
   @Input() visible = false;
   @Input() totalAmount = 0;
   @Input() paidAmount = 0;
@@ -74,7 +73,6 @@ export class PaymentModalComponent implements OnInit, OnChanges {
 
   addTip(percentage: number) {
     const tipValue = Math.round((this.originalTotal * percentage) / 100);
-    // Toggle: if clicking the same percentage, deselect it
     if (this.tipAmount === tipValue) {
       this.tipAmount = 0;
       this.paymentAmount = this.pendingAmount;
@@ -85,7 +83,7 @@ export class PaymentModalComponent implements OnInit, OnChanges {
   }
 
   payFull() {
-    console.log('payFull called. pendingAmount:', this.pendingAmount, 'paidAmount:', this.paidAmount, 'totalAmount:', this.totalAmount);
+    this.logger.log('payFull — pendingAmount:', this.pendingAmount);
     this.paymentAmount = Number(this.pendingAmount);
     this.percentageMode = false;
     this.tipAmount = 0;
@@ -94,13 +92,9 @@ export class PaymentModalComponent implements OnInit, OnChanges {
 
   processPayment() {
     const amount = Number(this.paymentAmount);
-    console.log('processPayment called. paymentAmount:', amount, 'pendingAmount:', this.pendingAmount);
-    if (amount <= 0) {
-      console.log('Payment amount is 0 or less, returning');
-      return;
-    }
+    this.logger.log('processPayment — amount:', amount, 'pendingAmount:', this.pendingAmount);
+    if (amount <= 0) return;
 
-    // Allow paying more than pending (for tips)
     if (amount > this.pendingAmount && this.tipAmount === 0) {
       alert('El monto no puede exceder lo pendiente por pagar');
       return;
@@ -109,15 +103,14 @@ export class PaymentModalComponent implements OnInit, OnChanges {
     this.loading = true;
 
     const payment: PaymentData = {
-      amount: amount,
+      amount,
       method: this.paymentMethod,
       description: this.description || (this.tipAmount > 0 ? `Propina de ${this.tipAmount / 100}€` : ''),
     };
 
-    console.log('Emitting payment:', payment);
+    this.logger.log('Emitting payment:', payment);
     this.onPayment.emit(payment);
 
-    // Reset form
     this.paymentAmount = 0;
     this.percentage = 0;
     this.percentageMode = false;

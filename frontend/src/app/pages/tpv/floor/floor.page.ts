@@ -6,9 +6,14 @@ import { forkJoin } from 'rxjs';
 import { ZoneService } from '../../../services/api/zone.service';
 import { TableService } from '../../../services/api/table.service';
 import { OrderService } from '../../../services/api/order.service';
+import { LoggerService } from '../../../services/logger.service';
 import { PinModalComponent } from '../../../components/pin-modal/pin-modal.component';
 import { DinersModalComponent } from '../../../components/diners-modal/diners-modal.component';
 import { WaiterModalComponent } from '../../../components/waiter-modal/waiter-modal.component';
+import { Zone } from '../../../types/zone.model';
+import { Table } from '../../../types/table.model';
+import { Order } from '../../../types/order.model';
+import { User } from '../../../types/user.model';
 
 @Component({
   selector: 'app-floor',
@@ -22,68 +27,58 @@ export class FloorPage implements OnInit {
   private zoneService = inject(ZoneService);
   private tableService = inject(TableService);
   private orderService = inject(OrderService);
+  private logger = inject(LoggerService);
 
-  zones: any[] = [];
-  tables: any[] = [];
-  openOrders: any[] = [];
+  zones: Zone[] = [];
+  tables: Table[] = [];
+  openOrders: Order[] = [];
   selectedZoneUuid: string | null = null;
 
   showWaiterModal = false;
   showPinModal = false;
   showDinersModal = false;
-  selectedTable: any = null;
-  selectedWaiter: any = null;
-  validatedUser: any = null;
+  selectedTable: Table | null = null;
+  selectedWaiter: User | null = null;
+  validatedUser: User | null = null;
 
   ngOnInit() {
     this.loadData();
   }
 
   ionViewWillEnter() {
-    // Recargar datos cada vez que la página está a punto de entrar
-    // Esto se ejecuta cuando regresas de una navegación
-    console.log('ionViewWillEnter triggered - reloading data');
+    this.logger.log('ionViewWillEnter triggered - reloading data');
     this.loadData();
   }
 
   ionViewDidLoad() {
-    // Adicional: también recargar cuando la vista se carga
-    console.log('ionViewDidLoad triggered - reloading data');
+    this.logger.log('ionViewDidLoad triggered - reloading data');
     this.loadData();
   }
 
   loadData() {
-    console.log('FloorPage: Starting to load data...');
+    this.logger.log('FloorPage: Starting to load data...');
     forkJoin({
       zones: this.zoneService.getAllTpv(),
       tables: this.tableService.getAllTpv(),
       openOrders: this.orderService.getAllOpen(),
     }).subscribe({
       next: ({ zones, tables, openOrders }) => {
-        console.log('FloorPage: Data loaded successfully');
-        console.log('  - Zones:', zones.length);
-        console.log('  - Tables:', tables.length);
-        console.log('  - Open Orders:', openOrders.length, openOrders);
-        
+        this.logger.log('FloorPage: Data loaded —', zones.length, 'zones,', tables.length, 'tables,', openOrders.length, 'open orders');
         this.zones = zones;
         this.tables = tables;
         this.openOrders = openOrders;
-        
-        // Log estado de cada mesa
+
         tables.forEach(table => {
-          const isOccupied = this.isOccupied(table.uuid);
-          console.log(`  Mesa ${table.name}: ${isOccupied ? 'OCUPADA' : 'LIBRE'}`);
+          this.logger.log(`  Mesa ${table.name}: ${this.isOccupied(table.uuid) ? 'OCUPADA' : 'LIBRE'}`);
         });
       },
-      error: (err) => {
-        console.error('FloorPage: Error loading data', err);
-      },
+      error: (err) => this.logger.error('FloorPage: Error loading data', err),
     });
   }
 
-  get filteredTables() {
+  get filteredTables(): Table[] {
     if (!this.selectedZoneUuid) return this.tables;
-    return this.tables.filter(t => t.zoneId === this.selectedZoneUuid);
+    return this.tables.filter(t => t.zone_id === this.selectedZoneUuid);
   }
 
   selectZone(uuid: string | null) {
@@ -91,25 +86,23 @@ export class FloorPage implements OnInit {
   }
 
   isOccupied(tableUuid: string): boolean {
-    return this.openOrders.some(o => o.tableId === tableUuid);
+    return this.openOrders.some(o => o.table_id === tableUuid);
   }
 
-  getOrder(tableUuid: string) {
-    return this.openOrders.find(o => o.tableId === tableUuid);
+  getOrder(tableUuid: string): Order | undefined {
+    return this.openOrders.find(o => o.table_id === tableUuid);
   }
 
   getZoneName(zoneId: string): string {
     return this.zones.find(z => z.uuid === zoneId)?.name ?? '';
   }
 
-  // Paso 1: click en mesa → mostrar modal de camareros
-  onTableClick(table: any) {
+  onTableClick(table: Table) {
     this.selectedTable = table;
     this.showWaiterModal = true;
   }
 
-  // Paso 2: seleccionar camarero → mostrar PIN
-  onWaiterSelected(waiter: any) {
+  onWaiterSelected(waiter: User) {
     this.selectedWaiter = waiter;
     this.showWaiterModal = false;
     this.showPinModal = true;
@@ -121,13 +114,12 @@ export class FloorPage implements OnInit {
     this.selectedWaiter = null;
   }
 
-  // Paso 3: PIN validado → si mesa libre, comensales; si ocupada, navegar
-  onPinValidated(user: any) {
+  onPinValidated(user: User) {
     this.validatedUser = user;
     this.showPinModal = false;
 
-    if (this.isOccupied(this.selectedTable.uuid)) {
-      this.router.navigate(['/tpv/order', this.selectedTable.uuid], {
+    if (this.isOccupied(this.selectedTable!.uuid)) {
+      this.router.navigate(['/tpv/order', this.selectedTable!.uuid], {
         state: { user: this.validatedUser },
       });
     } else {
@@ -142,16 +134,15 @@ export class FloorPage implements OnInit {
     this.validatedUser = null;
   }
 
-  // Paso 4: comensales confirmados → abrir order → navegar
   onDinersConfirmed(diners: number) {
     this.showDinersModal = false;
-    this.orderService.openOrder(this.selectedTable.uuid, this.validatedUser.id, diners).subscribe({
+    this.orderService.openOrder(this.selectedTable!.uuid, this.validatedUser!.id, diners).subscribe({
       next: () => {
-        this.router.navigate(['/tpv/order', this.selectedTable.uuid], {
+        this.router.navigate(['/tpv/order', this.selectedTable!.uuid], {
           state: { user: this.validatedUser },
         });
       },
-      error: (err: any) => console.error('Error opening order:', err),
+      error: (err) => this.logger.error('Error opening order:', err),
     });
   }
 

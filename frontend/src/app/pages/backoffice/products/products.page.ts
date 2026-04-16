@@ -72,7 +72,7 @@ export class ProductsPage implements OnInit {
   get productsByFamily(): { family: any, products: any[] }[] {
     return this.families.map(family => ({
       family,
-      products: this.products.filter(p => p.familyId === family.uuid)
+      products: this.products.filter(p => p.family_id === family.uuid)
     })).filter(group => group.products.length > 0);
   }
 
