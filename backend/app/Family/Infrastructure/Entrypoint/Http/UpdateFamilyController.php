@@ -26,6 +26,6 @@ class UpdateFamilyController
             $request->user()->restaurant_id,
         );
 
-        return new JsonResponse($family);
+        return new JsonResponse($family->toArray());
     }
 }

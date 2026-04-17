@@ -16,6 +16,9 @@ class GetAllFamiliesController
     {
         $families = ($this->useCase)($request->user()->restaurant_id);
 
-        return new JsonResponse($families);
+        return new JsonResponse(array_map(
+            static fn($item) => $item->toArray(),
+            $families,
+        ));
     }
 }

@@ -16,6 +16,9 @@ class GetAllTaxesController
     {
         $taxes = ($this->useCase)($request->user()->restaurant_id);
 
-        return new JsonResponse($taxes);
+        return new JsonResponse(array_map(
+            static fn($item) => $item->toArray(),
+            $taxes,
+        ));
     }
 }

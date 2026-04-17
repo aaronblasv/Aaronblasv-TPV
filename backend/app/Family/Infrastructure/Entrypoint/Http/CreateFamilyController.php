@@ -24,6 +24,6 @@ class CreateFamilyController
             $request->user()->restaurant_id,
         );
 
-        return new JsonResponse($family, 201);
+        return new JsonResponse($family->toArray(), 201);
     }
 }

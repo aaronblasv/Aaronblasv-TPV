@@ -35,6 +35,6 @@ class UpdateProductController
             $validated['image_src'] ?? null,
         );
 
-        return new JsonResponse($product);
+        return new JsonResponse($product->toArray());
     }
 }

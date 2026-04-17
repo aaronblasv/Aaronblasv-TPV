@@ -26,6 +26,6 @@ class UpdateTaxController
             $request->user()->restaurant_id,
         );
 
-        return new JsonResponse($tax);
+        return new JsonResponse($tax->toArray());
     }
 }

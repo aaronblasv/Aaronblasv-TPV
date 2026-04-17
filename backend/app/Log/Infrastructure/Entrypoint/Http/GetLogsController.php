@@ -19,6 +19,6 @@ class GetLogsController
 
         $response = ($this->useCase)($request->user()->restaurant_id, $action, $userId, $limit, $offset);
 
-        return new JsonResponse($response, 200);
+        return new JsonResponse($response->toArray(), 200);
     }
 }

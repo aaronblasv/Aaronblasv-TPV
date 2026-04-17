@@ -25,6 +25,6 @@ class CreateTaxController
             $request->user()->restaurant_id,
         );
 
-        return new JsonResponse($tax, 201);
+        return new JsonResponse($tax->toArray(), 201);
     }
 }

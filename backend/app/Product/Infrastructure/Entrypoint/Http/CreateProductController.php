@@ -34,6 +34,6 @@ class CreateProductController
             $validated['image_src'] ?? null,
         );
 
-        return new JsonResponse($product, 201);
+        return new JsonResponse($product->toArray(), 201);
     }
 }
