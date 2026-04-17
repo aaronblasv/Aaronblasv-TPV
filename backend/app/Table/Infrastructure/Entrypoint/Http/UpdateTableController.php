@@ -26,6 +26,6 @@ class UpdateTableController
             $request->user()->restaurant_id,
         );
 
-        return new JsonResponse($table);
+        return new JsonResponse($table->toArray());
     }
 }

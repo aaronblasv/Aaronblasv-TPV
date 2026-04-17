@@ -18,6 +18,7 @@ class EloquentTable extends Model
         'name',
         'zone_id',
         'restaurant_id',
+        'merged_with',
     ];
 
 }

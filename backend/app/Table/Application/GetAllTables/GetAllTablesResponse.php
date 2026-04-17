@@ -10,6 +10,7 @@ final readonly class GetAllTablesResponse
         public string $uuid,
         public string $name,
         public string $zoneId,
+        public ?string $mergedWith,
     ) {}
 
     public static function create(Table $table): self
@@ -18,11 +19,12 @@ final readonly class GetAllTablesResponse
             $table->uuid()->getValue(),
             $table->name()->getValue(),
             $table->zoneId()->getValue(),
+            $table->mergedWith()?->getValue(),
         );
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, string|null>
      */
     public function toArray(): array
     {
@@ -30,6 +32,7 @@ final readonly class GetAllTablesResponse
             'uuid' => $this->uuid,
             'name' => $this->name,
             'zone_id' => $this->zoneId,
+            'merged_with' => $this->mergedWith,
         ];
     }
 }

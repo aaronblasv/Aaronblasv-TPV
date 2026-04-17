@@ -31,4 +31,14 @@ export class TableService {
   getAllTpv(): Observable<Table[]> {
     return this.http.get<Table[]>(`${environment.apiUrl}/tpv/tables`);
   }
+
+  mergeTables(parentUuid: string, childUuids: string[]): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/tpv/tables/${parentUuid}/merge`, {
+      table_uuids: childUuids,
+    });
+  }
+
+  unmergeTables(parentUuid: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/tpv/tables/${parentUuid}/unmerge`, {});
+  }
 }

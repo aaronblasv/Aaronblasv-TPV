@@ -12,6 +12,7 @@ class Table
         private TableName $name,
         private Uuid $zoneId,
         private int $restaurantId,
+        private ?Uuid $mergedWith = null,
     ) {}
 
     public static function dddCreate(
@@ -28,12 +29,14 @@ class Table
         string $name,
         string $zoneId,
         int $restaurantId,
+        ?string $mergedWith = null,
     ): self {
         return new self(
             Uuid::create($uuid),
             TableName::create($name),
             Uuid::create($zoneId),
             $restaurantId,
+            $mergedWith ? Uuid::create($mergedWith) : null,
         );
     }
 
@@ -43,23 +46,24 @@ class Table
         $this->zoneId = $zoneId;
     }
 
-    public function uuid(): Uuid
+    public function mergeWith(Uuid $parentTableUuid): void
     {
-        return $this->uuid;
+        $this->mergedWith = $parentTableUuid;
     }
 
-    public function name(): TableName
+    public function unmerge(): void
     {
-        return $this->name;
+        $this->mergedWith = null;
     }
 
-    public function zoneId(): Uuid
+    public function isMerged(): bool
     {
-        return $this->zoneId;
+        return $this->mergedWith !== null;
     }
 
-    public function restaurantId(): int
-    {
-        return $this->restaurantId;
-    }
+    public function uuid(): Uuid { return $this->uuid; }
+    public function name(): TableName { return $this->name; }
+    public function zoneId(): Uuid { return $this->zoneId; }
+    public function restaurantId(): int { return $this->restaurantId; }
+    public function mergedWith(): ?Uuid { return $this->mergedWith; }
 }

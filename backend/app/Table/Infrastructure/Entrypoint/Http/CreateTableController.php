@@ -25,6 +25,6 @@ class CreateTableController
             $request->user()->restaurant_id,
         );
 
-        return new JsonResponse($table, 201);
+        return new JsonResponse($table->toArray(), 201);
     }
 }

@@ -35,6 +35,7 @@ class EloquentTableRepository implements TableRepositoryInterface
                 'name' => $table->name()->getValue(),
                 'zone_id' => $zone->id,
                 'restaurant_id' => $table->restaurantId(),
+                'merged_with' => $table->mergedWith()?->getValue(),
             ]
         );
     }
@@ -57,6 +58,31 @@ class EloquentTableRepository implements TableRepositoryInterface
             ->delete();
     }
 
+    public function update(Table $table): void
+    {
+        $zone = $this->zoneModel->newQuery()
+            ->where('uuid', $table->zoneId()->getValue())
+            ->firstOrFail();
+
+        $this->model->newQuery()
+            ->where('uuid', $table->uuid()->getValue())
+            ->update([
+                'name' => $table->name()->getValue(),
+                'zone_id' => $zone->id,
+                'merged_with' => $table->mergedWith()?->getValue(),
+            ]);
+    }
+
+    public function findByMergedWith(string $parentUuid, int $restaurantId): array
+    {
+        return $this->model->newQuery()
+            ->where('merged_with', $parentUuid)
+            ->where('restaurant_id', $restaurantId)
+            ->get()
+            ->map(fn(EloquentTable $table) => $this->toDomain($table))
+            ->toArray();
+    }
+
     private function toDomain(EloquentTable $table): Table
     {
         $zone = $this->zoneModel->newQuery()->find($table->zone_id);
@@ -66,6 +92,7 @@ class EloquentTableRepository implements TableRepositoryInterface
             $table->name,
             $zone->uuid,
             $table->restaurant_id,
+            $table->merged_with,
         );
     }
 }
