@@ -70,15 +70,20 @@ export const routes: Routes = [
   path: 'settings',
   loadComponent: () => import('./pages/backoffice/settings/settings.page').then(m => m.SettingsPage),
   canActivate: [authGuard],
-},
-{
-  path: 'tpv',
-  loadComponent: () => import('./pages/tpv/floor/floor.page').then(m => m.FloorPage),
-  canActivate: [tpvGuard],
-},
-{
-  path: 'tpv/order/:tableUuid',
-  loadComponent: () => import('./pages/tpv/order/order.page').then(m => m.OrderPage),
-  canActivate: [tpvGuard],
-},
+  },
+  {
+    path: 'cash-shifts',
+    loadComponent: () => import('./pages/backoffice/cash-shifts/cash-shifts.page').then(m => m.CashShiftsPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'tpv',
+    loadComponent: () => import('./pages/tpv/floor/floor.page').then(m => m.FloorPage),
+    canActivate: [tpvGuard],
+  },
+  {
+    path: 'tpv/order/:tableUuid',
+    loadComponent: () => import('./pages/tpv/order/order.page').then(m => m.OrderPage),
+    canActivate: [tpvGuard],
+  },
 ];

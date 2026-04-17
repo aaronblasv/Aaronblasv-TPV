@@ -1,0 +1,31 @@
+// ─── TPV Design System ───
+// Dark theme — exact values from the HTML mockups
+// Fonts: Geist (body), Funnel Sans (headings), Geist Mono (numbers)
+
+:root {
+  --tpv-bg:            #111827;
+  --tpv-card:          #1E2A3B;
+  --tpv-sidebar:       #0F172A;
+  --tpv-topbar:        #0F172A;
+  --tpv-surface2:      #243044;
+  --tpv-border:        #1E293B;
+  --tpv-border-light:  #263347;
+  --tpv-border-mid:    #2D3B52;
+  --tpv-text-primary:  #F1F5F9;
+  --tpv-text-muted:    #64748B;
+  --tpv-text-dim:      #94A3B8;
+  --tpv-orange:        #F97316;
+  --tpv-orange-dim:    #431407;
+  --tpv-orange-border: rgba(255,132,0,.35);
+  --tpv-green:         #22C55E;
+  --tpv-green-solid:   #16A34A;
+  --tpv-green-dim:     #052E16;
+  --tpv-amber:         #F59E0B;
+  --tpv-amber-dim:     #451A03;
+  --tpv-blue:          #3B82F6;
+  --tpv-blue-dim:      #172554;
+  --tpv-red:           #EF4444;
+  --tpv-red-dim:       rgba(239,68,68,.12);
+  --tpv-radius:        10px;
+  --tpv-radius-sm:     6px;
+}
