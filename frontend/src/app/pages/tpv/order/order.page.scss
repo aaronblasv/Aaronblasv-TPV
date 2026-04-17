@@ -1,386 +1,1183 @@
-.order-layout {
-  display: flex;
+/* ═══════════════════════════════════════════════════════
+   TPV Order — Carbon Frost palette
+   Fonts: Funnel Sans (headings), Geist (body),
+          Newsreader (captions), Geist Mono (data)
+   ═══════════════════════════════════════════════════════ */
+
+// ── Carbon Frost Palette ──
+$bg:           #0C0F14;
+$card:         #161B24;
+$sidebar:      #0E1117;
+$topbar:       #0E1117;
+$surface:      #1C2230;
+$surface2:     #243044;
+$border:       #1E2533;
+$border-light: #2A3344;
+$text-primary: #E8ECF1;
+$text-muted:   #6B7A8D;
+$text-dim:     #8D9BAD;
+$accent:       #7CB9E8;
+$accent-dim:   #1A2940;
+$orange:       #E8935A;
+$orange-dim:   #2C1E12;
+$green:        #6BCB8B;
+$green-dim:    #122218;
+$amber:        #D4A957;
+$red:          #E06060;
+$red-dim:      #2A1414;
+$radius:       8px;
+$radius-sm:    5px;
+$shadow-card:  0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.2);
+$shadow-hover: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.25);
+
+app-order {
+  display: block;
+  width: 100%;
   height: 100vh;
-  background: #F3F4F6;
-}
-
-// Panel izquierdo — Productos
-.products-panel {
-  flex: 0 0 60%;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
+  background: $bg;
+  color: $text-primary;
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
   overflow: hidden;
-}
 
-.products-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    color: #1F2937;
-  }
-}
-
-.btn-back {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  border: 2px solid #E5E7EB;
-  background: white;
-  font-size: 1.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1F2937;
-
-  &:active {
-    background: #F3F4F6;
-  }
-}
-
-.family-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.family-tab {
-  padding: 0.5rem 1.25rem;
-  border-radius: 999px;
-  border: 2px solid #E5E7EB;
-  background: white;
-  color: #6B7280;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &.active {
-    background: #4F46E5;
-    color: white;
-    border-color: #4F46E5;
+  .order-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: $bg;
+    overflow: hidden;
   }
 
-  &:active {
-    transform: scale(0.97);
+  // ── TOP BAR ──
+  .topbar {
+    height: 56px;
+    background: $topbar;
+    border-bottom: 1px solid $border;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    flex-shrink: 0;
   }
-}
 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  overflow-y: auto;
-  flex: 1;
-  max-width: 100%;
-  align-content: start;
-}
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: $text-muted;
+    font-size: 14px;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: background .15s, color .15s;
+    min-height: 44px;
 
-.product-card {
-  background: white;
-  border-radius: 12px;
-  padding: 0.5rem;
-  border: 2px solid #E5E7EB;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.25rem;
-  aspect-ratio: 1 / 1;
-  transition: all 0.15s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-  &:active {
-    transform: scale(0.95);
-    border-color: #4F46E5;
+    &:hover { background: rgba(255,255,255,.06); color: $text-primary; }
   }
-}
 
-.product-image {
-  width: 100%;
-  height: 55%;
-  object-fit: cover;
-  border-radius: 6px;
-  background: #F3F4F6;
-}
-
-.product-image-placeholder {
-  width: 100%;
-  height: 55%;
-  border-radius: 6px;
-  background: #F3F4F6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-}
-
-.product-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #1F2937;
-  text-align: center;
-  line-height: 1.2;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.product-price {
-  font-size: 0.8rem;
-  color: #4F46E5;
-  font-weight: 700;
-}
-
-// Panel derecho — Resumen
-.order-panel {
-  flex: 0 0 40%;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  border-left: 1px solid #E5E7EB;
-}
-
-.order-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #E5E7EB;
-
-  h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.25rem;
-    color: #1F2937;
-  }
-}
-
-.order-meta {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.8rem;
-  color: #6B7280;
-}
-
-.waiter-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  background: #F3F4F6;
-}
-
-.waiter-avatar-sm {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #4F46E5;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.waiter-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #1F2937;
-}
-
-.order-lines {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.75rem 1rem;
-}
-
-.order-line {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  grid-template-rows: auto auto;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border-bottom: 1px solid #F3F4F6;
-  background: #FAFAFA;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-}
-
-.line-info {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.line-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1F2937;
-}
-
-.line-unit-price {
-  font-size: 0.8rem;
-  color: #6B7280;
-}
-
-.line-actions {
-  grid-column: 1;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0;
-}
-
-.qty-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 2px solid #E5E7EB;
-  background: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1F2937;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:active {
-    background: #F3F4F6;
-  }
-}
-
-.line-qty {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1F2937;
-  min-width: 24px;
-  text-align: center;
-}
-
-.remove-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: none;
-  background: #FEE2E2;
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:active {
-    background: #FECACA;
-  }
-}
-
-.line-subtotal {
-  grid-column: 3;
-  grid-row: 1 / 3;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  text-align: right;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4F46E5;
-  padding-left: 1rem;
-}
-
-.empty-order {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #6B7280;
-  font-size: 0.875rem;
-}
-
-// Totales
-.order-totals {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #E5E7EB;
-}
-
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-  color: #6B7280;
-  margin-bottom: 0.5rem;
-
-  &.total-final {
-    font-size: 1.1rem;
+  .mesa-badge {
+    background: $accent;
+    color: #0C0F14;
     font-weight: 700;
-    color: #1F2937;
-    margin-bottom: 0;
-    padding-top: 0.5rem;
-    border-top: 2px solid #E5E7EB;
-  }
-}
-
-// Acciones
-.order-actions {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #E5E7EB;
-  display: flex;
-  gap: 0.75rem;
-}
-
-.btn-cancel {
-  flex: 1;
-  height: 52px;
-  border-radius: 12px;
-  border: 2px solid #EF4444;
-  background: white;
-  color: #EF4444;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:active {
-    background: #FEE2E2;
+    font-size: 14px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: 'Geist Mono', monospace;
   }
 
-  &:disabled,
-  &.disabled {
-    border-color: rgba(239, 68, 68, 0.3);
-    color: rgba(239, 68, 68, 0.4);
-    background: rgba(254, 226, 226, 0.3);
-    cursor: not-allowed;
+  .topbar-diners {
+    background: $surface;
+    border: 1px solid $border-light;
+    color: $text-muted;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Geist', sans-serif;
+    min-height: 36px;
+    transition: all .15s;
 
-    &:active {
-      background: rgba(254, 226, 226, 0.3);
+    &:hover { color: $text-primary; border-color: $accent; }
+  }
+
+  .category-tabs {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-bottom: 16px;
+  }
+
+  .cat-tab {
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: none;
+    color: $text-muted;
+    white-space: nowrap;
+    min-height: 44px;
+    transition: all .15s;
+
+    &:hover { color: $text-primary; background: rgba(255,255,255,.06); }
+
+    &.active {
+      background: rgba($accent, .15);
+      color: $accent;
+      border-color: rgba($accent, .3);
+      font-weight: 600;
     }
   }
-}
 
-.btn-close {
-  flex: 1;
-  height: 52px;
-  border-radius: 12px;
-  border: none;
-  background: #10B981;
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:active {
-    background: #059669;
+  // ── LAYOUT ──
+  .layout {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
   }
+
+  // ── TAB SIDEBAR ──
+  .tab-sidebar {
+    width: 100px;
+    background: $sidebar;
+    border-right: 1px solid $border;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .tab-sidebar-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 84px;
+    min-height: 72px;
+    padding: 14px 6px;
+    border: none;
+    border-radius: $radius;
+    background: transparent;
+    color: $text-muted;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+    svg { opacity: .6; transition: opacity .15s; }
+
+    &:hover {
+      background: rgba(255,255,255,.06);
+      color: $text-primary;
+      svg { opacity: .85; }
+    }
+
+    &:active {
+      background: rgba(255,255,255,.10);
+    }
+
+    &.active {
+      background: $accent-dim;
+      color: $accent;
+      svg { opacity: 1; stroke: $accent; }
+    }
+  }
+
+  .topbar-tab-title {
+    font-family: 'Funnel Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  // ── SUMMARY TAB ──
+  .summary-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .summary-table-wrap {
+    flex: 1;
+    padding: 24px 28px;
+    overflow-y: auto;
+  }
+
+  .summary-title {
+    font-family: 'Funnel Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: $text-primary;
+  }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Geist', sans-serif;
+
+    thead {
+      tr { border-bottom: 2px solid $border-light; }
+      th {
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: $text-muted;
+        font-weight: 600;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid $border;
+        transition: background .12s;
+        &:hover { background: rgba(255,255,255,.03); }
+      }
+      td {
+        padding: 12px;
+        font-size: 14px;
+        color: $text-primary;
+      }
+    }
+
+    .col-qty, .col-price, .col-total { text-align: right; font-family: 'Geist Mono', monospace; }
+  }
+
+  .summary-totals {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid $border-light;
+  }
+
+  .summary-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: $text-muted;
+    font-family: 'Geist Mono', monospace;
+  }
+
+  .summary-discount-row { color: $green; }
+
+  .summary-grand {
+    font-size: 18px;
+    font-weight: 700;
+    color: $text-primary;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px solid $border-light;
+  }
+
+  // ── SUMMARY SIDEBAR ──
+  .summary-sidebar {
+    width: 340px;
+    background: $card;
+    border-left: 1px solid $border;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .summary-sidebar-section {
+    h4 {
+      font-family: 'Funnel Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 10px;
+    }
+  }
+
+  .summary-pay-methods {
+    display: flex;
+    gap: 8px;
+  }
+
+  .summary-split-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid $border-light;
+    border-radius: $radius;
+    background: transparent;
+    color: $text-muted;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    &:hover { background: rgba(255,255,255,.06); color: $text-primary; }
+  }
+
+  .summary-sidebar-totals {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid $border;
+  }
+
+  // ── ORDER ACTIONS (new order tab) ──
+  .btn-send-kitchen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border-radius: $radius;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    border: none;
+    background: $green;
+    color: #0C0F14;
+    transition: opacity .15s;
+    &:hover { opacity: .9; }
+  }
+
+  // ── PRODUCT GRID (left / main area) ──
+  .product-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    align-content: start;
+  }
+
+  .product-card {
+    background: $card;
+    border: 1px solid $border;
+    border-radius: 14px;
+    padding: 0;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    overflow: hidden;
+
+    &:hover {
+      border-color: rgba($accent, .4);
+      box-shadow: $shadow-hover;
+      transform: translateY(-2px);
+    }
+
+    &:active { transform: scale(.97); }
+  }
+
+  .product-img-wrap {
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .product-img-placeholder {
+    width: 100%;
+    height: 140px;
+    background: $surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    span {
+      font-size: 36px;
+      font-weight: 700;
+      color: $text-muted;
+      font-family: 'Funnel Sans', sans-serif;
+      text-transform: uppercase;
+    }
+  }
+
+  .product-info {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: $text-primary;
+    line-height: 1.3;
+    font-family: 'Geist', sans-serif;
+  }
+
+  .product-price {
+    font-family: 'Geist Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-primary;
+    opacity: .85;
+  }
+
+  // ── ORDER PANEL (right sidebar) ──
+  .order-panel {
+    width: 440px;
+    min-width: 440px;
+    background: $sidebar;
+    border-left: 1px solid $border;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .order-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid $border;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .order-title {
+    font-family: 'Funnel Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  .item-count {
+    font-size: 12px;
+    color: $text-muted;
+    font-family: 'Geist Mono', monospace;
+    background: $surface;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  .order-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+    min-height: 0;
+  }
+
+  .order-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+    border-bottom: 1px solid rgba($border, .5);
+    transition: background .1s;
+    cursor: default;
+
+    &:hover { background: rgba(255,255,255,.03); }
+  }
+
+  .item-qty {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: $surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Geist Mono', monospace;
+    color: $accent;
+    flex-shrink: 0;
+  }
+
+  .item-name {
+    flex: 1;
+    font-size: 13px;
+    color: $text-primary;
+    line-height: 1.3;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .line-discount-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: $amber;
+    background: rgba($amber, .15);
+    border-radius: 999px;
+    padding: 2px 6px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  .item-price {
+    font-family: 'Geist Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: $text-primary;
+    flex-shrink: 0;
+  }
+
+  .item-action {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $border-light;
+    background: $surface;
+    color: $text-muted;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .15s;
+
+    &:hover { color: $text-primary; border-color: $accent; }
+
+    &--discount {
+      font-size: 12px;
+      color: $amber;
+      border-color: rgba($amber, .3);
+
+      &:hover { background: rgba($amber, .15); }
+    }
+  }
+
+  .item-remove {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: rgba($red, .08);
+    cursor: pointer;
+    color: $text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .15s;
+
+    &:hover { color: $red; background: rgba($red, .15); }
+  }
+
+  .empty-order {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: $text-muted;
+    font-size: 13px;
+    font-style: italic;
+    font-family: 'Newsreader', serif;
+  }
+
+  // ── Order Footer (totals + meta + actions) ──
+  .order-footer {
+    flex-shrink: 0;
+  }
+
+  // ── Totals ──
+  .order-totals {
+    padding: 8px 16px;
+    border-top: 1px solid $border;
+    background: $sidebar;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 0;
+  }
+
+  .total-label {
+    font-size: 12px;
+    color: $text-muted;
+  }
+
+  .total-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    color: $text-muted;
+  }
+
+  .discount-row {
+    .total-label, .total-value { color: $amber; }
+  }
+
+  .total-grand {
+    padding-top: 4px;
+    margin-top: 2px;
+    border-top: 1px solid $border;
+
+    .total-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: $text-primary;
+    }
+
+    .total-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: $accent;
+      font-family: 'Geist Mono', monospace;
+    }
+  }
+
+  // ── Meta Actions ──
+  .order-meta-actions {
+    padding: 6px 14px;
+    border-top: 1px solid $border;
+    display: flex;
+    gap: 4px;
+    justify-content: space-between;
+  }
+
+  .meta-btn {
+    flex: 1;
+    padding: 6px 4px;
+    border-radius: 6px;
+    border: 1px solid $border-light;
+    background: $surface;
+    color: $text-muted;
+    font-size: 12px;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    min-height: 36px;
+    transition: all .15s;
+    white-space: nowrap;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover { color: $text-primary; border-color: $accent; }
+
+    &:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Order Actions ──
+  .order-actions {
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid $border;
+  }
+
+  .btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Geist', sans-serif;
+    transition: opacity .15s;
+
+    &:hover { opacity: .85; }
+
+    &:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-cancel-order {
+    background: rgba($red, .12);
+    color: $red;
+    border: 1px solid rgba($red, .2);
+  }
+
+  .btn-pay {
+    background: #16A34A;
+    color: #fff;
+  }
+
+  // ── Transfer Modal ──
+  .transfer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+
+  .transfer-modal {
+    width: min(560px, 100%);
+    background: $card;
+    border: 1px solid $border;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 24px 48px rgba(0,0,0,.4);
+  }
+
+  .transfer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-family: 'Funnel Sans', sans-serif;
+      color: $text-primary;
+    }
+  }
+
+  .transfer-close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid $border;
+    border-radius: 10px;
+    background: $surface;
+    color: $text-muted;
+    font-size: 1rem;
+    cursor: pointer;
+
+    &:hover { color: $text-primary; }
+  }
+
+  .transfer-description {
+    margin: 0 0 1rem;
+    color: $text-muted;
+    font-size: 0.9rem;
+  }
+
+  .transfer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .transfer-table-card {
+    min-height: 88px;
+    border-radius: 12px;
+    border: 1px solid $border;
+    background: $surface;
+    color: $text-primary;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.75rem;
+    transition: all .15s;
+
+    &:hover {
+      border-color: $accent;
+      background: rgba($accent, .1);
+    }
+
+    &:active { transform: scale(.98); }
+  }
+
+  .transfer-table-name {
+    display: block;
+    font-size: 0.95rem;
+  }
+
+  .transfer-empty {
+    padding: 1rem;
+    border-radius: 12px;
+    background: $surface;
+    color: $text-muted;
+    text-align: center;
+  }
+
+  // ── Payment View ──
+  .topbar-spacer { flex: 1; }
+
+  .topbar-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid $border-light;
+    background: transparent;
+    color: $text-primary;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    min-height: 40px;
+    transition: all .15s;
+
+    &:hover { background: rgba(255,255,255,.06); border-color: $accent; }
+  }
+
+  .pay-order-summary {
+    width: 340px;
+    min-width: 340px;
+    background: $sidebar;
+    border-left: 1px solid $border;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .pay-summary-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid $border;
+
+    h3 {
+      font-family: 'Funnel Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: $text-primary;
+      margin-bottom: 4px;
+    }
+  }
+
+  .pay-summary-meta {
+    font-size: 12px;
+    color: $text-muted;
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+  }
+
+  .pay-summary-lines {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .pay-line {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    gap: 10px;
+    border-bottom: 1px solid rgba($border, .5);
+  }
+
+  .pay-line-qty {
+    font-family: 'Geist Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: $accent;
+    width: 26px;
+    flex-shrink: 0;
+  }
+
+  .pay-line-name {
+    flex: 1;
+    font-size: 14px;
+    color: $text-primary;
+  }
+
+  .pay-line-price {
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-primary;
+    flex-shrink: 0;
+  }
+
+  .pay-summary-totals {
+    padding: 16px 20px;
+    border-top: 1px solid $border;
+    background: rgba(0,0,0,.15);
+  }
+
+  .pay-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 13px;
+    color: $text-muted;
+  }
+
+  .pay-discount-row {
+    color: $amber;
+  }
+
+  .pay-total-grand {
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px solid $border;
+
+    span:first-child {
+      font-size: 16px;
+      font-weight: 700;
+      color: $text-primary;
+    }
+
+    span:last-child {
+      font-family: 'Geist Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: $accent;
+    }
+  }
+
+  .pay-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .pay-title {
+    font-family: 'Funnel Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  .pay-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .pay-method-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px 14px;
+    border-radius: 12px;
+    border: 2px solid $border-light;
+    background: transparent;
+    color: $text-muted;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    transition: all .15s;
+    min-height: 90px;
+
+    &:hover {
+      border-color: $text-dim;
+      color: $text-primary;
+    }
+
+    &.active {
+      border-color: $accent;
+      color: $accent;
+      background: rgba($accent, .06);
+    }
+  }
+
+  .pay-amount-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: $text-muted;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .pay-amount-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: $surface;
+    border: 1px solid $border-light;
+    border-radius: 10px;
+  }
+
+  .pay-amount-value {
+    flex: 1;
+    font-family: 'Geist Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  .pay-amount-clear {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,.05);
+    color: $text-muted;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+
+    &:hover { color: $red; background: rgba($red, .1); }
+  }
+
+  .pay-quick-amounts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .pay-quick-btn {
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 1px solid $border-light;
+    background: transparent;
+    color: $text-dim;
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    min-height: 44px;
+
+    &:hover { color: $text-primary; border-color: $accent; }
+
+    &.active {
+      background: rgba($accent, .12);
+      border-color: $accent;
+      color: $accent;
+    }
+  }
+
+  .pay-numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .pay-numpad-key {
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid $border;
+    background: $surface;
+    color: $text-primary;
+    font-family: 'Geist Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .1s;
+
+    &:hover { background: $surface2; }
+    &:active { transform: scale(.97); }
+  }
+
+  .pay-change {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: $surface;
+    border-radius: 10px;
+    border: 1px solid $border;
+  }
+
+  .pay-change-label {
+    font-size: 14px;
+    color: $text-muted;
+  }
+
+  .pay-change-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: $green;
+  }
+
+  .pay-confirm-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: $accent;
+    color: $bg;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 56px;
+    transition: opacity .15s;
+
+    &:hover { opacity: .9; }
+    &:disabled { opacity: .4; cursor: not-allowed; }
+  }
+
+  .pay-bottom-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .pay-bottom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid $border-light;
+    background: transparent;
+    color: $text-muted;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    min-height: 46px;
+    transition: all .15s;
+
+    &:hover { color: $text-primary; border-color: $text-dim; }
+  }
+
+  // ── Scrollbar ──
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: $border; border-radius: 2px; }
 }
