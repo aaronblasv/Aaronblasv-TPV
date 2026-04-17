@@ -49,7 +49,12 @@
                   <td>{{ sale.close_user_name }}</td>
                   <td class="date-cell">{{ formatDate(sale.opened_at) }}</td>
                   <td class="date-cell">{{ sale.closed_at ? formatDate(sale.closed_at) : '—' }}</td>
-                  <td class="total-cell text-right">{{ formatCurrency(sale.total) }}</td>
+                  <td class="total-cell text-right">
+                    {{ formatCurrency(sale.net_total) }}
+                    @if (sale.refunded_total > 0) {
+                      <div class="refund-note">Devuelto: {{ formatCurrency(sale.refunded_total) }}</div>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
@@ -77,6 +82,16 @@
           <span>Fecha: <strong>{{ formatDate(selectedSale.value_date) }}</strong></span>
         </div>
 
+        <div class="refund-toolbar">
+          <select [(ngModel)]="refundMethod">
+            <option value="cash">Efectivo</option>
+            <option value="card">Tarjeta</option>
+            <option value="bizum">Bizum</option>
+          </select>
+          <input [(ngModel)]="refundReason" placeholder="Motivo de devolución" />
+          <button class="btn-refund-all" (click)="refundAllSale()">Devolver venta completa</button>
+        </div>
+
         @if (linesLoading) {
           <div class="modal-loading">Cargando líneas...</div>
         } @else {
@@ -88,6 +103,7 @@
                 <th class="text-right">Precio u.</th>
                 <th class="text-right">IVA</th>
                 <th class="text-right">Subtotal</th>
+                <th class="text-center">Devolución</th>
               </tr>
             </thead>
             <tbody>
@@ -97,14 +113,31 @@
                   <td class="text-center">{{ line.quantity }}</td>
                   <td class="text-right">{{ formatCurrency(line.price) }}</td>
                   <td class="text-right">{{ line.tax_percentage }}%</td>
-                  <td class="text-right">{{ formatCurrency(line.quantity * line.price) }}</td>
+                  <td class="text-right">
+                    {{ formatCurrency(line.line_total) }}
+                    @if (line.discount_amount > 0) {
+                      <div class="line-note">Dto: {{ formatCurrency(line.discount_amount) }}</div>
+                    }
+                    @if (line.refunded_quantity > 0) {
+                      <div class="line-note refund">Devueltas: {{ line.refunded_quantity }}</div>
+                    }
+                  </td>
+                  <td class="text-center refund-cell">
+                    @if (getRemainingQuantity(line) > 0) {
+                      <input type="number" min="1" [max]="getRemainingQuantity(line)" [(ngModel)]="refundQuantities[line.uuid]" />
+                      <button class="btn-refund-line" (click)="refundLine(line)">Devolver</button>
+                    } @else {
+                      <span class="line-note refund">Sin unidades</span>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
             <tfoot>
               <tr>
                 <td colspan="4" class="text-right"><strong>Total</strong></td>
-                <td class="text-right total-cell"><strong>{{ formatCurrency(lineTotal) }}</strong></td>
+                <td class="text-right total-cell"><strong>{{ formatCurrency(netLineTotal) }}</strong></td>
+                <td></td>
               </tr>
             </tfoot>
           </table>

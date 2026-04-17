@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { SaleService } from '../../../services/api/sale.service';
-import { Sale, SaleLine } from '../../../types/sale.model';
+import { RefundPayload, Sale, SaleLine } from '../../../types/sale.model';
 
 @Component({
   selector: 'app-sales',
@@ -25,6 +25,9 @@ export class SalesPage implements OnInit {
   selectedSale: Sale | null = null;
   saleLines: SaleLine[] = [];
   linesLoading = false;
+  refundMethod: 'cash' | 'card' | 'bizum' = 'cash';
+  refundReason = '';
+  refundQuantities: Record<string, number> = {};
 
   ngOnInit() {
     this.loadSales();
@@ -53,7 +56,11 @@ export class SalesPage implements OnInit {
     this.saleLines = [];
     this.linesLoading = true;
     this.saleService.getLines(sale.uuid).subscribe({
-      next: (lines) => { this.saleLines = lines; this.linesLoading = false; },
+      next: (lines) => {
+        this.saleLines = lines;
+        this.refundQuantities = Object.fromEntries(lines.map(line => [line.uuid, Math.max(1, line.quantity - line.refunded_quantity)]));
+        this.linesLoading = false;
+      },
       error: () => { this.linesLoading = false; },
     });
   }
@@ -64,7 +71,58 @@ export class SalesPage implements OnInit {
   }
 
   get lineTotal(): number {
-    return this.saleLines.reduce((sum, l) => sum + l.quantity * l.price, 0);
+    return this.saleLines.reduce((sum, line) => sum + line.line_total, 0);
+  }
+
+  get netLineTotal(): number {
+    return this.saleLines.reduce((sum, line) => sum + (line.line_total - Math.round((line.line_total / line.quantity) * line.refunded_quantity)), 0);
+  }
+
+  getRemainingQuantity(line: SaleLine): number {
+    return Math.max(0, line.quantity - line.refunded_quantity);
+  }
+
+  refundAllSale() {
+    if (!this.selectedSale) {
+      return;
+    }
+
+    const payload: RefundPayload = {
+      method: this.refundMethod,
+      reason: this.refundReason || undefined,
+      refund_all: true,
+    };
+
+    this.saleService.createRefund(this.selectedSale.uuid, payload).subscribe({
+      next: () => {
+        this.loadSales();
+        this.openDetail(this.selectedSale!);
+      },
+    });
+  }
+
+  refundLine(line: SaleLine) {
+    if (!this.selectedSale) {
+      return;
+    }
+
+    const quantity = Math.min(this.getRemainingQuantity(line), Math.max(1, Number(this.refundQuantities[line.uuid] || 0)));
+    const payload: RefundPayload = {
+      method: this.refundMethod,
+      reason: this.refundReason || undefined,
+      refund_all: false,
+      lines: [{
+        sale_line_uuid: line.uuid,
+        quantity,
+      }],
+    };
+
+    this.saleService.createRefund(this.selectedSale.uuid, payload).subscribe({
+      next: () => {
+        this.loadSales();
+        this.openDetail(this.selectedSale!);
+      },
+    });
   }
 
   formatCurrency(cents: number): string {

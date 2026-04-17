@@ -36,7 +36,12 @@ class EloquentSaleRepository implements SaleRepositoryInterface
             'user_id'       => $userId,
             'ticket_number' => $sale->ticketNumber(),
             'value_date'    => $sale->valueDate()->format('Y-m-d H:i:s'),
+            'subtotal'      => $sale->subtotal(),
+            'tax_amount'    => $sale->taxAmount(),
+            'line_discount_total' => $sale->lineDiscountTotal(),
+            'order_discount_total' => $sale->orderDiscountTotal(),
             'total'         => $sale->total(),
+            'refunded_total' => $sale->refundedTotal(),
         ]);
     }
 
@@ -55,7 +60,39 @@ class EloquentSaleRepository implements SaleRepositoryInterface
             'quantity'       => $line->quantity(),
             'price'          => $line->price(),
             'tax_percentage' => $line->taxPercentage(),
+            'line_subtotal'  => $line->lineSubtotal(),
+            'tax_amount'     => $line->taxAmount(),
+            'discount_type'  => $line->discountType(),
+            'discount_value' => $line->discountValue(),
+            'discount_amount' => $line->discountAmount(),
+            'line_total'     => $line->lineTotal(),
+            'refunded_quantity' => $line->refundedQuantity(),
         ]);
+    }
+
+    public function update(Sale $sale): void
+    {
+        $this->model->newQuery()
+            ->where('uuid', $sale->uuid()->getValue())
+            ->firstOrFail()
+            ->update([
+                'subtotal' => $sale->subtotal(),
+                'tax_amount' => $sale->taxAmount(),
+                'line_discount_total' => $sale->lineDiscountTotal(),
+                'order_discount_total' => $sale->orderDiscountTotal(),
+                'total' => $sale->total(),
+                'refunded_total' => $sale->refundedTotal(),
+            ]);
+    }
+
+    public function updateLine(SaleLine $line): void
+    {
+        $this->saleLineModel->newQuery()
+            ->where('uuid', $line->uuid()->getValue())
+            ->firstOrFail()
+            ->update([
+                'refunded_quantity' => $line->refundedQuantity(),
+            ]);
     }
 
     public function getNextTicketNumber(int $restaurantId): int
@@ -70,10 +107,101 @@ class EloquentSaleRepository implements SaleRepositoryInterface
     public function findAll(int $restaurantId): array
     {
         return $this->model->newQuery()
-            ->where('restaurant_id', $restaurantId)
-            ->orderBy('created_at', 'desc')
+            ->join('orders', 'sales.order_id', '=', 'orders.id')
+            ->join('users', 'sales.user_id', '=', 'users.id')
+            ->where('sales.restaurant_id', $restaurantId)
+            ->whereNull('sales.deleted_at')
+            ->orderBy('sales.created_at', 'desc')
+            ->select('sales.*', 'orders.uuid as order_uuid', 'users.uuid as user_uuid')
             ->get()
-            ->map(fn(EloquentSale $model) => $this->toDomain($model))
+            ->map(fn($model) => Sale::fromPersistence(
+                $model->uuid,
+                $model->restaurant_id,
+                $model->order_uuid,
+                $model->user_uuid,
+                $model->ticket_number,
+                new \DateTimeImmutable($model->value_date),
+                (int) $model->subtotal,
+                (int) $model->tax_amount,
+                (int) $model->line_discount_total,
+                (int) $model->order_discount_total,
+                $model->total,
+                (int) $model->refunded_total,
+            ))
+            ->toArray();
+    }
+
+    public function findByUuid(int $restaurantId, string $saleUuid): ?Sale
+    {
+        $model = $this->model->newQuery()
+            ->join('orders', 'sales.order_id', '=', 'orders.id')
+            ->join('users', 'sales.user_id', '=', 'users.id')
+            ->where('sales.restaurant_id', $restaurantId)
+            ->where('sales.uuid', $saleUuid)
+            ->select('sales.*', 'orders.uuid as order_uuid', 'users.uuid as user_uuid')
+            ->first();
+
+        if (!$model) {
+            return null;
+        }
+
+        return Sale::fromPersistence(
+            $model->uuid,
+            $model->restaurant_id,
+            $model->order_uuid,
+            $model->user_uuid,
+            $model->ticket_number,
+            new \DateTimeImmutable($model->value_date),
+            (int) $model->subtotal,
+            (int) $model->tax_amount,
+            (int) $model->line_discount_total,
+            (int) $model->order_discount_total,
+            $model->total,
+            (int) $model->refunded_total,
+        );
+    }
+
+    public function findDomainLinesBySaleUuid(int $restaurantId, string $saleUuid): array
+    {
+        $sale = $this->model->newQuery()
+            ->where('restaurant_id', $restaurantId)
+            ->where('uuid', $saleUuid)
+            ->first();
+
+        if (!$sale) {
+            return [];
+        }
+
+        return $this->saleLineModel->newQuery()
+            ->join('sales', 'sales_lines.sale_id', '=', 'sales.id')
+            ->join('order_lines', 'sales_lines.order_line_id', '=', 'order_lines.id')
+            ->join('users', 'sales_lines.user_id', '=', 'users.id')
+            ->where('sales_lines.sale_id', $sale->id)
+            ->where('sales_lines.restaurant_id', $restaurantId)
+            ->select(
+                'sales_lines.*',
+                'sales.uuid as sale_uuid',
+                'order_lines.uuid as order_line_uuid',
+                'users.uuid as user_uuid',
+            )
+            ->get()
+            ->map(fn($model) => SaleLine::fromPersistence(
+                $model->uuid,
+                $model->restaurant_id,
+                $model->sale_uuid,
+                $model->order_line_uuid,
+                $model->user_uuid,
+                (int) $model->quantity,
+                (int) $model->price,
+                (int) $model->tax_percentage,
+                (int) $model->line_subtotal,
+                (int) $model->tax_amount,
+                $model->discount_type,
+                (int) $model->discount_value,
+                (int) $model->discount_amount,
+                (int) $model->line_total,
+                (int) $model->refunded_quantity,
+            ))
             ->toArray();
     }
 
@@ -92,6 +220,11 @@ class EloquentSaleRepository implements SaleRepositoryInterface
                 's.ticket_number',
                 's.value_date',
                 's.total',
+                's.subtotal',
+                's.tax_amount',
+                's.line_discount_total',
+                's.order_discount_total',
+                's.refunded_total',
                 't.name as table_name',
                 'open_user.name as open_user_name',
                 'close_user.name as close_user_name',
@@ -110,7 +243,13 @@ class EloquentSaleRepository implements SaleRepositoryInterface
             'uuid'            => $row->uuid,
             'ticket_number'   => $row->ticket_number,
             'value_date'      => $row->value_date,
+            'subtotal'        => (int) $row->subtotal,
+            'tax_amount'      => (int) $row->tax_amount,
+            'line_discount_total' => (int) $row->line_discount_total,
+            'order_discount_total' => (int) $row->order_discount_total,
             'total'           => (int) $row->total,
+            'refunded_total'  => (int) $row->refunded_total,
+            'net_total'       => (int) $row->total - (int) $row->refunded_total,
             'table_name'      => $row->table_name,
             'open_user_name'  => $row->open_user_name,
             'close_user_name' => $row->close_user_name ?? '—',
@@ -141,6 +280,13 @@ class EloquentSaleRepository implements SaleRepositoryInterface
                 'sl.quantity',
                 'sl.price',
                 'sl.tax_percentage',
+                'sl.line_subtotal',
+                'sl.tax_amount',
+                'sl.discount_type',
+                'sl.discount_value',
+                'sl.discount_amount',
+                'sl.line_total',
+                'sl.refunded_quantity',
             )
             ->get()
             ->map(fn($row) => [
@@ -149,6 +295,13 @@ class EloquentSaleRepository implements SaleRepositoryInterface
                 'quantity'       => (int) $row->quantity,
                 'price'          => (int) $row->price,
                 'tax_percentage' => (int) $row->tax_percentage,
+                'line_subtotal'  => (int) $row->line_subtotal,
+                'tax_amount'     => (int) $row->tax_amount,
+                'discount_type'  => $row->discount_type,
+                'discount_value' => (int) $row->discount_value,
+                'discount_amount' => (int) $row->discount_amount,
+                'line_total'     => (int) $row->line_total,
+                'refunded_quantity' => (int) $row->refunded_quantity,
             ])
             ->all();
     }
@@ -163,7 +316,7 @@ class EloquentSaleRepository implements SaleRepositoryInterface
         };
 
         $byDay = $applyFilters(DB::table('sales as s'))
-            ->select(DB::raw('DATE(s.value_date) as day'), DB::raw('COUNT(*) as count'), DB::raw('SUM(s.total) as total'))
+            ->select(DB::raw('DATE(s.value_date) as day'), DB::raw('COUNT(*) as count'), DB::raw('SUM(s.total - s.refunded_total) as total'))
             ->groupBy('day')->orderBy('day')
             ->get()->map(fn($r) => ['day' => $r->day, 'count' => (int) $r->count, 'total' => (int) $r->total])->all();
 
@@ -171,7 +324,7 @@ class EloquentSaleRepository implements SaleRepositoryInterface
             ->join('orders as o', 's.order_id', '=', 'o.id')
             ->join('tables as t', 'o.table_id', '=', 't.id')
             ->join('zones as z', 't.zone_id', '=', 'z.id')
-            ->select('z.name as zone_name', DB::raw('COUNT(*) as count'), DB::raw('SUM(s.total) as total'))
+            ->select('z.name as zone_name', DB::raw('COUNT(*) as count'), DB::raw('SUM(s.total - s.refunded_total) as total'))
             ->groupBy('z.id', 'z.name')->orderByDesc('total')
             ->get()->map(fn($r) => ['zone_name' => $r->zone_name, 'count' => (int) $r->count, 'total' => (int) $r->total])->all();
 
@@ -180,13 +333,13 @@ class EloquentSaleRepository implements SaleRepositoryInterface
             ->join('order_lines as ol', 'sl.order_line_id', '=', 'ol.id')
             ->join('products as p', 'ol.product_id', '=', 'p.id')
             ->whereNull('sl.deleted_at')
-            ->select('p.name as product_name', DB::raw('SUM(sl.quantity) as total_quantity'), DB::raw('SUM(sl.quantity * sl.price) as total'))
+            ->select('p.name as product_name', DB::raw('SUM(sl.quantity - sl.refunded_quantity) as total_quantity'), DB::raw('SUM(sl.line_total - ((sl.refunded_quantity / sl.quantity) * sl.line_total)) as total'))
             ->groupBy('p.id', 'p.name')->orderByDesc('total_quantity')
             ->get()->map(fn($r) => ['product_name' => $r->product_name, 'total_quantity' => (int) $r->total_quantity, 'total' => (int) $r->total])->all();
 
         $byUser = $applyFilters(DB::table('sales as s'))
             ->join('users as u', 's.user_id', '=', 'u.id')
-            ->select('u.name as user_name', DB::raw('COUNT(*) as count'), DB::raw('SUM(s.total) as total'))
+            ->select('u.name as user_name', DB::raw('COUNT(*) as count'), DB::raw('SUM(s.total - s.refunded_total) as total'))
             ->groupBy('u.id', 'u.name')->orderByDesc('total')
             ->get()->map(fn($r) => ['user_name' => $r->user_name, 'count' => (int) $r->count, 'total' => (int) $r->total])->all();
 
@@ -198,19 +351,4 @@ class EloquentSaleRepository implements SaleRepositoryInterface
         ];
     }
 
-    private function toDomain(EloquentSale $model): Sale
-    {
-        $orderUuid = $this->orderModel->newQuery()->find($model->order_id)->uuid;
-        $userUuid  = $this->userModel->newQuery()->find($model->user_id)->uuid;
-
-        return Sale::fromPersistence(
-            $model->uuid,
-            $model->restaurant_id,
-            $orderUuid,
-            $userUuid,
-            $model->ticket_number,
-            new \DateTimeImmutable($model->value_date),
-            $model->total,
-        );
-    }
 }

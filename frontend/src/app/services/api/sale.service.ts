@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Sale, SaleLine, SalesReport } from '../../types/sale.model';
+import { RefundPayload, RefundResponse, Sale, SaleLine, SalesReport } from '../../types/sale.model';
 
 @Injectable({
   providedIn: 'root'
@@ -28,5 +28,9 @@ export class SaleService {
     if (from) params = params.set('from', from);
     if (to)   params = params.set('to', to);
     return this.http.get<SalesReport>(`${this.apiUrl}/report`, { params });
+  }
+
+  createRefund(saleUuid: string, payload: RefundPayload): Observable<RefundResponse> {
+    return this.http.post<RefundResponse>(`${this.apiUrl}/${saleUuid}/refunds`, payload);
   }
 }

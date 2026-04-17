@@ -15,7 +15,12 @@ class Sale
         private Uuid $userId,
         private int $ticketNumber,
         private \DateTimeImmutable $valueDate,
+        private int $subtotal,
+        private int $taxAmount,
+        private int $lineDiscountTotal,
+        private int $orderDiscountTotal,
         private int $total,
+        private int $refundedTotal,
     ) {}
 
     public static function dddCreate(
@@ -24,9 +29,13 @@ class Sale
         Uuid $orderId,
         Uuid $userId,
         int $ticketNumber,
+        int $subtotal,
+        int $taxAmount,
+        int $lineDiscountTotal,
+        int $orderDiscountTotal,
         int $total,
     ): self {
-        return new self($uuid, $restaurantId, $orderId, $userId, $ticketNumber, new \DateTimeImmutable(), $total);
+        return new self($uuid, $restaurantId, $orderId, $userId, $ticketNumber, new \DateTimeImmutable(), $subtotal, $taxAmount, $lineDiscountTotal, $orderDiscountTotal, $total, 0);
     }
 
     public static function fromPersistence(
@@ -36,7 +45,12 @@ class Sale
         string $userId,
         int $ticketNumber,
         \DateTimeImmutable $valueDate,
+        int $subtotal,
+        int $taxAmount,
+        int $lineDiscountTotal,
+        int $orderDiscountTotal,
         int $total,
+        int $refundedTotal,
     ): self {
         return new self(
             Uuid::create($uuid),
@@ -45,8 +59,18 @@ class Sale
             Uuid::create($userId),
             $ticketNumber,
             $valueDate,
+            $subtotal,
+            $taxAmount,
+            $lineDiscountTotal,
+            $orderDiscountTotal,
             $total,
+            $refundedTotal,
         );
+    }
+
+    public function registerRefund(int $amount): void
+    {
+        $this->refundedTotal += max(0, $amount);
     }
 
     public function uuid(): Uuid { return $this->uuid; }
@@ -55,5 +79,11 @@ class Sale
     public function userId(): Uuid { return $this->userId; }
     public function ticketNumber(): int { return $this->ticketNumber; }
     public function valueDate(): \DateTimeImmutable { return $this->valueDate; }
+    public function subtotal(): int { return $this->subtotal; }
+    public function taxAmount(): int { return $this->taxAmount; }
+    public function lineDiscountTotal(): int { return $this->lineDiscountTotal; }
+    public function orderDiscountTotal(): int { return $this->orderDiscountTotal; }
     public function total(): int { return $this->total; }
+    public function refundedTotal(): int { return $this->refundedTotal; }
+    public function netTotal(): int { return max(0, $this->total - $this->refundedTotal); }
 }

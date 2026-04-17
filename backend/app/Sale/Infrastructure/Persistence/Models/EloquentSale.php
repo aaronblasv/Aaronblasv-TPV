@@ -20,6 +20,11 @@ class EloquentSale extends Model
         'user_id',
         'ticket_number',
         'value_date',
+        'subtotal',
+        'tax_amount',
+        'line_discount_total',
+        'order_discount_total',
         'total',
+        'refunded_total',
     ];
 }

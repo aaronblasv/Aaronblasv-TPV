@@ -22,5 +22,12 @@ class EloquentSaleLine extends Model
         'quantity',
         'price',
         'tax_percentage',
+        'line_subtotal',
+        'tax_amount',
+        'discount_type',
+        'discount_value',
+        'discount_amount',
+        'line_total',
+        'refunded_quantity',
     ];
 }
