@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Application\GetAuthenticatedUser;
 
 use App\Restaurant\Domain\Interfaces\RestaurantRepositoryInterface;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Table\Application\DeleteTable;
 
 use App\Table\Domain\Exception\TableNotFoundException;

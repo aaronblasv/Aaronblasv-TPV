@@ -44,6 +44,7 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
     public function findById(string $uuid, int $restaurantId): ?OrderLine
     {
         $model = $this->model->newQuery()
+            ->with(['order', 'product', 'user'])
             ->where('uuid', $uuid)
             ->where('restaurant_id', $restaurantId)
             ->first();
@@ -56,6 +57,7 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
         $order = $this->orderModel->newQuery()->where('uuid', $orderUuid)->firstOrFail();
 
         return $this->model->newQuery()
+            ->with(['order', 'product', 'user'])
             ->where('order_id', $order->id)
             ->where('restaurant_id', $restaurantId)
             ->get()
@@ -87,9 +89,15 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
 
     private function toDomain(EloquentOrderLine $model): OrderLine
     {
-        $orderUuid = $this->orderModel->newQuery()->find($model->order_id)->uuid;
-        $productUuid = $this->productModel->newQuery()->find($model->product_id)->uuid;
-        $userUuid = $this->userModel->newQuery()->find($model->user_id)->uuid;
+        $orderUuid = $model->relationLoaded('order')
+            ? $model->order->uuid
+            : $this->orderModel->newQuery()->find($model->order_id)->uuid;
+        $productUuid = $model->relationLoaded('product')
+            ? $model->product->uuid
+            : $this->productModel->newQuery()->find($model->product_id)->uuid;
+        $userUuid = $model->relationLoaded('user')
+            ? $model->user->uuid
+            : $this->userModel->newQuery()->find($model->user_id)->uuid;
 
         return OrderLine::fromPersistence(
             $model->uuid,

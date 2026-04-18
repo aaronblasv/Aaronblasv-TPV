@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Log\Infrastructure\Persistence\Repositories;
 
 use App\Log\Domain\Entity\Log;

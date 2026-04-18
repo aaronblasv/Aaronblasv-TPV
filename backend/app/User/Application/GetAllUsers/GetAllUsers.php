@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Application\GetAllUsers;
 
 use App\User\Domain\Interfaces\UserRepositoryInterface;

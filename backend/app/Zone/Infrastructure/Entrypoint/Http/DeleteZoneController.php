@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Zone\Infrastructure\Entrypoint\Http;
 
 use App\Zone\Application\DeleteZone\DeleteZone;

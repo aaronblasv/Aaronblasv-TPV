@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Family\Application\CreateFamily;
 
 use App\Family\Domain\Entity\Family;

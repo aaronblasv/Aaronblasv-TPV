@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Family\Infrastructure\Entrypoint\Http;
 
 use App\Family\Application\ActivateFamily\ActivateFamily;

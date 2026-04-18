@@ -42,6 +42,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function findById(string $uuid, int $restaurantId): ?Order
     {
         $model = $this->model->newQuery()
+            ->with(['table', 'openedByUser', 'closedByUser'])
             ->where('uuid', $uuid)
             ->where('restaurant_id', $restaurantId)
             ->first();
@@ -105,6 +106,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function findAllOpen(int $restaurantId): array
     {
         return $this->model->newQuery()
+            ->with(['table', 'openedByUser', 'closedByUser'])
             ->where('restaurant_id', $restaurantId)
             ->where('status', 'open')
             ->get()
@@ -114,10 +116,18 @@ class EloquentOrderRepository implements OrderRepositoryInterface
 
     private function toDomain(EloquentOrder $model): Order
     {
-        $tableUuid = $this->tableModel->newQuery()->find($model->table_id)->uuid;
-        $openedByUuid = $this->userModel->newQuery()->find($model->opened_by_user_id)->uuid;
+        $tableUuid = $model->relationLoaded('table')
+            ? $model->table->uuid
+            : $this->tableModel->newQuery()->find($model->table_id)->uuid;
+
+        $openedByUuid = $model->relationLoaded('openedByUser')
+            ? $model->openedByUser->uuid
+            : $this->userModel->newQuery()->find($model->opened_by_user_id)->uuid;
+
         $closedByUuid = $model->closed_by_user_id
-            ? $this->userModel->newQuery()->find($model->closed_by_user_id)->uuid
+            ? ($model->relationLoaded('closedByUser')
+                ? $model->closedByUser?->uuid
+                : $this->userModel->newQuery()->find($model->closed_by_user_id)->uuid)
             : null;
 
         return Order::fromPersistence(

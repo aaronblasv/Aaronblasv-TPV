@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Zone\Domain\Interfaces;
 
 use App\Zone\Domain\Entity\Zone;

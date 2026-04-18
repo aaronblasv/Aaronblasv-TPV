@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Zone\Application\UpdateZone;
 
 use App\Zone\Domain\Entity\Zone;

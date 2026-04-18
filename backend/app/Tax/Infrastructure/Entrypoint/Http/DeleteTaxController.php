@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tax\Infrastructure\Entrypoint\Http;
 
 use App\Tax\Application\DeleteTax\DeleteTax;

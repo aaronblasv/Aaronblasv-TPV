@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tax\Application\UpdateTax;
 
 use App\Tax\Domain\Exception\TaxNotFoundException;

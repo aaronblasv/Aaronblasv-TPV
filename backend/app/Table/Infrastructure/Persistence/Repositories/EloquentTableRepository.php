@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Table\Infrastructure\Persistence\Repositories;
 
 use App\Table\Domain\Entity\Table;

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\CashShift\Infrastructure\Entrypoint\Http;
 
 use App\CashShift\Application\OpenCashShift\OpenCashShift;
-use App\Log\Application\CreateLog\CreateLog;
+use App\Shared\Infrastructure\Http\DispatchesActionLogged;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OpenCashShiftController
 {
+    use DispatchesActionLogged;
+
     public function __construct(
         private OpenCashShift $useCase,
-        private CreateLog $createLog,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -30,7 +31,7 @@ class OpenCashShiftController
             $validated['notes'] ?? null,
         );
 
-        ($this->createLog)(
+        $this->logAction(
             $request->user()->restaurant_id,
             $request->user()->uuid,
             'cash_shift.opened',

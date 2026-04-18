@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Zone\Application\DeleteZone;
 
 use App\Zone\Domain\Exception\ZoneNotFoundException;

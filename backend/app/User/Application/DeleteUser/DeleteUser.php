@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Application\DeleteUser;
 
 use App\User\Domain\Exception\UserNotFoundException;

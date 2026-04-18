@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Family\Infrastructure\Persistence\Repositories;
 
 use App\Family\Domain\Entity\Family;

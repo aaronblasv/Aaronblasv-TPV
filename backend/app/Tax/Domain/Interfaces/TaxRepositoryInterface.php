@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tax\Domain\Interfaces;
 
 use App\Tax\Domain\Entity\Tax;

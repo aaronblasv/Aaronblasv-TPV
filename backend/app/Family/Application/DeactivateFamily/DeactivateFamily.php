@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Family\Application\DeactivateFamily;
 
 use App\Family\Domain\Exception\FamilyNotFoundException;
