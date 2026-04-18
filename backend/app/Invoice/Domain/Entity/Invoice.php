@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Invoice\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\DomainDateTime;

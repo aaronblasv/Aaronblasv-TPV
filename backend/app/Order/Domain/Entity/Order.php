@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Order\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\DomainDateTime;
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Order\Domain\ValueObject\OrderStatus;
 use App\Order\Domain\ValueObject\Diners;
@@ -13,7 +14,7 @@ class Order
 {
     private function __construct(
         private Uuid $uuid,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
         private OrderStatus $status,
         private Uuid $tableId,
         private Uuid $openedByUserId,
@@ -35,7 +36,7 @@ class Order
     ): self {
         return new self(
             $uuid,
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             OrderStatus::open(),
             $tableId,
             $openedByUserId,
@@ -65,7 +66,7 @@ class Order
     ): self {
         return new self(
             Uuid::create($uuid),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             OrderStatus::create($status),
             Uuid::create($tableId),
             Uuid::create($openedByUserId),
@@ -112,6 +113,22 @@ class Order
         $this->discountAmount = self::calculateDiscountAmount($discountType, $discountValue, $baseAmount);
     }
 
+    public function cancel(): void
+    {
+        if (!$this->status->isOpen()) {
+            throw new \DomainException('Only open orders can be cancelled.');
+        }
+        $this->status = OrderStatus::cancelled();
+    }
+
+    public function markAsInvoiced(): void
+    {
+        if (!$this->status->isClosed()) {
+            throw new \DomainException('Only closed orders can be marked as invoiced.');
+        }
+        $this->status = OrderStatus::invoiced();
+    }
+
     public function moveToTable(Uuid $tableId): void
     {
         if (!$this->status->isOpen()) {
@@ -122,7 +139,7 @@ class Order
     }
 
     public function uuid(): Uuid { return $this->uuid; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function status(): OrderStatus { return $this->status; }
     public function tableId(): Uuid { return $this->tableId; }
     public function openedByUserId(): Uuid { return $this->openedByUserId; }

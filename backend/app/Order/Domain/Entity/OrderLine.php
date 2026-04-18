@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Order\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
-use App\Order\Domain\ValueObject\Quantity;
 
 class OrderLine
 {
     private function __construct(
         private Uuid $uuid,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
         private Uuid $orderId,
         private Uuid $productId,
         private Uuid $userId,
@@ -38,7 +38,7 @@ class OrderLine
     ): self {
         return new self(
             Uuid::create($uuid),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             Uuid::create($orderId),
             Uuid::create($productId),
             Uuid::create($userId),
@@ -64,7 +64,7 @@ class OrderLine
         int $discountValue = 0,
         int $discountAmount = 0,
     ): self {
-        return new self($uuid, $restaurantId, $orderId, $productId, $userId, $quantity, $price, $taxPercentage, $discountType, $discountValue, $discountAmount);
+        return new self($uuid, RestaurantId::create($restaurantId), $orderId, $productId, $userId, $quantity, $price, $taxPercentage, $discountType, $discountValue, $discountAmount);
     }
 
     public function updateQuantity(Quantity $quantity): void
@@ -89,7 +89,7 @@ class OrderLine
     }
 
     public function uuid(): Uuid { return $this->uuid; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function orderId(): Uuid { return $this->orderId; }
     public function productId(): Uuid { return $this->productId; }
     public function userId(): Uuid { return $this->userId; }

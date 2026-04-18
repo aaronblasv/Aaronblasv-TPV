@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Table\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
-use App\Table\Domain\ValueObject\TableName;
 
 class Table
 {
@@ -11,7 +13,7 @@ class Table
         private Uuid $uuid,
         private TableName $name,
         private Uuid $zoneId,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
         private ?Uuid $mergedWith = null,
     ) {}
 
@@ -21,7 +23,7 @@ class Table
         Uuid $zoneId,
         int $restaurantId,
     ): self {
-        return new self($uuid, $name, $zoneId, $restaurantId);
+        return new self($uuid, $name, $zoneId, RestaurantId::create($restaurantId));
     }
 
     public static function fromPersistence(
@@ -35,7 +37,7 @@ class Table
             Uuid::create($uuid),
             TableName::create($name),
             Uuid::create($zoneId),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             $mergedWith ? Uuid::create($mergedWith) : null,
         );
     }
@@ -64,6 +66,6 @@ class Table
     public function uuid(): Uuid { return $this->uuid; }
     public function name(): TableName { return $this->name; }
     public function zoneId(): Uuid { return $this->zoneId; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function mergedWith(): ?Uuid { return $this->mergedWith; }
 }

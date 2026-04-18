@@ -6,9 +6,11 @@ namespace App\Order\Domain\ValueObject;
 
 class OrderStatus
 {
-    private const OPEN = 'open';
-    private const CLOSED = 'closed';
-    private const VALID_STATUSES = [self::OPEN, self::CLOSED];
+    public const OPEN = 'open';
+    public const CLOSED = 'closed';
+    public const CANCELLED = 'cancelled';
+    public const INVOICED = 'invoiced';
+    private const VALID_STATUSES = [self::OPEN, self::CLOSED, self::CANCELLED, self::INVOICED];
 
     private function __construct(private string $value) {}
 
@@ -22,6 +24,16 @@ class OrderStatus
         return new self(self::CLOSED);
     }
 
+    public static function cancelled(): self
+    {
+        return new self(self::CANCELLED);
+    }
+
+    public static function invoiced(): self
+    {
+        return new self(self::INVOICED);
+    }
+
     public static function create(string $value): self
     {
         if (!in_array($value, self::VALID_STATUSES)) {
@@ -33,6 +45,21 @@ class OrderStatus
     public function isOpen(): bool
     {
         return $this->value === self::OPEN;
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->value === self::CLOSED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->value === self::CANCELLED;
+    }
+
+    public function isInvoiced(): bool
+    {
+        return $this->value === self::INVOICED;
     }
 
     public function getValue(): string { return $this->value; }

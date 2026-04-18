@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tax\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Tax\Domain\ValueObject\TaxName;
 use App\Tax\Domain\ValueObject\TaxPercentage;
@@ -12,7 +15,7 @@ class Tax
         private Uuid $uuid,
         private TaxName $name,
         private TaxPercentage $percentage,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
     ) {}
 
     public static function dddCreate(
@@ -21,7 +24,7 @@ class Tax
         TaxPercentage $percentage,
         int $restaurantId,
     ): self {
-        return new self($uuid, $name, $percentage, $restaurantId);
+        return new self($uuid, $name, $percentage, RestaurantId::create($restaurantId));
     }
 
     public static function fromPersistence(
@@ -34,7 +37,7 @@ class Tax
             Uuid::create($uuid),
             TaxName::create($name),
             TaxPercentage::create($percentage),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
         );
     }
 
@@ -61,6 +64,6 @@ class Tax
 
     public function restaurantId(): int
     {
-        return $this->restaurantId;
+        return $this->restaurantId->getValue();
     }
 }

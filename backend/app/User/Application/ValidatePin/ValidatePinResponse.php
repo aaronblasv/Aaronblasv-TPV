@@ -10,7 +10,6 @@ final readonly class ValidatePinResponse
 {
     private function __construct(
         public string $uuid,
-        public string $id,
         public string $name,
         public string $role,
         public ?string $imageSrc,
@@ -20,7 +19,6 @@ final readonly class ValidatePinResponse
     {
         return new self(
             uuid: $user->uuid()->getValue(),
-            id: $user->uuid()->getValue(),
             name: $user->name()->getValue(),
             role: $user->role()->getValue(),
             imageSrc: $user->imageSrc(),
@@ -34,7 +32,6 @@ final readonly class ValidatePinResponse
     {
         return [
             'uuid' => $this->uuid,
-            'id' => $this->id,
             'name' => $this->name,
             'role' => $this->role,
             'image_src' => $this->imageSrc,

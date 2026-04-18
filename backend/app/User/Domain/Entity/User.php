@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\DomainDateTime;
 use App\Shared\Domain\ValueObject\Email;
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\User\Domain\ValueObject\PasswordHash;
+use App\User\Domain\ValueObject\Pin;
 use App\User\Domain\ValueObject\UserName;
 use App\User\Domain\ValueObject\UserRole;
 
@@ -17,8 +21,8 @@ class User
         private Email $email,
         private PasswordHash $passwordHash,
         private UserRole $role,
-        private int $restaurantId,
-        private ?string $pin,
+        private RestaurantId $restaurantId,
+        private ?Pin $pin,
         private ?string $imageSrc,
         private DomainDateTime $createdAt,
         private DomainDateTime $updatedAt,
@@ -34,8 +38,8 @@ class User
             $email,
             $passwordHash,
             $role,
-            $restaurantId,
-            str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT),
+            RestaurantId::create($restaurantId),
+            Pin::create(str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT)),
             $imageSrc,
             $now,
             $now,
@@ -68,8 +72,8 @@ class User
             Email::create($email),
             PasswordHash::create($passwordHash),
             UserRole::create($role),
-            $restaurantId,
-            $pin,
+            RestaurantId::create($restaurantId),
+            $pin !== null ? Pin::create($pin) : null,
             $imageSrc,
             DomainDateTime::create($createdAt),
             DomainDateTime::create($updatedAt),
@@ -81,9 +85,11 @@ class User
     public function email(): Email { return $this->email; }
     public function passwordHash(): PasswordHash { return $this->passwordHash; }
     public function role(): UserRole { return $this->role; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
+    public function restaurantIdVO(): RestaurantId { return $this->restaurantId; }
     public function createdAt(): DomainDateTime { return $this->createdAt; }
     public function updatedAt(): DomainDateTime { return $this->updatedAt; }
-    public function pin(): ?string { return $this->pin; }
+    public function pin(): ?string { return $this->pin?->getValue(); }
+    public function pinVO(): ?Pin { return $this->pin; }
     public function imageSrc(): ?string { return $this->imageSrc; }
 }

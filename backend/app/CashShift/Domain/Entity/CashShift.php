@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\CashShift\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 
 class CashShift
 {
     private function __construct(
         private Uuid $uuid,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
         private Uuid $openedByUserId,
         private ?Uuid $closedByUserId,
         private string $status,
@@ -30,7 +31,7 @@ class CashShift
     {
         return new self(
             $uuid,
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             $openedByUserId,
             null,
             'open',
@@ -66,7 +67,7 @@ class CashShift
     ): self {
         return new self(
             Uuid::create($uuid),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             Uuid::create($openedByUserId),
             $closedByUserId ? Uuid::create($closedByUserId) : null,
             $status,
@@ -98,7 +99,7 @@ class CashShift
     }
 
     public function uuid(): Uuid { return $this->uuid; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function openedByUserId(): Uuid { return $this->openedByUserId; }
     public function closedByUserId(): ?Uuid { return $this->closedByUserId; }
     public function status(): string { return $this->status; }

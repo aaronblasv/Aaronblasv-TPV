@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Zone\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Zone\Domain\ValueObject\ZoneName;
 
@@ -10,7 +13,7 @@ class Zone
     private function __construct(
         private Uuid $uuid,
         private ZoneName $name,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
     ) {}
 
     public static function dddCreate(
@@ -18,7 +21,7 @@ class Zone
         ZoneName $name,
         int $restaurantId,
     ): self {
-        return new self($uuid, $name, $restaurantId);
+        return new self($uuid, $name, RestaurantId::create($restaurantId));
     }
 
     public static function fromPersistence(
@@ -29,7 +32,7 @@ class Zone
         return new self(
             Uuid::create($uuid),
             ZoneName::create($name),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
         );
     }
 
@@ -50,6 +53,6 @@ class Zone
 
     public function restaurantId(): int
     {
-        return $this->restaurantId;
+        return $this->restaurantId->getValue();
     }
 }

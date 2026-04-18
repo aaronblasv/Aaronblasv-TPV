@@ -1,10 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Domain\ValueObject;
 
 class UserRole
 {
-    private const VALID_ROLES = ['admin', 'supervisor', 'waiter'];
+    public const ADMIN = 'admin';
+    public const SUPERVISOR = 'supervisor';
+    public const WAITER = 'waiter';
+
+    private const VALID_ROLES = [self::ADMIN, self::SUPERVISOR, self::WAITER];
 
     private function __construct(private string $value) {}
 

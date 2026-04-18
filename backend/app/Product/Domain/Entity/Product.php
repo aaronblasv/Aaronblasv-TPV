@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Product\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
-use App\Product\Domain\ValueObject\ProductName;
 use App\Product\Domain\ValueObject\ProductPrice;
 use App\Product\Domain\ValueObject\ProductStock;
 
@@ -17,7 +19,7 @@ class Product
         private bool $active,
         private Uuid $familyId,
         private Uuid $taxId,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
         private ?string $imageSrc = null,
     ) {}
 
@@ -32,7 +34,7 @@ class Product
         int $restaurantId,
         ?string $imageSrc = null,
     ): self {
-        return new self($uuid, $name, $price, $stock, $active, $familyId, $taxId, $restaurantId, $imageSrc);
+        return new self($uuid, $name, $price, $stock, $active, $familyId, $taxId, RestaurantId::create($restaurantId), $imageSrc);
     }
 
     public static function fromPersistence(
@@ -54,7 +56,7 @@ class Product
             $active,
             Uuid::create($familyId),
             Uuid::create($taxId),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             $imageSrc,
         );
     }
@@ -84,7 +86,7 @@ class Product
     public function active(): bool { return $this->active; }
     public function familyId(): Uuid { return $this->familyId; }
     public function taxId(): Uuid { return $this->taxId; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function imageSrc(): ?string { return $this->imageSrc; }
 
     public function activate(): void

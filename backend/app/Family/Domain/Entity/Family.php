@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Family\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Family\Domain\ValueObject\FamilyName;
 
@@ -11,7 +14,7 @@ class Family
         private Uuid $uuid,
         private FamilyName $name,
         private bool $active,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
     ) {}
 
     public static function dddCreate(
@@ -20,7 +23,7 @@ class Family
         bool $active,
         int $restaurantId,
     ): self {
-        return new self($uuid, $name, $active, $restaurantId);
+        return new self($uuid, $name, $active, RestaurantId::create($restaurantId));
     }
 
     public static function fromPersistence(
@@ -33,7 +36,7 @@ class Family
             Uuid::create($uuid),
             FamilyName::create($name),
             $active,
-            $restaurantId,
+            RestaurantId::create($restaurantId),
         );
     }
 
@@ -70,6 +73,6 @@ class Family
 
     public function restaurantId(): int
     {
-        return $this->restaurantId;
+        return $this->restaurantId->getValue();
     }
 }

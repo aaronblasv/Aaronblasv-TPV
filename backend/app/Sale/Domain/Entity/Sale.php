@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Sale\Domain\Entity;
 
+use App\Shared\Domain\ValueObject\DomainDateTime;
+use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 
 class Sale
 {
     private function __construct(
         private Uuid $uuid,
-        private int $restaurantId,
+        private RestaurantId $restaurantId,
         private Uuid $orderId,
         private Uuid $userId,
         private int $ticketNumber,
-        private \DateTimeImmutable $valueDate,
+        private DomainDateTime $valueDate,
         private int $subtotal,
         private int $taxAmount,
         private int $lineDiscountTotal,
@@ -35,7 +37,7 @@ class Sale
         int $orderDiscountTotal,
         int $total,
     ): self {
-        return new self($uuid, $restaurantId, $orderId, $userId, $ticketNumber, new \DateTimeImmutable(), $subtotal, $taxAmount, $lineDiscountTotal, $orderDiscountTotal, $total, 0);
+        return new self($uuid, RestaurantId::create($restaurantId), $orderId, $userId, $ticketNumber, DomainDateTime::now(), $subtotal, $taxAmount, $lineDiscountTotal, $orderDiscountTotal, $total, 0);
     }
 
     public static function fromPersistence(
@@ -44,7 +46,7 @@ class Sale
         string $orderId,
         string $userId,
         int $ticketNumber,
-        \DateTimeImmutable $valueDate,
+        \DateTimeImmutable|DomainDateTime $valueDate,
         int $subtotal,
         int $taxAmount,
         int $lineDiscountTotal,
@@ -54,11 +56,11 @@ class Sale
     ): self {
         return new self(
             Uuid::create($uuid),
-            $restaurantId,
+            RestaurantId::create($restaurantId),
             Uuid::create($orderId),
             Uuid::create($userId),
             $ticketNumber,
-            $valueDate,
+            $valueDate instanceof DomainDateTime ? $valueDate : DomainDateTime::create($valueDate),
             $subtotal,
             $taxAmount,
             $lineDiscountTotal,
@@ -74,11 +76,11 @@ class Sale
     }
 
     public function uuid(): Uuid { return $this->uuid; }
-    public function restaurantId(): int { return $this->restaurantId; }
+    public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function orderId(): Uuid { return $this->orderId; }
     public function userId(): Uuid { return $this->userId; }
     public function ticketNumber(): int { return $this->ticketNumber; }
-    public function valueDate(): \DateTimeImmutable { return $this->valueDate; }
+    public function valueDate(): DomainDateTime { return $this->valueDate; }
     public function subtotal(): int { return $this->subtotal; }
     public function taxAmount(): int { return $this->taxAmount; }
     public function lineDiscountTotal(): int { return $this->lineDiscountTotal; }
