@@ -59,6 +59,10 @@
 
     <!-- ─── FLOOR AREA ─── -->
     <main class="floor-area">
+      @if (cashShiftAlert) {
+        <div class="cash-shift-alert">{{ cashShiftAlert }}</div>
+      }
+
       <div class="floor-header">
         <h2 class="floor-title">{{ selectedZoneUuid ? getZoneName(selectedZoneUuid) : 'Todas las mesas' }}</h2>
         <div class="legend">
@@ -159,6 +163,22 @@
   [selectedWaiter]="profileWaiter"
   (onValidated)="onProfilePinValidated($event)"
   (onCancel)="onProfilePinCancelled()"
+></app-pin-modal>
+
+<app-waiter-modal
+  [visible]="showBackofficeSupervisorModal"
+  [title]="'Selecciona administrador o supervisor'"
+  [emptyMessage]="'No hay administradores o supervisores disponibles'"
+  [allowedRoles]="['admin', 'supervisor']"
+  (onSelected)="onBackofficeSupervisorSelected($event)"
+  (onCancel)="onBackofficeSupervisorCancelled()"
+></app-waiter-modal>
+
+<app-pin-modal
+  [visible]="showBackofficePinModal"
+  [selectedWaiter]="selectedBackofficeSupervisor"
+  (onValidated)="onBackofficePinValidated($event)"
+  (onCancel)="onBackofficePinCancelled()"
 ></app-pin-modal>
 
 <app-profile-modal

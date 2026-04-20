@@ -1,7 +1,7 @@
 @if (visible) {
   <div class="modal-overlay" (click)="cancel()">
     <div class="modal-content" (click)="$event.stopPropagation()">
-      <h2>Seleccionar camarero</h2>
+      <h2>{{ title }}</h2>
 
       <div class="waiters-grid">
         @for (waiter of waiters; track waiter.uuid) {
@@ -13,7 +13,7 @@
       </div>
 
       @if (waiters.length === 0) {
-        <div class="empty-message">No hay camareros disponibles</div>
+        <div class="empty-message">{{ emptyMessage }}</div>
       }
 
       <button class="btn-cancel" (click)="cancel()">Cancelar</button>

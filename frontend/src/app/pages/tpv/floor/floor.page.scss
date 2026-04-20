@@ -279,6 +279,18 @@ app-floor {
     background: $bg;
   }
 
+  .cash-shift-alert {
+    margin: 16px 24px 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba($red, .35);
+    background: rgba($red, .12);
+    color: #FFB1B1;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: $shadow-card;
+  }
+
   .floor-header {
     display: flex;
     align-items: center;

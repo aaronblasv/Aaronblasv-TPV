@@ -7,6 +7,7 @@ import { AuthService } from '../../../services/api/auth.service';
 import { ZoneService } from '../../../services/api/zone.service';
 import { TableService } from '../../../services/api/table.service';
 import { OrderService } from '../../../services/api/order.service';
+import { CashShiftService } from '../../../services/api/cash-shift.service';
 import { LoggerService } from '../../../services/logger.service';
 import { PinModalComponent } from '../../../components/pin-modal/pin-modal.component';
 import { DinersModalComponent } from '../../../components/diners-modal/diners-modal.component';
@@ -16,6 +17,7 @@ import { Zone } from '../../../types/zone.model';
 import { Table } from '../../../types/table.model';
 import { Order } from '../../../types/order.model';
 import { User } from '../../../types/user.model';
+import { CashShiftSummary } from '../../../types/cash-shift.model';
 
 @Component({
   selector: 'app-floor',
@@ -31,6 +33,7 @@ export class FloorPage implements OnInit, OnDestroy {
   private zoneService = inject(ZoneService);
   private tableService = inject(TableService);
   private orderService = inject(OrderService);
+  private cashShiftService = inject(CashShiftService);
   private logger = inject(LoggerService);
 
   zones: Zone[] = [];
@@ -56,6 +59,8 @@ export class FloorPage implements OnInit, OnDestroy {
   private clockInterval: ReturnType<typeof setInterval> | null = null;
 
   canGoBackoffice = false;
+  currentCashShift: CashShiftSummary | null = null;
+  cashShiftAlert = '';
 
   // Profile modal state
   showProfileWaiterModal = false;
@@ -64,6 +69,9 @@ export class FloorPage implements OnInit, OnDestroy {
   profileUser: User | null = null;
   profileWaiter: User | null = null;
   restaurantName = '';
+  showBackofficeSupervisorModal = false;
+  showBackofficePinModal = false;
+  selectedBackofficeSupervisor: User | null = null;
 
   ngOnInit() {
     this.syncRoleFlags();
@@ -95,7 +103,36 @@ export class FloorPage implements OnInit, OnDestroy {
 
   goToBackoffice() {
     if (!this.canGoBackoffice) return;
+    this.selectedBackofficeSupervisor = null;
+    this.showBackofficeSupervisorModal = true;
+  }
+
+  onBackofficeSupervisorSelected(user: User) {
+    this.selectedBackofficeSupervisor = user;
+    this.showBackofficeSupervisorModal = false;
+    this.showBackofficePinModal = true;
+  }
+
+  onBackofficeSupervisorCancelled() {
+    this.showBackofficeSupervisorModal = false;
+    this.selectedBackofficeSupervisor = null;
+  }
+
+  onBackofficePinValidated(user: User) {
+    this.showBackofficePinModal = false;
+    this.selectedBackofficeSupervisor = null;
+
+    if (user.role !== 'admin' && user.role !== 'supervisor') {
+      this.cashShiftAlert = 'Solo un administrador o supervisor puede acceder al backoffice.';
+      return;
+    }
+
     this.router.navigate(['/dashboard']);
+  }
+
+  onBackofficePinCancelled() {
+    this.showBackofficePinModal = false;
+    this.selectedBackofficeSupervisor = null;
   }
 
   // ─── Profile flow (avatar click) ───
@@ -149,12 +186,14 @@ export class FloorPage implements OnInit, OnDestroy {
       zones: this.zoneService.getAllTpv(),
       tables: this.tableService.getAllTpv(),
       openOrders: this.orderService.getAllOpen(),
+      currentCashShift: this.cashShiftService.getCurrent(),
     }).subscribe({
-      next: ({ zones, tables, openOrders }) => {
+      next: ({ zones, tables, openOrders, currentCashShift }) => {
         this.logger.log('FloorPage: Data loaded —', zones.length, 'zones,', tables.length, 'tables,', openOrders.length, 'open orders');
         this.zones = zones;
         this.tables = tables;
         this.openOrders = openOrders;
+        this.currentCashShift = currentCashShift;
 
         tables.forEach(table => {
           this.logger.log(`  Mesa ${table.name}: ${this.isOccupied(table.uuid) ? 'OCUPADA' : 'LIBRE'}`);
@@ -255,6 +294,14 @@ export class FloorPage implements OnInit, OnDestroy {
       this.onMergeTableClick(table);
       return;
     }
+
+    if (!this.isOccupied(table.uuid) && !this.currentCashShift) {
+      this.cashShiftAlert = 'No se puede comenzar un pedido si la caja esta cerrada.';
+      return;
+    }
+
+    this.cashShiftAlert = '';
+
     this.selectedTable = table;
     this.showWaiterModal = true;
   }
@@ -295,11 +342,15 @@ export class FloorPage implements OnInit, OnDestroy {
     this.showDinersModal = false;
     this.orderService.openOrder(this.selectedTable!.uuid, this.validatedUser!.uuid, diners).subscribe({
       next: () => {
+        this.cashShiftAlert = '';
         this.router.navigate(['/tpv/order', this.selectedTable!.uuid], {
           state: { user: this.validatedUser },
         });
       },
-      error: (err) => this.logger.error('Error opening order:', err),
+      error: (err) => {
+        this.cashShiftAlert = err?.error?.message ?? 'No se pudo abrir la mesa.';
+        this.logger.error('Error opening order:', err);
+      },
     });
   }
 

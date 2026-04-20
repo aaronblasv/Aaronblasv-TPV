@@ -14,6 +14,9 @@ import { User } from '../../types/user.model';
 })
 export class WaiterModalComponent implements OnInit {
   @Input() visible = false;
+  @Input() title = 'Seleccionar camarero';
+  @Input() emptyMessage = 'No hay camareros disponibles';
+  @Input() allowedRoles: string[] = ['staff', 'waiter'];
   @Output() onSelected = new EventEmitter<User>();
   @Output() onCancel = new EventEmitter<void>();
 
@@ -29,7 +32,7 @@ export class WaiterModalComponent implements OnInit {
   loadWaiters() {
     this.userService.getAllTpv().subscribe({
       next: (users) => {
-        this.waiters = users.filter(u => u.role === 'staff' || u.role === 'waiter');
+        this.waiters = users.filter(user => this.allowedRoles.includes(user.role));
       },
       error: (err) => this.logger.error('Error loading waiters:', err),
     });
