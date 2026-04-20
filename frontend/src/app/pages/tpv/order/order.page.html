@@ -251,8 +251,8 @@
         </div>
 
         <div class="order-items">
-          @if (order && order.lines.length) {
-            @for (line of order.lines; track line.uuid) {
+          @if (order?.lines?.length) {
+            @for (line of order?.lines ?? []; track line.uuid) {
               <div class="order-item">
                 <div class="item-qty">{{ line.quantity }}×</div>
                 <span class="item-name">
