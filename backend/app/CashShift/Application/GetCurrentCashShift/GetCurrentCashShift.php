@@ -14,7 +14,7 @@ class GetCurrentCashShift
         private CashShiftSalesReadModelInterface $salesReadModel,
     ) {}
 
-    public function __invoke(int $restaurantId): ?array
+    public function __invoke(int $restaurantId): ?GetCurrentCashShiftResponse
     {
         $cashShift = $this->repository->findOpenByRestaurant($restaurantId);
         if (!$cashShift) {
@@ -23,17 +23,6 @@ class GetCurrentCashShift
 
         $summary = $this->salesReadModel->getWindowSummary($restaurantId, $cashShift->openedAt(), null);
 
-        return [
-            'uuid' => $cashShift->uuid()->getValue(),
-            'status' => $cashShift->status()->value,
-            'opening_cash' => $cashShift->openingCash(),
-            'cash_total' => $summary->cashTotal->getValue(),
-            'card_total' => $summary->cardTotal->getValue(),
-            'bizum_total' => $summary->bizumTotal->getValue(),
-            'refund_total' => $summary->refundTotal->getValue(),
-            'expected_cash' => $summary->expectedCash(\App\Shared\Domain\ValueObject\Money::create($cashShift->openingCash()))->getValue(),
-            'opened_at' => $cashShift->openedAt()->format('Y-m-d H:i:s'),
-            'notes' => $cashShift->notes(),
-        ];
+        return GetCurrentCashShiftResponse::create($cashShift, $summary);
     }
 }

@@ -21,7 +21,7 @@ class OpenCashShift
         private DomainEventBusInterface $domainEventBus,
     ) {}
 
-    public function __invoke(AuditContext $auditContext, int $openingCash, ?string $notes): array
+    public function __invoke(AuditContext $auditContext, int $openingCash, ?string $notes): OpenCashShiftResponse
     {
         return $this->transactionManager->run(function () use ($auditContext, $openingCash, $notes) {
             if ($this->repository->findOpenByRestaurant($auditContext->restaurantId)) {
@@ -38,12 +38,7 @@ class OpenCashShift
 
             $this->repository->save($cashShift);
 
-            $response = [
-                'uuid' => $cashShift->uuid()->getValue(),
-                'status' => $cashShift->status()->value,
-                'opening_cash' => $cashShift->openingCash(),
-                'opened_at' => $cashShift->openedAt()->format('Y-m-d H:i:s'),
-            ];
+            $response = OpenCashShiftResponse::create($cashShift);
 
             $cashShift->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
@@ -51,7 +46,7 @@ class OpenCashShift
                 'cash_shift.opened',
                 'cash_shift',
                 $cashShift->uuid()->getValue(),
-                $response,
+                $response->toArray(),
                 $auditContext->ipAddress,
             ));
 

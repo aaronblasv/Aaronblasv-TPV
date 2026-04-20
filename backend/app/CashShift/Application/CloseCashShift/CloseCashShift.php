@@ -7,6 +7,7 @@ namespace App\CashShift\Application\CloseCashShift;
 use App\CashShift\Domain\Exception\CashShiftNotFoundException;
 use App\CashShift\Domain\Interfaces\CashShiftRepositoryInterface;
 use App\CashShift\Domain\Interfaces\CashShiftSalesReadModelInterface;
+use App\CashShift\Domain\ValueObject\ClosingCashSnapshot;
 use App\Shared\Application\Context\AuditContext;
 use App\Shared\Domain\Event\ActionLogged;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
@@ -22,7 +23,7 @@ class CloseCashShift
         private DomainEventBusInterface $domainEventBus,
     ) {}
 
-    public function __invoke(AuditContext $auditContext, string $cashShiftUuid, int $countedCash, ?string $notes): array
+    public function __invoke(AuditContext $auditContext, string $cashShiftUuid, int $countedCash, ?string $notes): CloseCashShiftResponse
     {
         return $this->transactionManager->run(function () use ($auditContext, $cashShiftUuid, $countedCash, $notes) {
             $cashShift = $this->repository->findByUuid($auditContext->restaurantId, $cashShiftUuid);
@@ -32,7 +33,7 @@ class CloseCashShift
 
             $summary = $this->salesReadModel->getWindowSummary($auditContext->restaurantId, $cashShift->openedAt(), null);
 
-            $cashShift->close(
+            $snapshot = ClosingCashSnapshot::create(
                 Uuid::create($auditContext->userId),
                 $summary->cashTotal->getValue(),
                 $summary->cardTotal->getValue(),
@@ -42,21 +43,11 @@ class CloseCashShift
                 $notes,
             );
 
+            $cashShift->close($snapshot);
+
             $this->repository->update($cashShift);
 
-            $response = [
-                'uuid' => $cashShift->uuid()->getValue(),
-                'status' => $cashShift->status()->value,
-                'opening_cash' => $cashShift->openingCash(),
-                'cash_total' => $cashShift->cashTotal(),
-                'card_total' => $cashShift->cardTotal(),
-                'bizum_total' => $cashShift->bizumTotal(),
-                'refund_total' => $cashShift->refundTotal(),
-                'counted_cash' => $cashShift->countedCash(),
-                'cash_difference' => $cashShift->cashDifference(),
-                'opened_at' => $cashShift->openedAt()->format('Y-m-d H:i:s'),
-                'closed_at' => $cashShift->closedAt()?->format('Y-m-d H:i:s'),
-            ];
+            $response = CloseCashShiftResponse::create($cashShift);
 
             $cashShift->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
@@ -64,7 +55,7 @@ class CloseCashShift
                 'cash_shift.closed',
                 'cash_shift',
                 $cashShiftUuid,
-                $response,
+                $response->toArray(),
                 $auditContext->ipAddress,
             ));
 

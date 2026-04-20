@@ -19,6 +19,7 @@ final readonly class GetOrderByTableResponse
         public int $discountValue,
         public int $discountAmount,
         public string $openedAt,
+        /** @var OrderLine[] */
         public array $lines,
     ) {}
 
@@ -34,17 +35,7 @@ final readonly class GetOrderByTableResponse
             $order->discountValue(),
             $order->discountAmount(),
             $order->openedAt()->format('Y-m-d H:i:s'),
-            array_map(fn(OrderLine $line) => [
-                'uuid'          => $line->uuid()->getValue(),
-                'productId'     => $line->productId()->getValue(),
-                'userId'        => $line->userId()->getValue(),
-                'quantity'      => $line->quantity()->getValue(),
-                'price'         => $line->price(),
-                'taxPercentage' => $line->taxPercentage(),
-                'discountType'  => $line->discountType(),
-                'discountValue' => $line->discountValue(),
-                'discountAmount' => $line->discountAmount(),
-            ], $lines),
+            $lines,
         );
     }
 
@@ -63,16 +54,16 @@ final readonly class GetOrderByTableResponse
             'discount_value' => $this->discountValue,
             'discount_amount' => $this->discountAmount,
             'opened_at' => $this->openedAt,
-            'lines' => array_map(static fn(array $line) => [
-                'uuid' => $line['uuid'] ?? null,
-                'product_id' => $line['productId'] ?? null,
-                'user_id' => $line['userId'] ?? null,
-                'quantity' => $line['quantity'] ?? null,
-                'price' => $line['price'] ?? null,
-                'tax_percentage' => $line['taxPercentage'] ?? null,
-                'discount_type' => $line['discountType'] ?? null,
-                'discount_value' => $line['discountValue'] ?? 0,
-                'discount_amount' => $line['discountAmount'] ?? 0,
+            'lines' => array_map(static fn(OrderLine $line) => [
+                'uuid' => $line->uuid()->getValue(),
+                'product_id' => $line->productId()->getValue(),
+                'user_id' => $line->userId()->getValue(),
+                'quantity' => $line->quantity()->getValue(),
+                'price' => $line->price(),
+                'tax_percentage' => $line->taxPercentage(),
+                'discount_type' => $line->discountType(),
+                'discount_value' => $line->discountValue(),
+                'discount_amount' => $line->discountAmount(),
             ], $this->lines),
         ];
     }

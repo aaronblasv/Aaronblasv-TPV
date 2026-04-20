@@ -17,7 +17,7 @@ class GetCurrentCashShiftController
         $response = ($this->useCase)($request->user()->restaurant_id);
 
         return $response
-            ? new JsonResponse($response)
+            ? new JsonResponse($response->toArray())
             : new JsonResponse(null, 204);
     }
 }

@@ -6,6 +6,7 @@ namespace App\CashShift\Domain\Entity;
 
 use App\CashShift\Domain\Exception\CashShiftAlreadyClosedException;
 use App\CashShift\Domain\Exception\InvalidCashShiftCloseException;
+use App\CashShift\Domain\ValueObject\ClosingCashSnapshot;
 use App\CashShift\Domain\ValueObject\CashShiftStatus;
 use App\Shared\Domain\Interfaces\HasDomainEventsInterface;
 use App\Shared\Domain\Support\RecordsDomainEvents;
@@ -92,13 +93,13 @@ class CashShift implements HasDomainEventsInterface
         );
     }
 
-    public function close(Uuid $closedByUserId, int $cashTotal, int $cardTotal, int $bizumTotal, int $refundTotal, int $countedCash, ?string $notes): void
+    public function close(ClosingCashSnapshot $snapshot): void
     {
         if (!$this->status->isOpen()) {
             throw new CashShiftAlreadyClosedException();
         }
 
-        $countedCashMoney = Money::create($countedCash);
+        $countedCashMoney = Money::create($snapshot->countedCash);
         if ($countedCashMoney->isNegative()) {
             throw new InvalidCashShiftCloseException('Counted cash cannot be negative.');
         }
@@ -108,18 +109,18 @@ class CashShift implements HasDomainEventsInterface
             throw new InvalidCashShiftCloseException('Closed date must be after opened date.');
         }
 
-        $this->closedByUserId = $closedByUserId;
+        $this->closedByUserId = $snapshot->closedByUserId;
         if (!$this->status->canTransitionTo(CashShiftStatus::CLOSED)) {
             throw new CashShiftAlreadyClosedException();
         }
         $this->status = CashShiftStatus::CLOSED;
-        $this->cashTotal = Money::create($cashTotal);
-        $this->cardTotal = Money::create($cardTotal);
-        $this->bizumTotal = Money::create($bizumTotal);
-        $this->refundTotal = Money::create($refundTotal);
+        $this->cashTotal = Money::create($snapshot->cashTotal);
+        $this->cardTotal = Money::create($snapshot->cardTotal);
+        $this->bizumTotal = Money::create($snapshot->bizumTotal);
+        $this->refundTotal = Money::create($snapshot->refundTotal);
         $this->countedCash = $countedCashMoney;
         $this->cashDifference = $countedCashMoney->subtract($this->openingCash->add($this->cashTotal));
-        $this->notes = $notes;
+        $this->notes = $snapshot->notes;
         $this->closedAt = $closedAt;
     }
 
@@ -129,13 +130,13 @@ class CashShift implements HasDomainEventsInterface
     public function openedByUserId(): Uuid { return $this->openedByUserId; }
     public function closedByUserId(): ?Uuid { return $this->closedByUserId; }
     public function status(): CashShiftStatus { return $this->status; }
-    public function openingCash(): int { return $this->openingCash->getValue(); }
-    public function cashTotal(): int { return $this->cashTotal->getValue(); }
-    public function cardTotal(): int { return $this->cardTotal->getValue(); }
-    public function bizumTotal(): int { return $this->bizumTotal->getValue(); }
-    public function refundTotal(): int { return $this->refundTotal->getValue(); }
-    public function countedCash(): ?int { return $this->countedCash?->getValue(); }
-    public function cashDifference(): int { return $this->cashDifference->getValue(); }
+    public function openingCash(): Money { return $this->openingCash; }
+    public function cashTotal(): Money { return $this->cashTotal; }
+    public function cardTotal(): Money { return $this->cardTotal; }
+    public function bizumTotal(): Money { return $this->bizumTotal; }
+    public function refundTotal(): Money { return $this->refundTotal; }
+    public function countedCash(): ?Money { return $this->countedCash; }
+    public function cashDifference(): Money { return $this->cashDifference; }
     public function notes(): ?string { return $this->notes; }
     public function openedAt(): \DateTimeImmutable { return $this->openedAt; }
     public function closedAt(): ?\DateTimeImmutable { return $this->closedAt; }

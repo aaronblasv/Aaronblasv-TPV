@@ -142,6 +142,6 @@ Route::middleware(['auth:sanctum', 'backoffice'])->group(function () {
     Route::post('/sales/{saleUuid}/refunds', CreateRefundController::class);
 
     Route::get('/cash-shifts/current', GetCurrentCashShiftController::class);
-    Route::post('/cash-shifts', OpenCashShiftController::class);
-    Route::post('/cash-shifts/{cashShiftUuid}/close', CloseCashShiftController::class);
+    Route::post('/cash-shifts', OpenCashShiftController::class)->middleware('require.role:admin,supervisor');
+    Route::post('/cash-shifts/{cashShiftUuid}/close', CloseCashShiftController::class)->middleware('require.role:admin,supervisor');
 });

@@ -8,7 +8,6 @@ use App\CashShift\Application\OpenCashShift\OpenCashShift;
 use App\Shared\Application\Context\AuditContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class OpenCashShiftController
 {
@@ -18,10 +17,6 @@ class OpenCashShiftController
 
     public function __invoke(Request $request): JsonResponse
     {
-        if (!in_array($request->user()->role, ['admin', 'supervisor'], true)) {
-            throw new AccessDeniedHttpException('Solo un administrador o supervisor puede abrir la caja.');
-        }
-
         $validated = $request->validate([
             'opening_cash' => 'required|integer|min:0',
             'notes' => 'nullable|string',
@@ -37,6 +32,6 @@ class OpenCashShiftController
             $validated['notes'] ?? null,
         );
 
-        return new JsonResponse($response, 201);
+        return new JsonResponse($response->toArray(), 201);
     }
 }
