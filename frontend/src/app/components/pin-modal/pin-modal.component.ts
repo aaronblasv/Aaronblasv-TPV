@@ -53,7 +53,7 @@ export class PinModalComponent {
     this.orderService.validatePin(this.pin).subscribe({
       next: (user: User) => {
         this.loading = false;
-        if (this.selectedWaiter && user.id !== this.selectedWaiter.id) {
+        if (this.selectedWaiter && user.uuid !== this.selectedWaiter.uuid) {
           this.error = 'El PIN no corresponde a ' + this.selectedWaiter.name;
           this.pin = '';
           return;
