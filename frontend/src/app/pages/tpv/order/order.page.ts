@@ -63,6 +63,7 @@ export class OrderPage implements OnInit {
   showTransferModal = false;
   showDiscountModal = false;
   showChangeDinersModal = false;
+  showKitchenSentModal = false;
   discountModalTitle = 'Descuento';
   discountModalCurrentType: 'amount' | 'percentage' | null = null;
   discountModalCurrentValue = 0;
@@ -74,15 +75,13 @@ export class OrderPage implements OnInit {
   lastTotalAmount = 0;
 
   // Payment view state
-  payMode: 'full' | 'split' | 'custom' = 'full';
+  payMode: 'payment' | 'split' = 'payment';
   payMethod: 'cash' | 'card' | 'bizum' = 'cash';
   payInput = '';
   splitShares: { index: number; amount: number; method: 'cash' | 'card' | 'bizum'; paid: boolean }[] = [];
   payInputDisplay = '0.00';
   payInputCents = 0;
   numpadKeys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'];
-  quickAmounts: number[] = [];
-
   get pendingAmount(): number {
     return Math.max(0, this.orderTotal - this.totalPaid);
   }
@@ -128,19 +127,14 @@ export class OrderPage implements OnInit {
   }
 
   goToPayment() {
-    this.payMode = 'full';
+    this.payMode = 'payment';
     this.currentTab = 'summary';
-  }
-
-  payFull() {
-    if (this.pendingAmount <= 0) return;
-    this.onPaymentRegistered({ amount: this.pendingAmount, method: this.payMethod, description: '' });
   }
 
   payCustomAmount() {
     if (this.payInputCents <= 0 || this.pendingAmount <= 0) return;
     const amount = Math.min(this.payInputCents, this.pendingAmount);
-    this.onPaymentRegistered({ amount, method: this.payMethod, description: 'Pago parcial' });
+    this.onPaymentRegistered({ amount, method: this.payMethod, description: 'Pago' });
     this.payInput = '';
     this.updatePayInputDisplay();
   }
@@ -150,8 +144,8 @@ export class OrderPage implements OnInit {
     this.buildSplitShares();
   }
 
-  switchToCustom() {
-    this.payMode = 'custom';
+  switchToPayment() {
+    this.payMode = 'payment';
     this.payInput = '';
     this.updatePayInputDisplay();
   }
@@ -206,6 +200,7 @@ export class OrderPage implements OnInit {
     this.totalPaid = 0;
     this.lastInvoiceNumber = '';
     this.lastTotalAmount = 0;
+    this.showKitchenSentModal = false;
     this.order = null;
   }
 
@@ -721,7 +716,7 @@ export class OrderPage implements OnInit {
     this.showClosePinModal = false;
     this.closeSelectedWaiter = null;
     this.currentUser = user;
-    this.payMode = 'full';
+    this.payMode = 'payment';
     this.currentTab = 'summary';
   }
 
@@ -804,6 +799,18 @@ export class OrderPage implements OnInit {
   onSuccessModalClose() {
     this.showSuccessModal = false;
     this.router.navigate(['/tpv'], { replaceUrl: true });
+  }
+
+  sendToKitchen() {
+    if (!this.order?.lines?.length) {
+      return;
+    }
+
+    this.showKitchenSentModal = true;
+  }
+
+  closeKitchenSentModal() {
+    this.showKitchenSentModal = false;
   }
 
   onPaymentCancelled() {

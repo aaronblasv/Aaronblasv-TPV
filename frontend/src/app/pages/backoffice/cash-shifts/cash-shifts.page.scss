@@ -1,118 +1,285 @@
-.cash-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.cash-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: #E8ECF1;
+  }
 }
 
-.cash-header {
+.cash-eyebrow {
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7CB9E8;
+}
+
+.cash-subtitle {
+  max-width: 680px;
+  margin: 0.75rem 0 0;
+  color: #8D9BAD;
+  line-height: 1.6;
+}
+
+.cash-hero-status {
+  min-width: 260px;
+  padding: 1.25rem 1.35rem;
+  border-radius: 20px;
+  border: 1px solid #2A3344;
+  background: linear-gradient(180deg, rgba(28, 34, 48, 0.95) 0%, rgba(14, 17, 23, 0.95) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  color: #E8ECF1;
+
+  strong {
+    font-size: 1.2rem;
+  }
+
+  small {
+    color: #8D9BAD;
+  }
+
+  &.is-open {
+    border-color: rgba(107, 203, 139, 0.35);
+    box-shadow: 0 0 0 1px rgba(107, 203, 139, 0.08) inset;
+  }
+}
+
+.cash-hero-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #6B7A8D;
+}
+
+.cash-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr);
+  gap: 1.5rem;
+}
+
+.cash-panel {
+  background: linear-gradient(180deg, rgba(22, 27, 36, 0.96) 0%, rgba(12, 15, 20, 0.96) 100%);
+  border: 1px solid #1E2533;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.cash-panel--open {
+  border-color: rgba(107, 203, 139, 0.25);
+}
+
+.cash-panel--closed {
+  border-color: rgba(124, 185, 232, 0.24);
+}
+
+.cash-panel--side + .cash-panel--side {
+  margin-top: 1.5rem;
+}
+
+.cash-loading {
+  color: #8D9BAD;
+}
+
+.cash-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 
   h2 {
-    margin: 0 0 0.25rem;
-    color: #1F2937;
-    font-size: 1.1rem;
+    margin: 0.5rem 0 0.35rem;
+    color: #E8ECF1;
+    font-size: 1.35rem;
   }
 
   p {
     margin: 0;
-    color: #6B7280;
-    font-size: 0.875rem;
+    color: #8D9BAD;
   }
 }
 
-.status-pill {
-  padding: 0.4rem 0.8rem;
+.cash-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  background: #DCFCE7;
-  color: #15803D;
-  font-size: 0.8rem;
+  background: rgba(107, 203, 139, 0.14);
+  color: #6BCB8B;
+  font-size: 0.78rem;
   font-weight: 700;
 
-  &.closed {
-    background: #E5E7EB;
-    color: #4B5563;
+  &--closed {
+    background: rgba(124, 185, 232, 0.14);
+    color: #7CB9E8;
   }
 }
 
-.cash-grid {
+.cash-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.cash-metric {
+.cash-stat-card {
   padding: 1rem;
-  border-radius: 12px;
-  background: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-
-  span {
-    color: #6B7280;
-    font-size: 0.8rem;
-  }
-
-  strong {
-    color: #111827;
-    font-size: 1rem;
-  }
-}
-
-.cash-form {
-  display: grid;
-  grid-template-columns: 1fr 2fr auto;
-  gap: 1rem;
-  align-items: end;
-
-  &.compact {
-    grid-template-columns: 1fr 2fr auto;
-  }
-}
-
-.form-group {
+  border-radius: 18px;
+  border: 1px solid #2A3344;
+  background: rgba(28, 34, 48, 0.75);
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
 
-  label {
-    color: #374151;
-    font-size: 0.875rem;
+  span {
+    color: #8D9BAD;
+    font-size: 0.82rem;
+  }
+
+  strong {
+    color: #E8ECF1;
+    font-size: 1.1rem;
+  }
+}
+
+.cash-stat-card--highlight {
+  border-color: rgba(124, 185, 232, 0.32);
+  background: rgba(124, 185, 232, 0.1);
+}
+
+.cash-stat-card--accent {
+  border-color: rgba(107, 203, 139, 0.3);
+  background: rgba(107, 203, 139, 0.08);
+}
+
+.cash-action-block,
+.cash-block-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cash-block-title {
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0;
+    color: #E8ECF1;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 0;
+    color: #8D9BAD;
+  }
+}
+
+.cash-form-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cash-form-grid--open {
+  margin-bottom: 1.25rem;
+}
+
+.cash-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+
+  span {
+    font-size: 0.88rem;
     font-weight: 600;
+    color: #D8E0EA;
   }
 
   input,
   textarea {
     width: 100%;
-    border: 1px solid #D1D5DB;
-    border-radius: 10px;
-    padding: 0.75rem 0.9rem;
+    border: 1px solid #2A3344;
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
     font: inherit;
+    color: #E8ECF1;
+    background: #121824;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+}
+
+.cash-field--compact input {
+  min-height: 54px;
+}
+
+.cash-side-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.cash-mini-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid rgba(42, 51, 68, 0.8);
+  color: #8D9BAD;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  strong {
+    color: #E8ECF1;
+    text-align: right;
+  }
+
+  &.is-negative strong {
+    color: #E06060;
   }
 }
 
 .btn-primary {
-  height: 46px;
-  padding: 0 1.2rem;
+  min-height: 48px;
+  padding: 0 1.3rem;
   border: none;
-  border-radius: 10px;
-  background: #4F46E5;
-  color: white;
-  font-weight: 700;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #7CB9E8 0%, #5BA3D9 100%);
+  color: #0C0F14;
+  font-weight: 800;
   cursor: pointer;
 }
 
+@media (max-width: 1100px) {
+  .cash-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
-  .cash-form,
-  .cash-form.compact {
+  .cash-hero {
+    flex-direction: column;
+  }
+
+  .cash-form-grid {
     grid-template-columns: 1fr;
   }
 }

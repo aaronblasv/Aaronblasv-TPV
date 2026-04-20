@@ -57,6 +57,7 @@ export class SidebarComponent implements OnInit {
   }
 
   logout() {
+    this.releaseFocus();
     this.authService.logout().subscribe({
       next: () => {
         this.router.navigate(['/login']);
@@ -68,7 +69,25 @@ export class SidebarComponent implements OnInit {
     });
   }
 
+  onNavItemClick(event: Event) {
+    (event.currentTarget as HTMLElement | null)?.blur();
+    this.releaseFocus();
+    this.toggleSidebar();
+  }
+
   toggleSidebar() {
     this.isOpen = !this.isOpen;
+
+    if (!this.isOpen) {
+      this.releaseFocus();
+    }
+  }
+
+  private releaseFocus() {
+    const activeElement = document.activeElement;
+
+    if (activeElement instanceof HTMLElement) {
+      activeElement.blur();
+    }
   }
 }

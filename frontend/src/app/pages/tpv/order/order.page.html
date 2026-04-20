@@ -82,9 +82,8 @@
 
           <!-- Payment mode tabs -->
           <div class="pay-mode-tabs">
-            <button class="pay-mode-tab" [class.active]="payMode === 'full'" (click)="payMode = 'full'">Completo</button>
+            <button class="pay-mode-tab" [class.active]="payMode === 'payment'" (click)="switchToPayment()">Pago</button>
             <button class="pay-mode-tab" [class.active]="payMode === 'split'" (click)="switchToSplit()">Dividir</button>
-            <button class="pay-mode-tab" [class.active]="payMode === 'custom'" (click)="switchToCustom()">Parcial</button>
           </div>
 
           <!-- Totals bar -->
@@ -105,41 +104,13 @@
             }
           </div>
 
-          <!-- ═══ MODE: FULL ═══ -->
-          @if (payMode === 'full') {
-            <div class="pay-section">
-              <h4 class="pay-section-title">Método de Pago</h4>
-              <div class="summary-pay-methods">
-                <button class="pay-method-card" [class.active]="payMethod === 'card'" (click)="payMethod = 'card'">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                  <span>Tarjeta</span>
-                </button>
-                <button class="pay-method-card" [class.active]="payMethod === 'cash'" (click)="payMethod = 'cash'">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-                  <span>Efectivo</span>
-                </button>
-                <button class="pay-method-card" [class.active]="payMethod === 'bizum'" (click)="payMethod = 'bizum'">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M8 12h8M12 8v8"/></svg>
-                  <span>Bizum</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="pay-spacer"></div>
-
-            <button class="pay-confirm-btn" (click)="payFull()" [disabled]="pendingAmount <= 0">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>
-              Cobrar {{ pendingAmount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}
-            </button>
-          }
-
           <!-- ═══ MODE: SPLIT ═══ -->
           @if (payMode === 'split') {
             <div class="pay-section split-shares">
               @for (share of splitShares; track share.index) {
                 <div class="split-share-card" [class.paid]="share.paid">
                   <div class="split-share-header">
-                    <span class="split-share-label">🧑 Comensal {{ share.index + 1 }}</span>
+                    <span class="split-share-label">Comensal {{ share.index + 1 }}</span>
                     <span class="split-share-amount">{{ share.amount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
                   </div>
                   @if (!share.paid) {
@@ -157,8 +128,8 @@
             </div>
           }
 
-          <!-- ═══ MODE: CUSTOM ═══ -->
-          @if (payMode === 'custom') {
+          <!-- ═══ MODE: PAYMENT ═══ -->
+          @if (payMode === 'payment') {
             <div class="pay-section">
               <h4 class="pay-section-title">Método de Pago</h4>
               <div class="summary-pay-methods">
@@ -185,6 +156,13 @@
               </button>
             </div>
 
+            @if (payMethod === 'cash' && payChange > 0) {
+              <div class="pay-change-card">
+                <span class="pay-change-label">Cambio a devolver</span>
+                <span class="pay-change-value">{{ payChange / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              </div>
+            }
+
             <!-- Numpad -->
             <div class="pay-numpad">
               @for (key of numpadKeys; track key) {
@@ -200,7 +178,7 @@
 
             <button class="pay-confirm-btn" (click)="payCustomAmount()" [disabled]="payInputCents <= 0 || pendingAmount <= 0">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-              Añadir cobro
+              Cobrar
             </button>
           }
 
@@ -313,7 +291,7 @@
 
           <div class="order-actions">
             <button class="btn btn-cancel-order" (click)="cancelOrder()" [disabled]="totalPaid > 0">✕ Cancelar</button>
-            <button class="btn btn-send-kitchen">
+            <button class="btn btn-send-kitchen" (click)="sendToKitchen()" [disabled]="!order?.lines?.length">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Enviar a cocina
             </button>
@@ -344,6 +322,17 @@
       } @else {
         <div class="transfer-empty">No hay mesas libres disponibles para el traslado.</div>
       }
+    </div>
+  </div>
+}
+
+@if (showKitchenSentModal) {
+  <div class="kitchen-modal-overlay" (click)="closeKitchenSentModal()">
+    <div class="kitchen-modal" (click)="$event.stopPropagation()">
+      <div class="kitchen-modal-icon">🍽️</div>
+      <h3>Pedido enviado a cocina</h3>
+      <p>La comanda ya está lista para que el equipo de cocina la prepare.</p>
+      <button class="kitchen-modal-btn" (click)="closeKitchenSentModal()">Aceptar</button>
     </div>
   </div>
 }

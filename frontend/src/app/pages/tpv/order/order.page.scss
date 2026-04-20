@@ -305,7 +305,7 @@ app-order {
   // ── Pay Mode Tabs ──
   .pay-mode-tabs {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     background: $surface;
     border-radius: 10px;
     padding: 4px;
@@ -407,6 +407,36 @@ app-order {
     color: #0C0F14;
     transition: opacity .15s;
     &:hover { opacity: .9; }
+    &:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+  }
+
+  .pay-change-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba($green, .28);
+    background: rgba($green, .1);
+  }
+
+  .pay-change-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    color: rgba($green, .92);
+  }
+
+  .pay-change-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: $green;
   }
 
   // ── PRODUCT GRID (left / main area) ──
@@ -876,6 +906,66 @@ app-order {
     background: $surface;
     color: $text-muted;
     text-align: center;
+  }
+
+  .kitchen-modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, .62);
+    z-index: 1100;
+  }
+
+  .kitchen-modal {
+    width: min(420px, 100%);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid $border;
+    background: linear-gradient(180deg, rgba($card, .98) 0%, rgba($surface, .98) 100%);
+    box-shadow: 0 28px 56px rgba(0, 0, 0, .45);
+    text-align: center;
+
+    h3 {
+      margin: 0 0 .5rem;
+      font-size: 1.25rem;
+      font-family: 'Funnel Sans', sans-serif;
+      color: $text-primary;
+    }
+
+    p {
+      margin: 0;
+      color: $text-muted;
+      line-height: 1.5;
+    }
+  }
+
+  .kitchen-modal-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1rem;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($green, .16);
+    border: 1px solid rgba($green, .24);
+    font-size: 2rem;
+  }
+
+  .kitchen-modal-btn {
+    margin-top: 1.25rem;
+    width: 100%;
+    min-height: 46px;
+    border: none;
+    border-radius: 12px;
+    background: $green;
+    color: $bg;
+    font-size: .95rem;
+    font-weight: 700;
+    cursor: pointer;
   }
 
   // ── Payment View ──
