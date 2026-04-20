@@ -367,13 +367,20 @@ export class OrderPage implements OnInit {
 
     if (this.discountTarget === 'order') {
       this.orderService.updateOrderDiscount(this.order.uuid, result.type, result.value).subscribe({
-        next: () => this.loadOrder(),
+        next: () => {
+          this.applyOrderDiscountLocally(result);
+          this.discountTarget = null;
+          this.loadOrder();
+        },
         error: (err) => this.logger.error('Error updating order discount:', err),
       });
     } else if (this.discountTarget) {
       const line = this.discountTarget as OrderLine;
       this.orderService.updateLineDiscount(this.order.uuid, line.uuid, result.type, result.value).subscribe({
-        next: () => this.loadOrder(),
+        next: () => {
+          this.discountTarget = null;
+          this.loadOrder();
+        },
         error: (err) => this.logger.error('Error updating line discount:', err),
       });
     }
@@ -381,6 +388,7 @@ export class OrderPage implements OnInit {
 
   onDiscountCancelled() {
     this.showDiscountModal = false;
+    this.discountTarget = null;
   }
 
   changeDiners() {
@@ -492,7 +500,7 @@ export class OrderPage implements OnInit {
       timeStyle: 'short',
     }).format(new Date());
 
-    const linesHtml = this.order?.lines.map((line) => {
+    const linesHtml = (this.order?.lines ?? []).map((line) => {
       const productName = this.escapeHtml(this.getProductName(line.product_id));
       const quantity = line.quantity;
       const unitPrice = this.formatCents(line.price);
@@ -674,16 +682,7 @@ export class OrderPage implements OnInit {
   }
 
   getOrderDiscountAmount(): number {
-    if (!this.order?.discount_type || !this.order?.discount_value || !this.order?.lines) {
-      return 0;
-    }
-
-    const baseAmount = this.order.lines.reduce((sum, line) => sum + this.getLineSubtotal(line), 0);
-    if (this.order.discount_type === 'percentage') {
-      return Math.min(baseAmount, Math.round(baseAmount * this.order.discount_value / 100));
-    }
-
-    return Math.min(baseAmount, this.order.discount_value);
+    return this.order?.discount_amount ?? 0;
   }
 
   formatDiscountLabel(discountType: 'amount' | 'percentage' | null, discountValue: number): string {
@@ -694,6 +693,35 @@ export class OrderPage implements OnInit {
     return discountType === 'percentage'
       ? `-${discountValue}%`
       : `-${this.formatCents(discountValue)}`;
+  }
+
+  private applyOrderDiscountLocally(result: DiscountResult) {
+    if (!this.order) {
+      return;
+    }
+
+    if (result.type === null || result.value <= 0) {
+      this.order = {
+        ...this.order,
+        discount_type: null,
+        discount_value: 0,
+        discount_amount: 0,
+      };
+
+      return;
+    }
+
+    const baseAmount = (this.order.lines ?? []).reduce((sum, line) => sum + this.getLineSubtotal(line), 0);
+    const discountAmount = result.type === 'percentage'
+      ? Math.min(baseAmount, Math.round(baseAmount * result.value / 100))
+      : Math.min(baseAmount, result.value);
+
+    this.order = {
+      ...this.order,
+      discount_type: result.type,
+      discount_value: result.value,
+      discount_amount: discountAmount,
+    };
   }
 
   requestClose() {

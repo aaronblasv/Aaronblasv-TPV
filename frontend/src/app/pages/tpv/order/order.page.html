@@ -75,6 +75,22 @@
               <span>{{ orderTotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
             </div>
           </div>
+
+          @if (order) {
+            <div class="summary-discount-actions">
+              <div class="summary-discount-copy">
+                <span class="summary-discount-title">Descuento del pedido</span>
+                <small>
+                  {{ getOrderDiscountAmount() > 0
+                    ? formatDiscountLabel(order.discount_type, order.discount_value)
+                    : 'Sin descuento aplicado' }}
+                </small>
+              </div>
+              <button class="summary-discount-btn" (click)="requestOrderDiscount()">
+                {{ getOrderDiscountAmount() > 0 ? 'Editar descuento' : 'Aplicar descuento' }}
+              </button>
+            </div>
+          }
         </div>
 
         <!-- Right panel: payment -->
@@ -262,7 +278,6 @@
         <div class="order-footer">
           <div class="order-meta-actions">
             @if (order) {
-              <button class="meta-btn" (click)="requestOrderDiscount()">Dto.</button>
               <button class="meta-btn" (click)="requestTransfer()">Mover</button>
               <button class="meta-btn" (click)="printProvisionalTicket()">Imprimir</button>
             }
