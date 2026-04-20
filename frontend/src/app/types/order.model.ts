@@ -18,5 +18,8 @@ export interface Order {
   discount_type: 'amount' | 'percentage' | null;
   discount_value: number;
   discount_amount: number;
-  lines: OrderLine[];
+  subtotal?: number;
+  tax_amount?: number;
+  total?: number;
+  lines?: OrderLine[];
 }

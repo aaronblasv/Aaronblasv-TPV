@@ -100,7 +100,7 @@
                 <span class="status-badge badge-merged">🔗 {{ getMergedNames(table.uuid) }}</span>
               }
               @if (isOccupied(table.uuid)) {
-                <span class="table-amount">€{{ getOrderTotal(table.uuid) / 100 | number:'1.2-2' }}</span>
+                <span class="table-amount">{{ getOrderTotal(table.uuid) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
               } @else {
                 <span class="table-amount empty">Sin pedido</span>
               }
@@ -123,7 +123,7 @@
         <div class="statusbar-stats">
           <div class="stat-item">Mesas ocupadas <span class="stat-value">{{ occupiedTables }}/{{ filteredTables.length }}</span></div>
           <div class="stat-divider"></div>
-          <div class="stat-item">Venta acumulada <span class="stat-value orange">{{ totalSales / 100 | number:'1.2-2' }} €</span></div>
+          <div class="stat-item">Venta acumulada <span class="stat-value orange">{{ totalSales / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span></div>
           <div class="stat-divider"></div>
           <div class="stat-item">Comensales <span class="stat-value">{{ totalDiners }}</span></div>
         </div>

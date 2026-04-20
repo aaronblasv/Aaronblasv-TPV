@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Order\Application\GetAllOpenOrders;
 
 use App\Order\Domain\Entity\Order;
+use App\Order\Domain\Entity\OrderLine;
 
 final readonly class GetAllOpenOrdersResponse
 {
@@ -17,11 +18,20 @@ final readonly class GetAllOpenOrdersResponse
         public ?string $discountType,
         public int $discountValue,
         public int $discountAmount,
+        public int $subtotal,
+        public int $taxAmount,
+        public int $total,
         public string $openedAt,
     ) {}
 
-    public static function create(Order $order): self
+    /**
+     * @param OrderLine[] $lines
+     */
+    public static function create(Order $order, array $lines): self
     {
+        $subtotal = $order->calculateSubtotal($lines);
+        $taxAmount = $order->calculateTaxAmount($lines);
+
         return new self(
             $order->uuid()->getValue(),
             $order->status()->getValue(),
@@ -31,6 +41,9 @@ final readonly class GetAllOpenOrdersResponse
             $order->discountType(),
             $order->discountValue(),
             $order->discountAmount(),
+            $subtotal,
+            $taxAmount,
+            $subtotal + $taxAmount,
             $order->openedAt()->format('Y-m-d H:i:s'),
         );
     }
@@ -49,6 +62,9 @@ final readonly class GetAllOpenOrdersResponse
             'discount_type' => $this->discountType,
             'discount_value' => $this->discountValue,
             'discount_amount' => $this->discountAmount,
+            'subtotal' => $this->subtotal,
+            'tax_amount' => $this->taxAmount,
+            'total' => $this->total,
             'opened_at' => $this->openedAt,
         ];
     }

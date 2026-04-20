@@ -266,9 +266,7 @@ export class FloorPage implements OnInit, OnDestroy {
 
   get totalSales(): number {
     return this.openOrders.reduce((sum, o) => {
-      const lines = o.lines ?? [];
-      const orderTotal = lines.reduce((s, l) => s + l.price * l.quantity - (l.discount_amount ?? 0), 0) - (o.discount_amount ?? 0);
-      return sum + orderTotal;
+      return sum + this.getOrderTotalAmount(o);
     }, 0);
   }
 
@@ -282,11 +280,49 @@ export class FloorPage implements OnInit, OnDestroy {
   getOrderTotal(tableUuid: string): number {
     const order = this.getOrder(tableUuid);
     if (!order) return 0;
+    return this.getOrderTotalAmount(order);
+  }
+
+  private getLineSubtotal(price: number, quantity: number, discountAmount: number | undefined): number {
+    return Math.max(0, price * quantity - (discountAmount ?? 0));
+  }
+
+  private getOrderSubtotalAmount(order: Order): number {
+    const lineSubtotal = (order.lines ?? []).reduce(
+      (sum, line) => sum + this.getLineSubtotal(line.price, line.quantity, line.discount_amount),
+      0,
+    );
+
+    return Math.max(0, lineSubtotal - (order.discount_amount ?? 0));
+  }
+
+  private getOrderTaxAmount(order: Order): number {
     const lines = order.lines ?? [];
-    return lines.reduce((sum, l) => {
-      const lineTotal = l.price * l.quantity - (l.discount_amount ?? 0);
-      return sum + lineTotal;
-    }, 0) - (order.discount_amount ?? 0);
+    const lineSubtotal = lines.reduce(
+      (sum, line) => sum + this.getLineSubtotal(line.price, line.quantity, line.discount_amount),
+      0,
+    );
+
+    if (lineSubtotal <= 0) {
+      return 0;
+    }
+
+    const taxBeforeOrderDiscount = lines.reduce(
+      (sum, line) => sum + this.getLineSubtotal(line.price, line.quantity, line.discount_amount) * line.tax_percentage / 100,
+      0,
+    );
+
+    const ratio = Math.max(0, (lineSubtotal - (order.discount_amount ?? 0)) / lineSubtotal);
+
+    return Math.round(taxBeforeOrderDiscount * ratio);
+  }
+
+  private getOrderTotalAmount(order: Order): number {
+    if (typeof order.total === 'number') {
+      return order.total;
+    }
+
+    return this.getOrderSubtotalAmount(order) + this.getOrderTaxAmount(order);
   }
 
   onTableClick(table: Table) {
