@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Order\Domain\Entity;
 
+use App\Order\Domain\ValueObject\Quantity;
 use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
 
