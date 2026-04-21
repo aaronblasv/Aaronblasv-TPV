@@ -34,20 +34,20 @@ class EloquentZoneRepository implements ZoneRepositoryInterface
         );
     }
 
-    public function findById(string $uuid, int $restaurantId): ?Zone
+    public function findById(string $zoneUuid, int $restaurantId): ?Zone
     {
         $zone = $this->model->newQuery()
-            ->where('uuid', $uuid)
+            ->where('uuid', $zoneUuid)
             ->where('restaurant_id', $restaurantId)
             ->first();
 
         return $zone ? $this->toDomain($zone) : null;
     }
 
-    public function delete(string $id, int $restaurantId): void
+    public function delete(string $zoneUuid, int $restaurantId): void
     {
         $this->model->newQuery()
-            ->where('uuid', $id)
+            ->where('uuid', $zoneUuid)
             ->where('restaurant_id', $restaurantId)
             ->delete();
     }

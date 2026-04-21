@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Sale\Application\GetSaleLines;
 
-use App\Sale\Domain\Interfaces\SaleRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleReportRepositoryInterface;
 
 class GetSaleLines
 {
     public function __construct(
-        private SaleRepositoryInterface $saleRepository,
+        private SaleReportRepositoryInterface $saleRepository,
     ) {}
 
     public function __invoke(int $restaurantId, string $saleUuid): array

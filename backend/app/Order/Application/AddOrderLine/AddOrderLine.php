@@ -7,6 +7,8 @@ namespace App\Order\Application\AddOrderLine;
 use App\Order\Domain\Entity\OrderLine;
 use App\Order\Domain\Exception\CannotAddLinesToClosedOrderException;
 use App\Order\Domain\Exception\OrderNotFoundException;
+use App\Order\Domain\Exception\ProductNotFoundInOrderContextException;
+use App\Order\Domain\Exception\TaxNotFoundForProductException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Order\Domain\ValueObject\Quantity;
@@ -40,12 +42,12 @@ class AddOrderLine
 
         $product = $this->productRepository->findById($productUuid, $restaurantId);
         if (!$product) {
-            throw new \DomainException("Product not found: {$productUuid}");
+            throw new ProductNotFoundInOrderContextException($productUuid, $orderUuid);
         }
 
         $tax = $this->taxRepository->findById($product->taxId()->getValue(), $restaurantId);
         if (!$tax) {
-            throw new \DomainException("Tax not found for product: {$productUuid}");
+            throw new TaxNotFoundForProductException($productUuid);
         }
 
         $line = OrderLine::dddCreate(

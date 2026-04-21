@@ -10,7 +10,7 @@ interface UserRepositoryInterface
 {
     public function save(User $user): void;
 
-    public function findById(string $id, ?int $restaurantId = null): ?User;
+    public function findById(string $userUuid, ?int $restaurantId = null): ?User;
 
     public function findByEmail(string $email): ?User;
 

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain\Interfaces;
 
-interface TransactionManagerInterface
+use App\Shared\Domain\TransactionManagerInterface as SharedTransactionManagerInterface;
+
+interface TransactionManagerInterface extends SharedTransactionManagerInterface
 {
-    public function run(callable $callback): mixed;
 }

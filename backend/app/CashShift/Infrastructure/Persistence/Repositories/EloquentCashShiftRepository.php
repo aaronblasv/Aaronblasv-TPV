@@ -6,6 +6,8 @@ namespace App\CashShift\Infrastructure\Persistence\Repositories;
 
 use App\CashShift\Domain\Entity\CashShift;
 use App\CashShift\Domain\Interfaces\CashShiftRepositoryInterface;
+use App\Shared\Domain\Exception\ConcurrencyException;
+use App\Shared\Domain\ValueObject\DomainDateTime;
 use App\CashShift\Infrastructure\Persistence\Models\EloquentCashShift;
 use App\User\Infrastructure\Persistence\Models\EloquentUser;
 class EloquentCashShiftRepository implements CashShiftRepositoryInterface
@@ -44,9 +46,12 @@ class EloquentCashShiftRepository implements CashShiftRepositoryInterface
             ? $this->userModel->newQuery()->where('uuid', $cashShift->closedByUserId()->getValue())->firstOrFail()->id
             : null;
 
-        $this->model->newQuery()
+        $updatedRows = $this->model->newQuery()
             ->where('uuid', $cashShift->uuid()->getValue())
-            ->firstOrFail()
+            ->when(
+                $cashShift->persistedAt() !== null,
+                fn ($query) => $query->where('updated_at', $cashShift->persistedAt()?->format('Y-m-d H:i:s')),
+            )
             ->update([
                 'closed_by_user_id' => $closedByUserId,
                 'status' => $cashShift->status()->value,
@@ -59,6 +64,18 @@ class EloquentCashShiftRepository implements CashShiftRepositoryInterface
                 'notes' => $cashShift->notes(),
                 'closed_at' => $cashShift->closedAt()?->format('Y-m-d H:i:s'),
             ]);
+
+        if ($updatedRows === 0) {
+            throw ConcurrencyException::forResource('Cash shift', $cashShift->uuid()->getValue());
+        }
+
+        $freshUpdatedAt = $this->model->newQuery()
+            ->where('uuid', $cashShift->uuid()->getValue())
+            ->value('updated_at');
+
+        if ($freshUpdatedAt !== null) {
+            $cashShift->syncPersistedAt(DomainDateTime::create(new \DateTimeImmutable($freshUpdatedAt)));
+        }
     }
 
     public function findOpenByRestaurant(int $restaurantId): ?CashShift
@@ -105,6 +122,7 @@ class EloquentCashShiftRepository implements CashShiftRepositoryInterface
             $model->notes,
             new \DateTimeImmutable($model->opened_at),
             $model->closed_at ? new \DateTimeImmutable($model->closed_at) : null,
+            $model->updated_at ? new \DateTimeImmutable($model->updated_at) : null,
         );
     }
 }

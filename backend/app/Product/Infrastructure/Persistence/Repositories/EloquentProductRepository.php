@@ -55,21 +55,21 @@ class EloquentProductRepository implements ProductRepositoryInterface
         );
     }
 
-    public function findById(string $uuid, int $restaurantId): ?Product
+    public function findById(string $productUuid, int $restaurantId): ?Product
     {
         $product = $this->model->newQuery()
             ->with(['family', 'tax'])
-            ->where('uuid', $uuid)
+            ->where('uuid', $productUuid)
             ->where('restaurant_id', $restaurantId)
             ->first();
 
         return $product ? $this->toDomain($product) : null;
     }
 
-    public function delete(string $id, int $restaurantId): void
+    public function delete(string $productUuid, int $restaurantId): void
     {
         $this->model->newQuery()
-            ->where('uuid', $id)
+            ->where('uuid', $productUuid)
             ->where('restaurant_id', $restaurantId)
             ->delete();
     }

@@ -9,7 +9,8 @@ use App\Refund\Domain\Entity\RefundLine;
 use App\Refund\Domain\Exception\RefundExceedsAvailableQuantityException;
 use App\Refund\Domain\Interfaces\RefundRepositoryInterface;
 use App\Sale\Domain\Exception\SaleNotFoundException;
-use App\Sale\Domain\Interfaces\SaleRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleReadRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
 use App\Shared\Application\Context\AuditContext;
 use App\Shared\Domain\Event\ActionLogged;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
@@ -19,7 +20,8 @@ use App\Shared\Domain\ValueObject\Uuid;
 class CreateRefund
 {
     public function __construct(
-        private SaleRepositoryInterface $saleRepository,
+        private SaleReadRepositoryInterface $saleReadRepository,
+        private SaleWriteRepositoryInterface $saleWriteRepository,
         private RefundRepositoryInterface $refundRepository,
         private TransactionManagerInterface $transactionManager,
         private DomainEventBusInterface $domainEventBus,
@@ -34,12 +36,12 @@ class CreateRefund
         array $requestedLines,
     ): array {
         return $this->transactionManager->run(function () use ($auditContext, $saleUuid, $method, $reason, $refundAll, $requestedLines) {
-            $sale = $this->saleRepository->findByUuid($auditContext->restaurantId, $saleUuid);
+            $sale = $this->saleReadRepository->findByUuid($auditContext->restaurantId, $saleUuid);
             if (!$sale) {
                 throw new SaleNotFoundException($saleUuid);
             }
 
-            $lines = $this->saleRepository->findDomainLinesBySaleUuid($auditContext->restaurantId, $saleUuid);
+            $lines = $this->saleReadRepository->findDomainLinesBySaleUuid($auditContext->restaurantId, $saleUuid);
             $byUuid = [];
             foreach ($lines as $line) {
                 $byUuid[$line->uuid()->getValue()] = $line;
@@ -108,7 +110,7 @@ class CreateRefund
 
             foreach ($refundLinePayload as [$line, $quantity, $lineSubtotal, $lineTax, $lineTotal]) {
                 $line->registerRefund($quantity);
-                $this->saleRepository->updateLine($line);
+                $this->saleWriteRepository->updateLine($line);
 
                 $refundLine = RefundLine::dddCreate(
                     Uuid::generate(),
@@ -124,7 +126,7 @@ class CreateRefund
             }
 
             $sale->registerRefund($total);
-            $this->saleRepository->update($sale);
+            $this->saleWriteRepository->update($sale);
 
             $response = [
                 'uuid' => $refund->uuid()->getValue(),

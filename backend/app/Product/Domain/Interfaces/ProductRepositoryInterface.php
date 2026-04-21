@@ -10,9 +10,9 @@ interface ProductRepositoryInterface
 {
     public function save(Product $product): void;
 
-    public function findById(string $uuid, int $restaurantId): ?Product;
+    public function findById(string $productUuid, int $restaurantId): ?Product;
 
     public function findAll(int $restaurantId): array;
 
-    public function delete(string $id, int $restaurantId): void;
+    public function delete(string $productUuid, int $restaurantId): void;
 }

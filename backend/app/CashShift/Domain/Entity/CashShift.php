@@ -10,6 +10,7 @@ use App\CashShift\Domain\ValueObject\ClosingCashSnapshot;
 use App\CashShift\Domain\ValueObject\CashShiftStatus;
 use App\Shared\Domain\Interfaces\HasDomainEventsInterface;
 use App\Shared\Domain\Support\RecordsDomainEvents;
+use App\Shared\Domain\ValueObject\DomainDateTime;
 use App\Shared\Domain\ValueObject\Money;
 use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
@@ -34,6 +35,7 @@ class CashShift implements HasDomainEventsInterface
         private ?string $notes,
         private \DateTimeImmutable $openedAt,
         private ?\DateTimeImmutable $closedAt,
+        private ?DomainDateTime $persistedAt,
     ) {}
 
     public static function open(Uuid $uuid, int $restaurantId, Uuid $openedByUserId, int $openingCash, ?string $notes): self
@@ -54,6 +56,7 @@ class CashShift implements HasDomainEventsInterface
             $notes,
             new \DateTimeImmutable(),
             null,
+            null,
         );
     }
 
@@ -73,6 +76,7 @@ class CashShift implements HasDomainEventsInterface
         ?string $notes,
         \DateTimeImmutable $openedAt,
         ?\DateTimeImmutable $closedAt,
+        ?\DateTimeImmutable $persistedAt,
     ): self {
         return new self(
             Uuid::create($uuid),
@@ -90,6 +94,7 @@ class CashShift implements HasDomainEventsInterface
             $notes,
             $openedAt,
             $closedAt,
+            $persistedAt ? DomainDateTime::create($persistedAt) : null,
         );
     }
 
@@ -140,4 +145,10 @@ class CashShift implements HasDomainEventsInterface
     public function notes(): ?string { return $this->notes; }
     public function openedAt(): \DateTimeImmutable { return $this->openedAt; }
     public function closedAt(): ?\DateTimeImmutable { return $this->closedAt; }
+    public function persistedAt(): ?DomainDateTime { return $this->persistedAt; }
+
+    public function syncPersistedAt(DomainDateTime $persistedAt): void
+    {
+        $this->persistedAt = $persistedAt;
+    }
 }

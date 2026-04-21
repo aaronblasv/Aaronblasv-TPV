@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Order\Domain\Entity;
 
+use App\Order\Domain\Exception\CannotCancelClosedOrderException;
+use App\Order\Domain\Exception\CannotCloseClosedOrderException;
+use App\Order\Domain\Exception\CannotInvoiceOpenOrderException;
+use App\Order\Domain\Exception\CannotTransferClosedOrderException;
 use App\Order\Domain\ValueObject\Diners;
 use App\Order\Domain\ValueObject\DiscountType;
 use App\Order\Domain\ValueObject\OrderStatus;
 use App\Shared\Domain\Interfaces\HasDomainEventsInterface;
 use App\Shared\Domain\Support\RecordsDomainEvents;
+use App\Shared\Domain\ValueObject\Discount;
 use App\Shared\Domain\ValueObject\DomainDateTime;
 use App\Shared\Domain\ValueObject\Money;
 use App\Shared\Domain\ValueObject\RestaurantId;
@@ -31,6 +36,7 @@ class Order implements HasDomainEventsInterface
         private Money $discountAmount,
         private DomainDateTime $openedAt,
         private ?DomainDateTime $closedAt,
+        private ?DomainDateTime $persistedAt,
     ) {}
 
     public static function dddCreate(
@@ -53,6 +59,7 @@ class Order implements HasDomainEventsInterface
             Money::zero(),
             DomainDateTime::now(),
             null,
+            null,
         );
     }
 
@@ -69,6 +76,7 @@ class Order implements HasDomainEventsInterface
         int $discountAmount,
         \DateTimeImmutable $openedAt,
         ?\DateTimeImmutable $closedAt,
+        ?\DateTimeImmutable $persistedAt,
     ): self {
         return new self(
             Uuid::create($uuid),
@@ -83,13 +91,14 @@ class Order implements HasDomainEventsInterface
             Money::create($discountAmount),
             DomainDateTime::create($openedAt),
             $closedAt ? DomainDateTime::create($closedAt) : null,
+            $persistedAt ? DomainDateTime::create($persistedAt) : null,
         );
     }
 
     public function close(Uuid $closedByUserId): void
     {
         if (!$this->status->isOpen()) {
-            throw new \DomainException('Cannot close an order that is not open.');
+            throw new CannotCloseClosedOrderException($this->uuid->getValue());
         }
         $this->status = OrderStatus::closed();
         $this->closedByUserId = $closedByUserId;
@@ -117,13 +126,13 @@ class Order implements HasDomainEventsInterface
         $discountTypeVO = DiscountType::create($discountType);
         $this->discountType = $discountTypeVO;
         $this->discountValue = $discountValue;
-        $this->discountAmount = Money::create($discountTypeVO?->calculateAmount($baseAmount, $discountValue) ?? 0);
+        $this->discountAmount = Money::create(Discount::calculateAmount($discountTypeVO->value, $discountValue, $baseAmount));
     }
 
     public function cancel(): void
     {
         if (!$this->status->isOpen()) {
-            throw new \DomainException('Only open orders can be cancelled.');
+            throw new CannotCancelClosedOrderException($this->uuid->getValue());
         }
         $this->status = OrderStatus::cancelled();
     }
@@ -131,7 +140,7 @@ class Order implements HasDomainEventsInterface
     public function markAsInvoiced(): void
     {
         if (!$this->status->isClosed()) {
-            throw new \DomainException('Only closed orders can be marked as invoiced.');
+            throw new CannotInvoiceOpenOrderException($this->uuid->getValue());
         }
         $this->status = OrderStatus::invoiced();
     }
@@ -139,7 +148,7 @@ class Order implements HasDomainEventsInterface
     public function moveToTable(Uuid $tableId): void
     {
         if (!$this->status->isOpen()) {
-            throw new \DomainException('Cannot move an order that is not open.');
+            throw new CannotTransferClosedOrderException($this->uuid->getValue());
         }
 
         $this->tableId = $tableId;
@@ -158,6 +167,12 @@ class Order implements HasDomainEventsInterface
     public function discountAmount(): int { return $this->discountAmount->getValue(); }
     public function openedAt(): DomainDateTime { return $this->openedAt; }
     public function closedAt(): ?DomainDateTime { return $this->closedAt; }
+    public function persistedAt(): ?DomainDateTime { return $this->persistedAt; }
+
+    public function syncPersistedAt(DomainDateTime $persistedAt): void
+    {
+        $this->persistedAt = $persistedAt;
+    }
 
     public function calculateSubtotal(array $lines): int
     {
@@ -191,9 +206,10 @@ class Order implements HasDomainEventsInterface
             return 0;
         }
 
-        return $this->discountType->calculateAmount(
-            $this->calculateLinesSubtotalAfterDiscounts($lines),
+        return Discount::calculateAmount(
+            $this->discountType->value,
             $this->discountValue,
+            $this->calculateLinesSubtotalAfterDiscounts($lines),
         );
     }
 

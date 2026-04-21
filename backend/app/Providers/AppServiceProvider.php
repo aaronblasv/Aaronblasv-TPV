@@ -35,8 +35,12 @@ use App\Refund\Domain\Interfaces\RefundRepositoryInterface;
 use App\Refund\Infrastructure\Persistence\Repositories\EloquentRefundRepository;
 use App\Restaurant\Domain\Interfaces\RestaurantRepositoryInterface;
 use App\Restaurant\Infrastructure\Persistence\Repositories\EloquentRestaurantRepository;
-use App\Sale\Domain\Interfaces\SaleRepositoryInterface;
-use App\Sale\Infrastructure\Persistence\Repositories\EloquentSaleRepository;
+use App\Sale\Domain\Interfaces\SaleReadRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleReportRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
+use App\Sale\Infrastructure\Persistence\Repositories\EloquentSaleReadRepository;
+use App\Sale\Infrastructure\Persistence\Repositories\EloquentSaleReportRepository;
+use App\Sale\Infrastructure\Persistence\Repositories\EloquentSaleWriteRepository;
 use App\Table\Domain\Interfaces\TableRepositoryInterface;
 use App\Table\Infrastructure\Persistence\Repositories\EloquentTableRepository;
 use App\Tax\Domain\Interfaces\TaxRepositoryInterface;
@@ -53,10 +57,13 @@ use App\Log\Infrastructure\Listener\WriteLogOnActionLogged;
 use App\Order\Domain\Event\OrderClosed;
 use App\Sale\Application\CreateSaleOnOrderClosed\CreateSaleOnOrderClosed;
 use App\Shared\Domain\Event\ActionLogged;
+use App\Shared\Domain\CacheRepositoryInterface;
+use App\Shared\Domain\TransactionManagerInterface;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
 use App\Shared\Domain\Interfaces\ImageUploaderInterface;
-use App\Shared\Domain\Interfaces\TransactionManagerInterface;
+use App\Shared\Domain\Interfaces\TransactionManagerInterface as LegacyTransactionManagerInterface;
 use App\Shared\Application\UploadImage\UploadImage;
+use App\Shared\Infrastructure\Services\LaravelCacheRepository;
 use App\Shared\Infrastructure\Services\LaravelDomainEventBus;
 use App\Shared\Infrastructure\Services\LaravelTransactionManager;
 use App\Shared\Infrastructure\Services\PublicStorageImageUploader;
@@ -93,7 +100,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrderLineRepositoryInterface::class, EloquentOrderLineRepository::class);
 
         // Sale
-        $this->app->bind(SaleRepositoryInterface::class, EloquentSaleRepository::class);
+        $this->app->bind(SaleWriteRepositoryInterface::class, EloquentSaleWriteRepository::class);
+        $this->app->bind(SaleReadRepositoryInterface::class, EloquentSaleReadRepository::class);
+        $this->app->bind(SaleReportRepositoryInterface::class, EloquentSaleReportRepository::class);
 
         // Payment
         $this->app->bind(PaymentRepositoryInterface::class, EloquentPaymentRepository::class);
@@ -131,8 +140,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Shared
         $this->app->bind(DomainEventBusInterface::class, LaravelDomainEventBus::class);
+        $this->app->bind(CacheRepositoryInterface::class, LaravelCacheRepository::class);
         $this->app->bind(ImageUploaderInterface::class, PublicStorageImageUploader::class);
         $this->app->bind(TransactionManagerInterface::class, LaravelTransactionManager::class);
+        $this->app->bind(LegacyTransactionManagerInterface::class, LaravelTransactionManager::class);
         $this->app->bind(UploadImage::class, fn($app) => new UploadImage(
             $app->make(ImageUploaderInterface::class),
         ));

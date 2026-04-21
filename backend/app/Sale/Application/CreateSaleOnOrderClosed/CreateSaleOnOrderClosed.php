@@ -7,13 +7,13 @@ namespace App\Sale\Application\CreateSaleOnOrderClosed;
 use App\Order\Domain\Event\OrderClosed;
 use App\Sale\Domain\Entity\Sale;
 use App\Sale\Domain\Entity\SaleLine;
-use App\Sale\Domain\Interfaces\SaleRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
 use App\Shared\Domain\ValueObject\Uuid;
 
 class CreateSaleOnOrderClosed
 {
     public function __construct(
-        private SaleRepositoryInterface $saleRepository,
+        private SaleWriteRepositoryInterface $saleRepository,
     ) {}
 
     public function handle(OrderClosed $event): void

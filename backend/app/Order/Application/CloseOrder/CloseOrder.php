@@ -9,7 +9,7 @@ use App\Order\Domain\Exception\CannotCloseOrderWithNoLinesException;
 use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
-use App\Sale\Domain\Interfaces\SaleRepositoryInterface;
+use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
 use App\Shared\Application\Context\AuditContext;
 use App\Shared\Domain\Event\ActionLogged;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
@@ -21,7 +21,7 @@ class CloseOrder
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
         private OrderLineRepositoryInterface $lineRepository,
-        private SaleRepositoryInterface $saleRepository,
+        private SaleWriteRepositoryInterface $saleRepository,
         private TransactionManagerInterface $transactionManager,
         private DomainEventBusInterface $domainEventBus,
     ) {}

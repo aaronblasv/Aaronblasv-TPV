@@ -7,10 +7,11 @@ namespace App\Invoice\Application\GenerateInvoice;
 use App\Invoice\Domain\Entity\Invoice;
 use App\Invoice\Domain\Interfaces\InvoiceOrderDataProviderInterface;
 use App\Invoice\Domain\Interfaces\InvoiceRepositoryInterface;
+use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Shared\Application\Context\AuditContext;
 use App\Shared\Domain\Event\ActionLogged;
+use App\Shared\Domain\TransactionManagerInterface;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
-use App\Shared\Domain\Interfaces\TransactionManagerInterface;
 use App\Shared\Domain\ValueObject\Uuid;
 
 class GenerateInvoice
@@ -28,7 +29,7 @@ class GenerateInvoice
             $orderData = $this->orderDataProvider->getOrderForInvoice($orderUuid, $auditContext->restaurantId);
 
             if (!$orderData) {
-                throw new \DomainException("Order not found: {$orderUuid}");
+                throw new OrderNotFoundException($orderUuid);
             }
 
             $invoiceNumber = $this->invoiceRepository->getNextInvoiceNumber();

@@ -51,9 +51,9 @@ class EloquentUserRepository implements UserRepositoryInterface
             ))->toArray();
     }
 
-    public function findById(string $id, ?int $restaurantId = null): ?User
+    public function findById(string $userUuid, ?int $restaurantId = null): ?User
     {
-        $query = $this->model->newQuery()->where('uuid', $id);
+        $query = $this->model->newQuery()->where('uuid', $userUuid);
 
         if ($restaurantId !== null) {
             $query->where('restaurant_id', $restaurantId);

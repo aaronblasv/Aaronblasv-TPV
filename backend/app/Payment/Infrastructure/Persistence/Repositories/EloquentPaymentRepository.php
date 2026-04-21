@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Payment\Infrastructure\Persistence\Repositories;
 
+use App\Payment\Domain\Exception\PaymentPersistenceRelationNotFoundException;
 use App\Payment\Domain\Entity\Payment;
 use App\Payment\Domain\Interfaces\PaymentRepositoryInterface;
 use App\Payment\Infrastructure\Persistence\Models\EloquentPayment;
@@ -70,12 +71,8 @@ class EloquentPaymentRepository implements PaymentRepositoryInterface
 
     private function toDomain(EloquentPayment $payment): Payment
     {
-        $orderUuid = $payment->relationLoaded('order')
-            ? $payment->order->uuid
-            : $this->orderModel->newQuery()->find($payment->order_id)->uuid;
-        $userUuid = $payment->relationLoaded('user')
-            ? $payment->user->uuid
-            : $this->userModel->newQuery()->find($payment->user_id)->uuid;
+        $orderUuid = $this->resolveOrderUuid($payment);
+        $userUuid = $this->resolveUserUuid($payment);
 
         return Payment::fromPersistence(
             $payment->uuid,
@@ -85,5 +82,41 @@ class EloquentPaymentRepository implements PaymentRepositoryInterface
             $payment->method,
             $payment->description,
         );
+    }
+
+    private function resolveOrderUuid(EloquentPayment $payment): string
+    {
+        if ($payment->relationLoaded('order')) {
+            if ($payment->order === null) {
+                throw PaymentPersistenceRelationNotFoundException::missingOrder($payment->uuid, (int) $payment->order_id);
+            }
+
+            return $payment->order->uuid;
+        }
+
+        $order = $this->orderModel->newQuery()->find($payment->order_id);
+        if ($order === null) {
+            throw PaymentPersistenceRelationNotFoundException::missingOrder($payment->uuid, (int) $payment->order_id);
+        }
+
+        return $order->uuid;
+    }
+
+    private function resolveUserUuid(EloquentPayment $payment): string
+    {
+        if ($payment->relationLoaded('user')) {
+            if ($payment->user === null) {
+                throw PaymentPersistenceRelationNotFoundException::missingUser($payment->uuid, (int) $payment->user_id);
+            }
+
+            return $payment->user->uuid;
+        }
+
+        $user = $this->userModel->newQuery()->find($payment->user_id);
+        if ($user === null) {
+            throw PaymentPersistenceRelationNotFoundException::missingUser($payment->uuid, (int) $payment->user_id);
+        }
+
+        return $user->uuid;
     }
 }

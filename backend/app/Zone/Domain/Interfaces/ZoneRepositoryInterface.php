@@ -10,9 +10,9 @@ interface ZoneRepositoryInterface
 {
     public function save(Zone $zone): void;
 
-    public function findById(string $uuid, int $restaurantId): ?Zone;
+    public function findById(string $zoneUuid, int $restaurantId): ?Zone;
 
     public function findAll(int $restaurantId): array;
 
-    public function delete(string $id, int $restaurantId): void;
+    public function delete(string $zoneUuid, int $restaurantId): void;
 }

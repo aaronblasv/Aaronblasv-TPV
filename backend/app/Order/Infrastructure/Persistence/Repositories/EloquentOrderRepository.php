@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Order\Infrastructure\Persistence\Repositories;
 
+use App\Order\Domain\Exception\OrderPersistenceRelationNotFoundException;
 use App\Order\Domain\Entity\Order;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
+use App\Shared\Domain\Exception\ConcurrencyException;
+use App\Shared\Domain\ValueObject\DomainDateTime;
 use App\Order\Infrastructure\Persistence\Models\EloquentOrder;
 use App\Table\Infrastructure\Persistence\Models\EloquentTable;
 use App\User\Infrastructure\Persistence\Models\EloquentUser;
@@ -68,7 +71,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
 
     public function update(Order $order): void
     {
-        $model = $this->model->newQuery()->where('uuid', $order->uuid()->getValue())->firstOrFail();
+        $this->model->newQuery()->where('uuid', $order->uuid()->getValue())->firstOrFail();
 
         $tableId = $this->tableModel->newQuery()
             ->where('uuid', $order->tableId()->getValue())
@@ -91,7 +94,25 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             $data['closed_at'] = $order->closedAt()->format('Y-m-d H:i:s');
         }
 
-        $model->update($data);
+        $updatedRows = $this->model->newQuery()
+            ->where('uuid', $order->uuid()->getValue())
+            ->when(
+                $order->persistedAt() !== null,
+                fn ($query) => $query->where('updated_at', $order->persistedAt()?->format('Y-m-d H:i:s')),
+            )
+            ->update($data);
+
+        if ($updatedRows === 0) {
+            throw ConcurrencyException::forResource('Order', $order->uuid()->getValue());
+        }
+
+        $freshUpdatedAt = $this->model->newQuery()
+            ->where('uuid', $order->uuid()->getValue())
+            ->value('updated_at');
+
+        if ($freshUpdatedAt !== null) {
+            $order->syncPersistedAt(DomainDateTime::create(new \DateTimeImmutable($freshUpdatedAt)));
+        }
     }
 
     public function delete(string $uuid, int $restaurantId): void
@@ -116,19 +137,9 @@ class EloquentOrderRepository implements OrderRepositoryInterface
 
     private function toDomain(EloquentOrder $model): Order
     {
-        $tableUuid = $model->relationLoaded('table')
-            ? $model->table->uuid
-            : $this->tableModel->newQuery()->find($model->table_id)->uuid;
-
-        $openedByUuid = $model->relationLoaded('openedByUser')
-            ? $model->openedByUser->uuid
-            : $this->userModel->newQuery()->find($model->opened_by_user_id)->uuid;
-
-        $closedByUuid = $model->closed_by_user_id
-            ? ($model->relationLoaded('closedByUser')
-                ? $model->closedByUser?->uuid
-                : $this->userModel->newQuery()->find($model->closed_by_user_id)->uuid)
-            : null;
+        $tableUuid = $this->resolveTableUuid($model);
+        $openedByUuid = $this->resolveOpenedByUserUuid($model);
+        $closedByUuid = $this->resolveClosedByUserUuid($model);
 
         return Order::fromPersistence(
             $model->uuid,
@@ -143,6 +154,65 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             (int) $model->discount_amount,
             new \DateTimeImmutable($model->opened_at),
             $model->closed_at ? new \DateTimeImmutable($model->closed_at) : null,
+            $model->updated_at ? new \DateTimeImmutable($model->updated_at) : null,
         );
+    }
+
+    private function resolveTableUuid(EloquentOrder $model): string
+    {
+        if ($model->relationLoaded('table')) {
+            if ($model->table === null) {
+                throw OrderPersistenceRelationNotFoundException::missingTable($model->uuid, (int) $model->table_id);
+            }
+
+            return $model->table->uuid;
+        }
+
+        $table = $this->tableModel->newQuery()->find($model->table_id);
+        if ($table === null) {
+            throw OrderPersistenceRelationNotFoundException::missingTable($model->uuid, (int) $model->table_id);
+        }
+
+        return $table->uuid;
+    }
+
+    private function resolveOpenedByUserUuid(EloquentOrder $model): string
+    {
+        if ($model->relationLoaded('openedByUser')) {
+            if ($model->openedByUser === null) {
+                throw OrderPersistenceRelationNotFoundException::missingOpenedByUser($model->uuid, (int) $model->opened_by_user_id);
+            }
+
+            return $model->openedByUser->uuid;
+        }
+
+        $user = $this->userModel->newQuery()->find($model->opened_by_user_id);
+        if ($user === null) {
+            throw OrderPersistenceRelationNotFoundException::missingOpenedByUser($model->uuid, (int) $model->opened_by_user_id);
+        }
+
+        return $user->uuid;
+    }
+
+    private function resolveClosedByUserUuid(EloquentOrder $model): ?string
+    {
+        if ($model->closed_by_user_id === null) {
+            return null;
+        }
+
+        if ($model->relationLoaded('closedByUser')) {
+            if ($model->closedByUser === null) {
+                throw OrderPersistenceRelationNotFoundException::missingClosedByUser($model->uuid, (int) $model->closed_by_user_id);
+            }
+
+            return $model->closedByUser->uuid;
+        }
+
+        $user = $this->userModel->newQuery()->find($model->closed_by_user_id);
+        if ($user === null) {
+            throw OrderPersistenceRelationNotFoundException::missingClosedByUser($model->uuid, (int) $model->closed_by_user_id);
+        }
+
+        return $user->uuid;
     }
 }
