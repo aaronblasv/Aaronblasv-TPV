@@ -64,6 +64,7 @@ final readonly class GetOrderByTableResponse
                 'discount_type' => $line->discountType(),
                 'discount_value' => $line->discountValue(),
                 'discount_amount' => $line->discountAmount(),
+                'sent_to_kitchen' => $line->isSentToKitchen(),
             ], $this->lines),
         ];
     }

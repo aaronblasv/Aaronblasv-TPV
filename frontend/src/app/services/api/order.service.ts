@@ -51,6 +51,10 @@ export class OrderService {
     });
   }
 
+  sendToKitchen(orderUuid: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/orders/${orderUuid}/send-to-kitchen`, {});
+  }
+
   updateLineDiscount(orderUuid: string, lineUuid: string, discountType: 'amount' | 'percentage' | null, discountValue: number): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/orders/${orderUuid}/lines/${lineUuid}/discount`, {
       discount_type: discountType,

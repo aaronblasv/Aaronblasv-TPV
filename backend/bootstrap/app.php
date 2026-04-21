@@ -1,6 +1,7 @@
 <?php
 
 use App\Shared\Domain\Exception\BusinessRuleViolationException;
+use App\Shared\Domain\Exception\ConcurrencyException;
 use App\Shared\Domain\Exception\NotFoundException;
 use App\Shared\Domain\Exception\UnauthorizedException;
 use Illuminate\Foundation\Application;
@@ -29,6 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (BusinessRuleViolationException $e): JsonResponse {
             return new JsonResponse(['message' => $e->getMessage()], 422);
+        });
+
+        $exceptions->render(function (ConcurrencyException $e): JsonResponse {
+            return new JsonResponse(['message' => $e->getMessage()], 409);
         });
 
         $exceptions->render(function (UnauthorizedException $e): JsonResponse {

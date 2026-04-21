@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Order\Infrastructure\Persistence\Repositories;
 
+use App\Order\Domain\Exception\OrderLinePersistenceRelationNotFoundException;
 use App\Order\Domain\Entity\OrderLine;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Order\Infrastructure\Persistence\Models\EloquentOrderLine;
 use App\Order\Infrastructure\Persistence\Models\EloquentOrder;
 use App\Product\Infrastructure\Persistence\Models\EloquentProduct;
 use App\User\Infrastructure\Persistence\Models\EloquentUser;
+use Illuminate\Support\Facades\Schema;
 
 class EloquentOrderLineRepository implements OrderLineRepositoryInterface
 {
+    private ?bool $hasSentToKitchenAtColumn = null;
+
     public function __construct(
         private EloquentOrderLine $model,
         private EloquentOrder $orderModel,
@@ -26,7 +30,7 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
         $productId = $this->productModel->newQuery()->where('uuid', $line->productId()->getValue())->firstOrFail()->id;
         $userId = $this->userModel->newQuery()->where('uuid', $line->userId()->getValue())->firstOrFail()->id;
 
-        $this->model->newQuery()->create([
+        $attributes = [
             'uuid'           => $line->uuid()->getValue(),
             'restaurant_id'  => $line->restaurantId(),
             'order_id'       => $orderId,
@@ -38,7 +42,13 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
             'discount_type'  => $line->discountType(),
             'discount_value' => $line->discountValue(),
             'discount_amount' => $line->discountAmount(),
-        ]);
+        ];
+
+        if ($this->supportsSentToKitchenAtColumn()) {
+            $attributes['sent_to_kitchen_at'] = $line->sentToKitchenAt()?->format('Y-m-d H:i:s');
+        }
+
+        $this->model->newQuery()->create($attributes);
     }
 
     public function findById(string $uuid, int $restaurantId): ?OrderLine
@@ -67,15 +77,22 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
 
     public function update(OrderLine $line): void
     {
+        $attributes = [
+            'order_id' => $this->orderModel->newQuery()->where('uuid', $line->orderId()->getValue())->firstOrFail()->id,
+            'quantity' => $line->quantity()->getValue(),
+            'discount_type' => $line->discountType(),
+            'discount_value' => $line->discountValue(),
+            'discount_amount' => $line->discountAmount(),
+        ];
+
+        if ($this->supportsSentToKitchenAtColumn()) {
+            $attributes['sent_to_kitchen_at'] = $line->sentToKitchenAt()?->format('Y-m-d H:i:s');
+        }
+
         $this->model->newQuery()
             ->where('uuid', $line->uuid()->getValue())
             ->firstOrFail()
-            ->update([
-                'quantity' => $line->quantity()->getValue(),
-                'discount_type' => $line->discountType(),
-                'discount_value' => $line->discountValue(),
-                'discount_amount' => $line->discountAmount(),
-            ]);
+            ->update($attributes);
     }
 
     public function delete(string $uuid, int $restaurantId): void
@@ -89,15 +106,9 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
 
     private function toDomain(EloquentOrderLine $model): OrderLine
     {
-        $orderUuid = $model->relationLoaded('order')
-            ? $model->order->uuid
-            : $this->orderModel->newQuery()->find($model->order_id)->uuid;
-        $productUuid = $model->relationLoaded('product')
-            ? $model->product->uuid
-            : $this->productModel->newQuery()->find($model->product_id)->uuid;
-        $userUuid = $model->relationLoaded('user')
-            ? $model->user->uuid
-            : $this->userModel->newQuery()->find($model->user_id)->uuid;
+        $orderUuid = $this->resolveOrderUuid($model);
+        $productUuid = $this->resolveProductUuid($model);
+        $userUuid = $this->resolveUserUuid($model);
 
         return OrderLine::fromPersistence(
             $model->uuid,
@@ -111,6 +122,68 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
             $model->discount_type,
             (int) $model->discount_value,
             (int) $model->discount_amount,
+            $this->supportsSentToKitchenAtColumn() && $model->sent_to_kitchen_at
+                ? new \DateTimeImmutable($model->sent_to_kitchen_at)
+                : null,
         );
+    }
+
+    private function supportsSentToKitchenAtColumn(): bool
+    {
+        return $this->hasSentToKitchenAtColumn ??= Schema::hasColumn($this->model->getTable(), 'sent_to_kitchen_at');
+    }
+
+    private function resolveOrderUuid(EloquentOrderLine $model): string
+    {
+        if ($model->relationLoaded('order')) {
+            if ($model->order === null) {
+                throw OrderLinePersistenceRelationNotFoundException::missingOrder($model->uuid, (int) $model->order_id);
+            }
+
+            return $model->order->uuid;
+        }
+
+        $order = $this->orderModel->newQuery()->find($model->order_id);
+        if ($order === null) {
+            throw OrderLinePersistenceRelationNotFoundException::missingOrder($model->uuid, (int) $model->order_id);
+        }
+
+        return $order->uuid;
+    }
+
+    private function resolveProductUuid(EloquentOrderLine $model): string
+    {
+        if ($model->relationLoaded('product')) {
+            if ($model->product === null) {
+                throw OrderLinePersistenceRelationNotFoundException::missingProduct($model->uuid, (int) $model->product_id);
+            }
+
+            return $model->product->uuid;
+        }
+
+        $product = $this->productModel->newQuery()->find($model->product_id);
+        if ($product === null) {
+            throw OrderLinePersistenceRelationNotFoundException::missingProduct($model->uuid, (int) $model->product_id);
+        }
+
+        return $product->uuid;
+    }
+
+    private function resolveUserUuid(EloquentOrderLine $model): string
+    {
+        if ($model->relationLoaded('user')) {
+            if ($model->user === null) {
+                throw OrderLinePersistenceRelationNotFoundException::missingUser($model->uuid, (int) $model->user_id);
+            }
+
+            return $model->user->uuid;
+        }
+
+        $user = $this->userModel->newQuery()->find($model->user_id);
+        if ($user === null) {
+            throw OrderLinePersistenceRelationNotFoundException::missingUser($model->uuid, (int) $model->user_id);
+        }
+
+        return $user->uuid;
     }
 }

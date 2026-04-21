@@ -8,6 +8,8 @@ use App\Order\Domain\ValueObject\DiscountType;
 use App\Order\Domain\ValueObject\Quantity;
 use App\Shared\Domain\Interfaces\HasDomainEventsInterface;
 use App\Shared\Domain\Support\RecordsDomainEvents;
+use App\Shared\Domain\ValueObject\Discount;
+use App\Shared\Domain\ValueObject\DomainDateTime;
 use App\Shared\Domain\ValueObject\Money;
 use App\Shared\Domain\ValueObject\RestaurantId;
 use App\Shared\Domain\ValueObject\Uuid;
@@ -28,6 +30,7 @@ class OrderLine implements HasDomainEventsInterface
         private ?DiscountType $discountType,
         private int $discountValue,
         private Money $discountAmount,
+        private ?DomainDateTime $sentToKitchenAt,
     ) {}
 
     public static function fromPersistence(
@@ -42,6 +45,7 @@ class OrderLine implements HasDomainEventsInterface
         ?string $discountType,
         int $discountValue,
         int $discountAmount,
+        ?\DateTimeImmutable $sentToKitchenAt,
     ): self {
         return new self(
             Uuid::create($uuid),
@@ -55,6 +59,7 @@ class OrderLine implements HasDomainEventsInterface
             DiscountType::create($discountType),
             $discountValue,
             Money::create($discountAmount),
+            $sentToKitchenAt ? DomainDateTime::create($sentToKitchenAt) : null,
         );
     }
 
@@ -70,8 +75,14 @@ class OrderLine implements HasDomainEventsInterface
         ?string $discountType = null,
         int $discountValue = 0,
         int $discountAmount = 0,
+        ?DomainDateTime $sentToKitchenAt = null,
     ): self {
-        return new self($uuid, RestaurantId::create($restaurantId), $orderId, $productId, $userId, $quantity, Money::create($price), $taxPercentage, DiscountType::create($discountType), $discountValue, Money::create($discountAmount));
+        return new self($uuid, RestaurantId::create($restaurantId), $orderId, $productId, $userId, $quantity, Money::create($price), $taxPercentage, DiscountType::create($discountType), $discountValue, Money::create($discountAmount), $sentToKitchenAt);
+    }
+
+    public function moveToOrder(Uuid $orderId): void
+    {
+        $this->orderId = $orderId;
     }
 
     public function updateQuantity(Quantity $quantity): void
@@ -95,6 +106,15 @@ class OrderLine implements HasDomainEventsInterface
         $this->recalculateDiscountAmount();
     }
 
+    public function markSentToKitchen(): void
+    {
+        if ($this->sentToKitchenAt !== null) {
+            return;
+        }
+
+        $this->sentToKitchenAt = DomainDateTime::now();
+    }
+
     public function id(): Uuid { return $this->uuid; }
     public function uuid(): Uuid { return $this->id(); }
     public function restaurantId(): int { return $this->restaurantId->getValue(); }
@@ -107,6 +127,8 @@ class OrderLine implements HasDomainEventsInterface
     public function discountType(): ?string { return $this->discountType?->value; }
     public function discountValue(): int { return $this->discountValue; }
     public function discountAmount(): int { return $this->discountAmount->getValue(); }
+    public function sentToKitchenAt(): ?DomainDateTime { return $this->sentToKitchenAt; }
+    public function isSentToKitchen(): bool { return $this->sentToKitchenAt !== null; }
     public function subtotal(): int { return $this->price->getValue() * $this->quantity->getValue(); }
     public function subtotalAfterDiscount(): int { return max(0, $this->subtotal() - $this->discountAmount->getValue()); }
     public function taxAmount(): int { return (int) round($this->subtotalAfterDiscount() * $this->taxPercentage / 100); }
@@ -121,6 +143,6 @@ class OrderLine implements HasDomainEventsInterface
         }
 
         $baseAmount = $this->subtotal();
-        $this->discountAmount = Money::create($this->discountType->calculateAmount($baseAmount, $this->discountValue));
+        $this->discountAmount = Money::create(Discount::calculateAmount($this->discountType->value, $this->discountValue, $baseAmount));
     }
 }

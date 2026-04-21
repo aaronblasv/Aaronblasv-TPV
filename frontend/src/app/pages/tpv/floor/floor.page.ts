@@ -403,25 +403,42 @@ export class FloorPage implements OnInit, OnDestroy {
     this.mergeMode = true;
     this.mergeParent = null;
     this.mergeSelected = new Set();
+    this.cashShiftAlert = 'Selecciona primero una mesa con pedido abierto y luego solo mesas vacías.';
   }
 
   cancelMergeMode() {
     this.mergeMode = false;
     this.mergeParent = null;
     this.mergeSelected = new Set();
+    this.cashShiftAlert = '';
   }
 
   onMergeTableClick(table: Table) {
     if (!this.mergeParent) {
+      if (!this.isOccupied(table.uuid)) {
+        this.cashShiftAlert = 'La mesa principal debe tener un pedido abierto.';
+        return;
+      }
+
+      this.cashShiftAlert = 'Ahora selecciona solo mesas vacías para unirlas a la mesa abierta.';
       this.mergeParent = table;
       return;
     }
     if (table.uuid === this.mergeParent.uuid) return;
 
+    if (this.isOccupied(table.uuid)) {
+      this.cashShiftAlert = 'No se pueden unir dos o más mesas con pedido abierto.';
+      return;
+    }
+
     if (this.mergeSelected.has(table.uuid)) {
       this.mergeSelected.delete(table.uuid);
+      if (this.mergeSelected.size === 0) {
+        this.cashShiftAlert = 'Selecciona al menos una mesa vacía para completar la unión.';
+      }
     } else {
       this.mergeSelected.add(table.uuid);
+      this.cashShiftAlert = '';
     }
   }
 
@@ -430,14 +447,38 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   confirmMerge() {
-    if (!this.mergeParent || this.mergeSelected.size === 0) return;
+    if (!this.mergeParent) {
+      this.cashShiftAlert = 'Selecciona una mesa con pedido abierto.';
+      return;
+    }
+
+    if (!this.isOccupied(this.mergeParent.uuid)) {
+      this.cashShiftAlert = 'La mesa principal debe tener un pedido abierto.';
+      return;
+    }
+
+    if (this.mergeSelected.size === 0) {
+      this.cashShiftAlert = 'Selecciona al menos una mesa vacía para unir.';
+      return;
+    }
+
+    const hasOccupiedChild = Array.from(this.mergeSelected).some((tableUuid) => this.isOccupied(tableUuid));
+    if (hasOccupiedChild) {
+      this.cashShiftAlert = 'Solo se puede unir una mesa con pedido abierto con mesas vacías.';
+      return;
+    }
+
     const childUuids = Array.from(this.mergeSelected);
     this.tableService.mergeTables(this.mergeParent.uuid, childUuids).subscribe({
       next: () => {
+        this.cashShiftAlert = '';
         this.cancelMergeMode();
         this.loadData();
       },
-      error: (err) => this.logger.error('Error merging tables:', err),
+      error: (err) => {
+        this.cashShiftAlert = err?.error?.message ?? 'No se pudieron unir las mesas.';
+        this.logger.error('Error merging tables:', err);
+      },
     });
   }
 

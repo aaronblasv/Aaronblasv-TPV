@@ -82,6 +82,8 @@ export class OrderPage implements OnInit {
   payInputDisplay = '0.00';
   payInputCents = 0;
   numpadKeys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'];
+  private locallySentToKitchenLineIds = new Set<string>();
+
   get pendingAmount(): number {
     return Math.max(0, this.orderTotal - this.totalPaid);
   }
@@ -202,6 +204,7 @@ export class OrderPage implements OnInit {
     this.lastTotalAmount = 0;
     this.showKitchenSentModal = false;
     this.order = null;
+    this.locallySentToKitchenLineIds.clear();
   }
 
   loadData() {
@@ -233,7 +236,13 @@ export class OrderPage implements OnInit {
           this.router.navigate(['/tpv']);
           return;
         }
-        this.order = order;
+        this.order = {
+          ...order,
+          lines: (order.lines ?? []).map((line) => ({
+            ...line,
+            sent_to_kitchen: line.sent_to_kitchen || this.locallySentToKitchenLineIds.has(line.uuid),
+          })),
+        };
       },
       error: () => {
         this.router.navigate(['/tpv']);
@@ -244,6 +253,14 @@ export class OrderPage implements OnInit {
   get filteredProducts(): Product[] {
     if (!this.selectedFamilyUuid) return this.products;
     return this.products.filter(p => p.family_id === this.selectedFamilyUuid);
+  }
+
+  get summaryOrderLines(): OrderLine[] {
+    return this.order?.lines ?? [];
+  }
+
+  get pendingOrderLines(): OrderLine[] {
+    return this.summaryOrderLines.filter(line => !line.sent_to_kitchen);
   }
 
   selectFamily(uuid: string | null) {
@@ -264,7 +281,7 @@ export class OrderPage implements OnInit {
   }
 
   get totalItems(): number {
-    return this.order?.lines?.reduce((sum, l) => sum + l.quantity, 0) ?? 0;
+    return this.pendingOrderLines.reduce((sum, line) => sum + line.quantity, 0);
   }
 
   getLineSubtotal(line: OrderLine): number {
@@ -277,6 +294,18 @@ export class OrderPage implements OnInit {
 
   getLineTotal(line: OrderLine): number {
     return this.getLineSubtotal(line) + this.getLineTax(line);
+  }
+
+  get pendingSubtotal(): number {
+    return this.pendingOrderLines.reduce((sum, line) => sum + this.getLineSubtotal(line), 0);
+  }
+
+  get pendingTax(): number {
+    return this.pendingOrderLines.reduce((sum, line) => sum + this.getLineTax(line), 0);
+  }
+
+  get pendingTotal(): number {
+    return this.pendingSubtotal + this.pendingTax;
   }
 
   get orderSubtotal(): number {
@@ -300,7 +329,7 @@ export class OrderPage implements OnInit {
   }
 
   addProduct(product: Product) {
-    const existingLine = this.order?.lines?.find(l => l.product_id === product.uuid);
+    const existingLine = this.pendingOrderLines.find(line => line.product_id === product.uuid);
 
     if (existingLine) {
       const newQty = existingLine.quantity + 1;
@@ -830,11 +859,30 @@ export class OrderPage implements OnInit {
   }
 
   sendToKitchen() {
-    if (!this.order?.lines?.length) {
+    if (!this.order?.uuid || this.pendingOrderLines.length === 0) {
       return;
     }
 
-    this.showKitchenSentModal = true;
+    const sentLineIds = this.pendingOrderLines.map((line) => line.uuid);
+
+    this.orderService.sendToKitchen(this.order.uuid).subscribe({
+      next: () => {
+        sentLineIds.forEach((lineUuid) => this.locallySentToKitchenLineIds.add(lineUuid));
+
+        this.order = {
+          ...this.order!,
+          lines: (this.order?.lines ?? []).map((line) => (
+            sentLineIds.includes(line.uuid)
+              ? { ...line, sent_to_kitchen: true }
+              : line
+          )),
+        };
+
+        this.showKitchenSentModal = true;
+        this.loadOrder();
+      },
+      error: (err) => this.logger.error('Error sending order to kitchen:', err),
+    });
   }
 
   closeKitchenSentModal() {

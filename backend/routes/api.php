@@ -41,6 +41,7 @@ use App\Order\Infrastructure\Entrypoint\Http\UpdateOrderLineDiscountController;
 use App\Order\Infrastructure\Entrypoint\Http\RemoveOrderLineController;
 use App\Order\Infrastructure\Entrypoint\Http\UpdateOrderDinersController;
 use App\Order\Infrastructure\Entrypoint\Http\UpdateOrderDiscountController;
+use App\Order\Infrastructure\Entrypoint\Http\SendOrderToKitchenController;
 use App\Order\Infrastructure\Entrypoint\Http\CloseOrderController;
 use App\Order\Infrastructure\Entrypoint\Http\CancelOrderController;
 use App\Order\Infrastructure\Entrypoint\Http\GetAllOpenOrdersController;
@@ -80,6 +81,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/orders/{orderUuid}/lines/{lineUuid}', RemoveOrderLineController::class);
     Route::patch('/orders/{orderUuid}/diners', UpdateOrderDinersController::class);
     Route::patch('/orders/{orderUuid}/discount', UpdateOrderDiscountController::class);
+    Route::post('/orders/{orderUuid}/send-to-kitchen', SendOrderToKitchenController::class);
     Route::patch('/orders/{orderUuid}/transfer', TransferOrderTableController::class);
     Route::post('/orders/{orderUuid}/close', CloseOrderController::class);
     Route::delete('/orders/{orderUuid}', CancelOrderController::class);

@@ -43,7 +43,7 @@
             </thead>
             <tbody>
               @if (order) {
-                @for (line of order.lines; track line.uuid) {
+                @for (line of summaryOrderLines; track line.uuid) {
                   <tr>
                     <td class="col-name">{{ getProductName(line.product_id) }}</td>
                     <td class="col-qty">{{ line.quantity }}</td>
@@ -251,8 +251,8 @@
         </div>
 
         <div class="order-items">
-          @if (order?.lines?.length) {
-            @for (line of order?.lines ?? []; track line.uuid) {
+          @if (pendingOrderLines.length) {
+            @for (line of pendingOrderLines; track line.uuid) {
               <div class="order-item">
                 <div class="item-qty">{{ line.quantity }}×</div>
                 <span class="item-name">
@@ -286,27 +286,21 @@
           <div class="order-totals">
             <div class="total-row">
               <span class="total-label">Subtotal</span>
-              <span class="total-value">{{ orderSubtotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span class="total-value">{{ pendingSubtotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
             </div>
-            @if (getOrderDiscountAmount() > 0) {
-              <div class="total-row discount-row">
-                <span class="total-label">Descuento</span>
-                <span class="total-value">-{{ getOrderDiscountAmount() / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-              </div>
-            }
             <div class="total-row">
               <span class="total-label">Impuestos</span>
-              <span class="total-value">{{ orderTax / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span class="total-value">{{ pendingTax / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
             </div>
             <div class="total-row total-grand">
               <span class="total-label">Total</span>
-              <span class="total-value">{{ orderTotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span class="total-value">{{ pendingTotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
             </div>
           </div>
 
           <div class="order-actions">
             <button class="btn btn-cancel-order" (click)="cancelOrder()" [disabled]="totalPaid > 0">✕ Cancelar</button>
-            <button class="btn btn-send-kitchen" (click)="sendToKitchen()" [disabled]="!order?.lines?.length">
+            <button class="btn btn-send-kitchen" (click)="sendToKitchen()" [disabled]="pendingOrderLines.length === 0">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Enviar a cocina
             </button>
