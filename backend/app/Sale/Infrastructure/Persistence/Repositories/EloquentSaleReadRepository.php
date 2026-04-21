@@ -33,7 +33,7 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
                 $model->order_uuid,
                 $model->user_uuid,
                 $model->ticket_number,
-                new \DateTimeImmutable($model->value_date),
+                $this->toDateTimeImmutable($model->value_date),
                 (int) $model->subtotal,
                 (int) $model->tax_amount,
                 (int) $model->line_discount_total,
@@ -64,7 +64,7 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
             $model->order_uuid,
             $model->user_uuid,
             $model->ticket_number,
-            new \DateTimeImmutable($model->value_date),
+            $this->toDateTimeImmutable($model->value_date),
             (int) $model->subtotal,
             (int) $model->tax_amount,
             (int) $model->line_discount_total,
@@ -116,5 +116,18 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
                 (int) $model->refunded_quantity,
             ))
             ->toArray();
+    }
+
+    private function toDateTimeImmutable(mixed $value): \DateTimeImmutable
+    {
+        if ($value instanceof \DateTimeImmutable) {
+            return $value;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return \DateTimeImmutable::createFromInterface($value);
+        }
+
+        return new \DateTimeImmutable((string) $value);
     }
 }

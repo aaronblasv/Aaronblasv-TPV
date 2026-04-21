@@ -120,9 +120,26 @@ class EloquentCashShiftRepository implements CashShiftRepositoryInterface
             $model->counted_cash !== null ? (int) $model->counted_cash : null,
             (int) $model->cash_difference,
             $model->notes,
-            new \DateTimeImmutable($model->opened_at),
-            $model->closed_at ? new \DateTimeImmutable($model->closed_at) : null,
-            $model->updated_at ? new \DateTimeImmutable($model->updated_at) : null,
+            $this->toDateTimeImmutable($model->opened_at),
+            $this->toDateTimeImmutable($model->closed_at),
+            $this->toDateTimeImmutable($model->updated_at),
         );
+    }
+
+    private function toDateTimeImmutable(mixed $value): ?\DateTimeImmutable
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeImmutable) {
+            return $value;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return \DateTimeImmutable::createFromInterface($value);
+        }
+
+        return new \DateTimeImmutable((string) $value);
     }
 }

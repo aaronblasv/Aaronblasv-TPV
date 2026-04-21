@@ -152,10 +152,27 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             $model->discount_type,
             (int) $model->discount_value,
             (int) $model->discount_amount,
-            new \DateTimeImmutable($model->opened_at),
-            $model->closed_at ? new \DateTimeImmutable($model->closed_at) : null,
-            $model->updated_at ? new \DateTimeImmutable($model->updated_at) : null,
+            $this->toDateTimeImmutable($model->opened_at),
+            $this->toDateTimeImmutable($model->closed_at),
+            $this->toDateTimeImmutable($model->updated_at),
         );
+    }
+
+    private function toDateTimeImmutable(mixed $value): ?\DateTimeImmutable
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeImmutable) {
+            return $value;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return \DateTimeImmutable::createFromInterface($value);
+        }
+
+        return new \DateTimeImmutable((string) $value);
     }
 
     private function resolveTableUuid(EloquentOrder $model): string

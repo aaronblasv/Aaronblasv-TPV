@@ -123,9 +123,26 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
             (int) $model->discount_value,
             (int) $model->discount_amount,
             $this->supportsSentToKitchenAtColumn() && $model->sent_to_kitchen_at
-                ? new \DateTimeImmutable($model->sent_to_kitchen_at)
+                ? $this->toDateTimeImmutable($model->sent_to_kitchen_at)
                 : null,
         );
+    }
+
+    private function toDateTimeImmutable(mixed $value): ?\DateTimeImmutable
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeImmutable) {
+            return $value;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return \DateTimeImmutable::createFromInterface($value);
+        }
+
+        return new \DateTimeImmutable((string) $value);
     }
 
     private function supportsSentToKitchenAtColumn(): bool
