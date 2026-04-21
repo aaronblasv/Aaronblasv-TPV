@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ViewEncapsulation } from '@angula
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../../../services/api/auth.service';
 import { ZoneService } from '../../../services/api/zone.service';
 import { TableService } from '../../../services/api/table.service';
@@ -183,10 +183,30 @@ export class FloorPage implements OnInit, OnDestroy {
   loadData() {
     this.logger.log('FloorPage: Starting to load data...');
     forkJoin({
-      zones: this.zoneService.getAllTpv(),
-      tables: this.tableService.getAllTpv(),
-      openOrders: this.orderService.getAllOpen(),
-      currentCashShift: this.cashShiftService.getCurrent(),
+      zones: this.zoneService.getAllTpv().pipe(
+        catchError((err) => {
+          this.logger.error('FloorPage: Error loading zones', err);
+          return of([] as Zone[]);
+        }),
+      ),
+      tables: this.tableService.getAllTpv().pipe(
+        catchError((err) => {
+          this.logger.error('FloorPage: Error loading tables', err);
+          return of([] as Table[]);
+        }),
+      ),
+      openOrders: this.orderService.getAllOpen().pipe(
+        catchError((err) => {
+          this.logger.error('FloorPage: Error loading open orders', err);
+          return of([] as Order[]);
+        }),
+      ),
+      currentCashShift: this.cashShiftService.getCurrent().pipe(
+        catchError((err) => {
+          this.logger.error('FloorPage: Error loading current cash shift', err);
+          return of(null);
+        }),
+      ),
     }).subscribe({
       next: ({ zones, tables, openOrders, currentCashShift }) => {
         this.logger.log('FloorPage: Data loaded —', zones.length, 'zones,', tables.length, 'tables,', openOrders.length, 'open orders');
@@ -199,7 +219,7 @@ export class FloorPage implements OnInit, OnDestroy {
           this.logger.log(`  Mesa ${table.name}: ${this.isOccupied(table.uuid) ? 'OCUPADA' : 'LIBRE'}`);
         });
       },
-      error: (err) => this.logger.error('FloorPage: Error loading data', err),
+      error: (err) => this.logger.error('FloorPage: Unexpected error loading data', err),
     });
   }
 

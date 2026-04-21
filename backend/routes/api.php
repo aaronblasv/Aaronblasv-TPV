@@ -93,6 +93,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/tpv/validate-pin', ValidatePinController::class);
     Route::get('/tpv/families', GetAllFamiliesController::class);
     Route::get('/tpv/taxes', GetAllTaxesController::class);
+    Route::get('/cash-shifts/current', GetCurrentCashShiftController::class);
     Route::post('/tpv/tables/{tableUuid}/merge', MergeTablesController::class);
     Route::post('/tpv/tables/{tableUuid}/unmerge', UnmergeTablesController::class);
     Route::patch('/tpv/users/{uuid}/photo', UpdateUserPhotoController::class);
@@ -143,7 +144,6 @@ Route::middleware(['auth:sanctum', 'backoffice'])->group(function () {
     Route::get('/sales/{uuid}/lines', GetSaleLinesController::class);
     Route::post('/sales/{saleUuid}/refunds', CreateRefundController::class);
 
-    Route::get('/cash-shifts/current', GetCurrentCashShiftController::class);
     Route::post('/cash-shifts', OpenCashShiftController::class)->middleware('require.role:admin,supervisor');
     Route::post('/cash-shifts/{cashShiftUuid}/close', CloseCashShiftController::class)->middleware('require.role:admin,supervisor');
 });
