@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Order\Infrastructure\Entrypoint\Http;
 
 use App\Order\Application\AddOrderLine\AddOrderLine;
+use App\Shared\Application\Context\AuditContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,7 +22,11 @@ class AddOrderLineController
         ]);
 
         $response = ($this->useCase)(
-            $request->user()->restaurant_id,
+            new AuditContext(
+                $request->user()->restaurant_id,
+                $request->user()->uuid,
+                $request->ip(),
+            ),
             $orderUuid,
             $validated['product_id'],
             $validated['user_id'],

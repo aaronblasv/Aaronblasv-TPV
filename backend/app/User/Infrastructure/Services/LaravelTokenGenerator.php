@@ -10,15 +10,19 @@ use App\User\Infrastructure\Persistence\Models\EloquentUser;
 
 class LaravelTokenGenerator implements TokenGeneratorInterface
 {
+    public function __construct(
+        private EloquentUser $eloquentUser,
+    ) {}
+
     public function generateToken(User $user): string
     {
-        $eloquentUser = EloquentUser::where('uuid', $user->uuid()->getValue())->firstOrFail();
+        $eloquentUser = $this->eloquentUser->newQuery()->where('uuid', $user->uuid()->getValue())->firstOrFail();
         return $eloquentUser->createToken('auth-token')->plainTextToken;
     }
 
     public function revokeTokens(User $user): void
     {
-        $eloquentUser = EloquentUser::where('uuid', $user->uuid()->getValue())->first();
+        $eloquentUser = $this->eloquentUser->newQuery()->where('uuid', $user->uuid()->getValue())->first();
 
         if ($eloquentUser === null) {
             return;
@@ -29,7 +33,7 @@ class LaravelTokenGenerator implements TokenGeneratorInterface
 
     public function revokeTokensByUuid(string $uuid): void
     {
-        $eloquentUser = EloquentUser::where('uuid', $uuid)->first();
+        $eloquentUser = $this->eloquentUser->newQuery()->where('uuid', $uuid)->first();
 
         if ($eloquentUser === null) {
             return;

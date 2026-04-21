@@ -7,6 +7,7 @@ namespace App\Invoice\Infrastructure\Persistence\Repositories;
 use App\Invoice\Domain\Entity\Invoice;
 use App\Invoice\Domain\Interfaces\InvoiceRepositoryInterface;
 use App\Invoice\Infrastructure\Persistence\Models\EloquentInvoice;
+use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Infrastructure\Persistence\Models\EloquentOrder;
 
 class EloquentInvoiceRepository implements InvoiceRepositoryInterface
@@ -21,7 +22,7 @@ class EloquentInvoiceRepository implements InvoiceRepositoryInterface
         $order = $this->orderModel->newQuery()->where('uuid', $invoice->orderId()->getValue())->first();
 
         if (!$order) {
-            throw new \DomainException('Order not found');
+            throw new OrderNotFoundException($invoice->orderId()->getValue());
         }
 
         $this->model->newQuery()->create([

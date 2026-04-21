@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Family\Infrastructure\Entrypoint\Http;
 
 use App\Family\Application\DeactivateFamily\DeactivateFamily;
+use App\Shared\Application\Context\AuditContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,14 @@ class DeactivateFamilyController
 
     public function __invoke(Request $request, string $uuid): JsonResponse
     {
-        ($this->useCase)($uuid, $request->user()->restaurant_id);
+        ($this->useCase)(
+            new AuditContext(
+                $request->user()->restaurant_id,
+                $request->user()->uuid,
+                $request->ip(),
+            ),
+            $uuid,
+        );
 
         return new JsonResponse(null, 204);
     }

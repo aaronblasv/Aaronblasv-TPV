@@ -4,26 +4,43 @@ declare(strict_types=1);
 
 namespace App\Order\Application\CancelOrder;
 
-use App\Order\Domain\Exception\CannotCancelOrderException;
 use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
+use App\Shared\Application\Context\AuditContext;
+use App\Shared\Domain\Event\ActionLogged;
+use App\Shared\Domain\Interfaces\DomainEventBusInterface;
+use App\Shared\Domain\Interfaces\TransactionManagerInterface;
 
 class CancelOrder
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
+        private TransactionManagerInterface $transactionManager,
+        private DomainEventBusInterface $domainEventBus,
     ) {}
 
-    public function __invoke(string $orderUuid, int $restaurantId): void
+    public function __invoke(AuditContext $auditContext, string $orderUuid): void
     {
-        $order = $this->repository->findById($orderUuid, $restaurantId);
-        if (!$order) {
-            throw new OrderNotFoundException($orderUuid);
-        }
-        if (!$order->status()->isOpen()) {
-            throw new CannotCancelOrderException($orderUuid);
-        }
+        $this->transactionManager->run(function () use ($auditContext, $orderUuid) {
+            $order = $this->repository->findById($orderUuid, $auditContext->restaurantId);
+            if (!$order) {
+                throw new OrderNotFoundException($orderUuid);
+            }
 
-        $this->repository->delete($orderUuid, $restaurantId);
+            $order->cancel();
+            $this->repository->update($order);
+
+            $order->recordDomainEvent(ActionLogged::create(
+                $auditContext->restaurantId,
+                $auditContext->userId,
+                'order.cancelled',
+                'order',
+                $orderUuid,
+                null,
+                $auditContext->ipAddress,
+            ));
+
+            $this->domainEventBus->dispatch(...$order->pullDomainEvents());
+        });
     }
 }
