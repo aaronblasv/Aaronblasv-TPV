@@ -34,14 +34,24 @@ class CreateRefund
         ?string $reason,
         bool $refundAll,
         array $requestedLines,
-    ): array {
+    ): CreateRefundResponse {
         return $this->transactionManager->run(function () use ($auditContext, $saleUuid, $method, $reason, $refundAll, $requestedLines) {
             $sale = $this->saleReadRepository->findByUuid($auditContext->restaurantId, $saleUuid);
             if (!$sale) {
                 throw new SaleNotFoundException($saleUuid);
             }
 
-            $lines = $this->saleReadRepository->findDomainLinesBySaleUuid($auditContext->restaurantId, $saleUuid);
+            $requestedLineUuids = array_values(array_filter(array_map(
+                static fn (array $requestedLine): string => (string) ($requestedLine['sale_line_uuid'] ?? ''),
+                $requestedLines,
+            )));
+
+            $lines = $this->saleReadRepository->findDomainLinesBySaleUuidForUpdate(
+                $auditContext->restaurantId,
+                $saleUuid,
+                $refundAll ? [] : $requestedLineUuids,
+            );
+
             $byUuid = [];
             foreach ($lines as $line) {
                 $byUuid[$line->uuid()->getValue()] = $line;
@@ -128,14 +138,7 @@ class CreateRefund
             $sale->registerRefund($total);
             $this->saleWriteRepository->update($sale);
 
-            $response = [
-                'uuid' => $refund->uuid()->getValue(),
-                'type' => $refund->type(),
-                'method' => $refund->method(),
-                'subtotal' => $refund->subtotal(),
-                'tax_amount' => $refund->taxAmount(),
-                'total' => $refund->total(),
-            ];
+            $response = CreateRefundResponse::create($refund);
 
             $refund->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
@@ -143,7 +146,7 @@ class CreateRefund
                 'sale.refunded',
                 'sale',
                 $saleUuid,
-                $response,
+                $response->toArray(),
                 $auditContext->ipAddress,
             ));
 

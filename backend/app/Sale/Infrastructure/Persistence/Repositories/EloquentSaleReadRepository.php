@@ -76,6 +76,16 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
 
     public function findDomainLinesBySaleUuid(int $restaurantId, string $saleUuid): array
     {
+        return $this->findDomainLines($restaurantId, $saleUuid, false);
+    }
+
+    public function findDomainLinesBySaleUuidForUpdate(int $restaurantId, string $saleUuid, array $lineUuids = []): array
+    {
+        return $this->findDomainLines($restaurantId, $saleUuid, true, $lineUuids);
+    }
+
+    private function findDomainLines(int $restaurantId, string $saleUuid, bool $forUpdate, array $lineUuids = []): array
+    {
         $sale = $this->model->newQuery()
             ->where('restaurant_id', $restaurantId)
             ->where('uuid', $saleUuid)
@@ -85,7 +95,7 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
             return [];
         }
 
-        return $this->saleLineModel->newQuery()
+        $query = $this->saleLineModel->newQuery()
             ->join('sales', 'sales_lines.sale_id', '=', 'sales.id')
             ->join('order_lines', 'sales_lines.order_line_id', '=', 'order_lines.id')
             ->join('users', 'sales_lines.user_id', '=', 'users.id')
@@ -96,8 +106,17 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
                 'sales.uuid as sale_uuid',
                 'order_lines.uuid as order_line_uuid',
                 'users.uuid as user_uuid',
-            )
-            ->get()
+            );
+
+        if ($lineUuids !== []) {
+            $query->whereIn('sales_lines.uuid', $lineUuids);
+        }
+
+        if ($forUpdate) {
+            $query->lockForUpdate();
+        }
+
+        return $query->get()
             ->map(fn($model) => SaleLine::fromPersistence(
                 $model->uuid,
                 $model->restaurant_id,

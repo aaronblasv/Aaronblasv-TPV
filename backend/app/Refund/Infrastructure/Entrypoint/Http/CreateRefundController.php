@@ -18,7 +18,7 @@ class CreateRefundController
     public function __invoke(Request $request, string $saleUuid): JsonResponse
     {
         $validated = $request->validate([
-            'method' => 'required|in:cash,card,bizum',
+            'method' => 'required|string',
             'reason' => 'nullable|string|max:255',
             'refund_all' => 'required|boolean',
             'lines' => 'array',
@@ -39,6 +39,6 @@ class CreateRefundController
             $validated['lines'] ?? [],
         );
 
-        return new JsonResponse($response, 201);
+        return new JsonResponse($response->toArray(), 201);
     }
 }

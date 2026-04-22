@@ -11,4 +11,5 @@ interface SaleReadRepositoryInterface
     public function findAll(int $restaurantId): array;
     public function findByUuid(int $restaurantId, string $saleUuid): ?Sale;
     public function findDomainLinesBySaleUuid(int $restaurantId, string $saleUuid): array;
+    public function findDomainLinesBySaleUuidForUpdate(int $restaurantId, string $saleUuid, array $lineUuids = []): array;
 }
