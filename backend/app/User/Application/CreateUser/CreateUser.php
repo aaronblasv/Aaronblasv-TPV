@@ -27,7 +27,7 @@ class CreateUser
         $emailVO = Email::create($email);
         $nameVO = UserName::create($name);
         $passwordHashVO = PasswordHash::create($this->passwordHasher->hash($plainPassword));
-        $roleVO = UserRole::create($role);
+        $roleVO = UserRole::from($role);
         $user = User::dddCreate($emailVO, $nameVO, $passwordHashVO, $roleVO, RestaurantId::create($restaurantId), $this->pinGenerator->generate(), $imageSrc);
         $this->userRepository->save($user);
 

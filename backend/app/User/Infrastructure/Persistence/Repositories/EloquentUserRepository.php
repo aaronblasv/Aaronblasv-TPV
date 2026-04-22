@@ -22,7 +22,7 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'name' => $user->name()->getValue(),
                 'email' => $user->email()->getValue(),
                 'password' => $user->passwordHash()->getValue(),
-                'role' => $user->role()->getValue(),
+                'role' => $user->role()->value,
                 'restaurant_id' => $user->restaurantId()->getValue(),
                 'pin' => $user->pin()?->getValue(),
                 'image_src' => $user->imageSrc(),

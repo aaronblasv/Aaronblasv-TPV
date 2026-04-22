@@ -44,7 +44,7 @@ class CreateRestaurant
             Email::create($adminEmail),
             UserName::create($adminName),
             PasswordHash::create($this->passwordHasher->hash($adminPassword)),
-            UserRole::create('admin'),
+            UserRole::from('admin'),
             RestaurantId::create($restaurantId),
             $this->pinGenerator->generate(),
         );

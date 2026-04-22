@@ -18,7 +18,8 @@ class LoginUser
         private PasswordHasherInterface $passwordHasher,
     ) {}
 
-    public function __invoke(string $email, string $password) {
+    public function __invoke(string $email, string $password): LoginUserResponse
+    {
 
         $user = $this->userRepository->findByEmail($email);
 

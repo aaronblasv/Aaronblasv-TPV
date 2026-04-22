@@ -26,7 +26,7 @@ final readonly class GetAuthenticatedUserResponse
             id: $user->uuid()->getValue(),
             name: $user->name()->getValue(),
             email: $user->email()->getValue(),
-            role: $user->role()->getValue(),
+            role: $user->role()->value,
             restaurantId: $user->restaurantId()->getValue(),
             restaurantName: $restaurantName ?? '',
             imageSrc: $user->imageSrc(),

@@ -42,7 +42,7 @@ class CreateUserTest extends TestCase
                 return $user->email()->getValue() === 'create@example.com'
                     && $user->name()->getValue() === 'Create User'
                     && $user->passwordHash()->getValue() === $hashedPassword
-                    && $user->role()->getValue() === 'waiter'
+                    && $user->role()->value === 'waiter'
                     && $user->restaurantId()->getValue() === 1
                     && $user->pin()?->getValue() === '1234';
             }));

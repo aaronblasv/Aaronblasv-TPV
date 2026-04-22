@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace App\User\Domain\ValueObject;
 
-class UserRole
+enum UserRole: string
 {
-    public const ADMIN = 'admin';
-    public const SUPERVISOR = 'supervisor';
-    public const WAITER = 'waiter';
+    case ADMIN = 'admin';
+    case SUPERVISOR = 'supervisor';
+    case WAITER = 'waiter';
 
-    private const VALID_ROLES = [self::ADMIN, self::SUPERVISOR, self::WAITER];
-
-    private function __construct(private string $value) {}
-
-    public static function create(string $value): self
+    public function isAdmin(): bool
     {
-        if (!in_array($value, self::VALID_ROLES)) {
-            throw new \InvalidArgumentException("Invalid role: {$value}");
-        }
-        return new self($value);
+        return $this === self::ADMIN;
     }
 
-    public function getValue(): string
+    public function isSupervisor(): bool
     {
-        return $this->value;
+        return $this === self::SUPERVISOR;
+    }
+
+    public function isWaiter(): bool
+    {
+        return $this === self::WAITER;
+    }
+
+    public function isBackoffice(): bool
+    {
+        return $this !== self::WAITER;
     }
 }

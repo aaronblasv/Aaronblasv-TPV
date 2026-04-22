@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Middleware;
+namespace App\User\Infrastructure\Http\Middleware;
 
 use App\User\Domain\ValueObject\UserRole;
 use Closure;
@@ -15,7 +15,7 @@ class RequireBackofficeRole
     {
         $user = $request->user();
 
-        if (!$user || $user->role === UserRole::WAITER) {
+        if (!$user || $user->role === UserRole::WAITER->value) {
             return response()->json(['message' => 'No autorizado.'], 403);
         }
 

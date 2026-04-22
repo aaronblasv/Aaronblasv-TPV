@@ -20,7 +20,7 @@ final readonly class ValidatePinResponse
         return new self(
             uuid: $user->uuid()->getValue(),
             name: $user->name()->getValue(),
-            role: $user->role()->getValue(),
+            role: $user->role()->value,
             imageSrc: $user->imageSrc(),
         );
     }

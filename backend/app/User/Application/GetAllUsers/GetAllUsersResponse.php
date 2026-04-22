@@ -24,7 +24,7 @@ final readonly class GetAllUsersResponse
             uuid: $user->uuid()->getValue(),
             name: $user->name()->getValue(),
             email: $user->email()->getValue(),
-            role: $user->role()->getValue(),
+            role: $user->role()->value,
             imageSrc: $user->imageSrc(),
             createdAt: $user->createdAt()->format(\DateTimeInterface::ATOM),
             updatedAt: $user->updatedAt()->format(\DateTimeInterface::ATOM),

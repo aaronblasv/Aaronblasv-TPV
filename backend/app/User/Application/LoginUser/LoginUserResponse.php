@@ -17,7 +17,7 @@ final readonly class LoginUserResponse
     {
         return new self(
             token: $token,
-            role: $user->role()->getValue(),
+            role: $user->role()->value,
         );
     }
 

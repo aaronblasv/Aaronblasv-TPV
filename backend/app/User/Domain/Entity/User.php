@@ -71,7 +71,7 @@ class User
             UserName::create($name),
             Email::create($email),
             PasswordHash::create($passwordHash),
-            UserRole::create($role),
+            UserRole::from($role),
             RestaurantId::create($restaurantId),
             $pin !== null ? Pin::create($pin) : null,
             $imageSrc,
