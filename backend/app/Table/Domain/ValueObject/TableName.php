@@ -12,7 +12,7 @@ class TableName
 
     public static function create(string $value): self
     {
-        if (empty($value)) {
+        if (trim($value) === '') {
             throw new \InvalidArgumentException('Table name cannot be empty.');
         }
 

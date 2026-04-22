@@ -19,7 +19,7 @@ class ZoneName
 
     private function validate(): void
     {
-        if (empty($this->value)) {
+        if (trim($this->value) === '') {
             throw new \InvalidArgumentException('Zone name cannot be empty');
         }
     }

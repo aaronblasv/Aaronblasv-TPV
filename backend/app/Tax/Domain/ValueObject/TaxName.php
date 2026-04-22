@@ -12,7 +12,7 @@ class TaxName
 
     public static function create(string $value): self
     {
-        if (empty($value)) {
+        if (trim($value) === '') {
             throw new \InvalidArgumentException('Tax name cannot be empty.');
         }
         return new self($value);
