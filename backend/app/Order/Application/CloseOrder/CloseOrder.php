@@ -64,7 +64,7 @@ class CloseOrder
 
             $order->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
-                $auditContext->userId,
+                $closedByUserUuid,
                 'order.closed',
                 'order',
                 $orderUuid,

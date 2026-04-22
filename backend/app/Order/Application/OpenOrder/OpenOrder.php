@@ -53,7 +53,7 @@ class OpenOrder
 
             $order->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
-                $auditContext->userId,
+                $openedByUserUuid,
                 'order.opened',
                 'order',
                 $order->uuid()->getValue(),

@@ -17,6 +17,10 @@ class GenerateInvoiceController
 
     public function __invoke(Request $request, string $orderUuid): JsonResponse
     {
+        $validated = $request->validate([
+            'issued_by_user_id' => 'required|uuid',
+        ]);
+
         $response = ($this->useCase)(
             new AuditContext(
                 $request->user()->restaurant_id,
@@ -24,6 +28,7 @@ class GenerateInvoiceController
                 $request->ip(),
             ),
             $orderUuid,
+            $validated['issued_by_user_id'],
         );
 
         return new JsonResponse($response->toArray(), 201);

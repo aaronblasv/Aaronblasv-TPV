@@ -10,15 +10,18 @@ export class PaymentService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  registerPayment(orderUuid: string, amount: number, method: PaymentMethod, description?: string): Observable<void> {
+  registerPayment(orderUuid: string, paidByUserId: string, amount: number, method: PaymentMethod, description?: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/orders/${orderUuid}/payments`, {
+      paid_by_user_id: paidByUserId,
       amount,
       method,
       description: description ?? null,
     });
   }
 
-  generateInvoice(orderUuid: string): Observable<Invoice> {
-    return this.http.post<Invoice>(`${this.apiUrl}/orders/${orderUuid}/generate-invoice`, {});
+  generateInvoice(orderUuid: string, issuedByUserId: string): Observable<Invoice> {
+    return this.http.post<Invoice>(`${this.apiUrl}/orders/${orderUuid}/generate-invoice`, {
+      issued_by_user_id: issuedByUserId,
+    });
   }
 }

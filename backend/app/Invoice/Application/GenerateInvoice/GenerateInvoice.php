@@ -23,9 +23,9 @@ class GenerateInvoice
         private DomainEventBusInterface $domainEventBus,
     ) {}
 
-    public function __invoke(AuditContext $auditContext, string $orderUuid): GenerateInvoiceResponse
+    public function __invoke(AuditContext $auditContext, string $orderUuid, string $issuedByUserUuid): GenerateInvoiceResponse
     {
-        return $this->transactionManager->run(function () use ($auditContext, $orderUuid) {
+        return $this->transactionManager->run(function () use ($auditContext, $orderUuid, $issuedByUserUuid) {
             $orderData = $this->orderDataProvider->getOrderForInvoice($orderUuid, $auditContext->restaurantId);
 
             if (!$orderData) {
@@ -49,7 +49,7 @@ class GenerateInvoice
 
             $invoice->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
-                $auditContext->userId,
+                $issuedByUserUuid,
                 'invoice.generated',
                 'invoice',
                 $response->uuid,

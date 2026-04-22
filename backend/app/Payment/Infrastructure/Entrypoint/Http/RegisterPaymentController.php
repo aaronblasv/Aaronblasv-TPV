@@ -18,6 +18,7 @@ class RegisterPaymentController
     public function __invoke(Request $request, string $orderUuid): JsonResponse
     {
         $validated = $request->validate([
+            'paid_by_user_id' => 'required|uuid',
             'amount' => 'required|integer|min:1',
             'method' => 'required|in:cash,card,bizum',
             'description' => 'nullable|string|max:255',
@@ -30,6 +31,7 @@ class RegisterPaymentController
                 $request->ip(),
             ),
             $orderUuid,
+            $validated['paid_by_user_id'],
             $validated['amount'],
             $validated['method'],
             $validated['description'] ?? null,

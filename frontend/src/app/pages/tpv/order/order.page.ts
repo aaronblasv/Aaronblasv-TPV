@@ -784,8 +784,15 @@ export class OrderPage implements OnInit {
 
   onPaymentRegistered(payment: PaymentData) {
     this.logger.log('onPaymentRegistered:', payment);
+
+    if (!this.currentUser?.uuid) {
+      this.handleOrderClosureError('No se pudo validar el camarero para registrar el pago.');
+      return;
+    }
+
     this.paymentService.registerPayment(
       this.order!.uuid,
+      this.currentUser.uuid,
       Math.round(payment.amount),
       payment.method,
       payment.description,
@@ -813,17 +820,21 @@ export class OrderPage implements OnInit {
       return;
     }
 
-    this.paymentService.generateInvoice(this.order.uuid).subscribe({
+    const orderUuid = this.order.uuid;
+
+    if (!this.currentUser?.uuid) {
+      this.handleOrderClosureError('No se pudo validar el usuario que cierra la mesa.');
+      return;
+    }
+
+    const closingUserUuid = this.currentUser.uuid;
+
+    this.paymentService.generateInvoice(orderUuid, closingUserUuid).subscribe({
       next: (invoice) => {
         this.logger.log('Invoice generated:', invoice);
         this.lastInvoiceNumber = invoice.invoice_number || 'INV-XXXXXX-XXXX';
 
-        if (!this.currentUser?.uuid) {
-          this.handleOrderClosureError('No se pudo validar el usuario que cierra la mesa.');
-          return;
-        }
-
-        this.orderService.closeOrder(this.order!.uuid, this.currentUser.uuid).subscribe({
+        this.orderService.closeOrder(orderUuid, closingUserUuid).subscribe({
           next: () => {
             this.logger.log('Order closed successfully');
             this.showSuccessModal = true;
@@ -836,11 +847,7 @@ export class OrderPage implements OnInit {
       },
       error: (err) => {
         this.logger.error('Error generating invoice:', err);
-        if (!this.currentUser?.uuid) {
-          this.handleOrderClosureError('El pago se registró, pero faltan datos del usuario para cerrar la mesa.');
-          return;
-        }
-        this.orderService.closeOrder(this.order!.uuid, this.currentUser.uuid).subscribe({
+        this.orderService.closeOrder(orderUuid, closingUserUuid).subscribe({
           next: () => { this.showSuccessModal = true; },
           error: (closeErr) => {
             this.logger.error('Error closing order:', closeErr);

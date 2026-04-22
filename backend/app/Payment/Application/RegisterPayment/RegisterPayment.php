@@ -23,15 +23,16 @@ class RegisterPayment
     public function __invoke(
         AuditContext $auditContext,
         string $orderUuid,
+        string $paidByUserUuid,
         int $amount,
         string $method,
         ?string $description = null,
     ): RegisterPaymentResponse {
-        return $this->transactionManager->run(function () use ($auditContext, $orderUuid, $amount, $method, $description) {
+        return $this->transactionManager->run(function () use ($auditContext, $orderUuid, $paidByUserUuid, $amount, $method, $description) {
             $payment = Payment::dddCreate(
                 Uuid::generate(),
                 Uuid::create($orderUuid),
-                Uuid::create($auditContext->userId),
+                Uuid::create($paidByUserUuid),
                 $amount,
                 $method,
                 $description,
@@ -44,7 +45,7 @@ class RegisterPayment
 
             $payment->recordDomainEvent(ActionLogged::create(
                 $auditContext->restaurantId,
-                $auditContext->userId,
+                $paidByUserUuid,
                 'payment.registered',
                 'order',
                 $orderUuid,
