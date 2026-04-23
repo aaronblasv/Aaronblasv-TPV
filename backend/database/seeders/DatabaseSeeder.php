@@ -4,12 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\TaxSeeder;
-use Database\Seeders\FamilySeeder;
-use Database\Seeders\ProductSeeder;
-use Database\Seeders\ZoneSeeder;
-use Database\Seeders\TableSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             ZoneSeeder::class,
             TableSeeder::class,
+            DashboardDemoSeeder::class,
         ]);
     }
 }
