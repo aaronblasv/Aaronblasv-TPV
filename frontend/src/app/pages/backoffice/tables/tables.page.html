@@ -11,32 +11,40 @@
         <button class="btn-primary" (click)="openForm()">+ Nueva Mesa</button>
       </div>
 
-      @for (group of tablesByZone; track group.zone.uuid) {
-        <div class="table-card">
-          <h2 class="family-title">{{ group.zone.name }}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (table of group.tables; track table.uuid) {
-                <tr>
-                  <td>{{ table.name }}</td>
-                  <td>
-                    <app-action-buttons
-                      [showToggle]="false"
-                      (onEdit)="openForm(table)"
-                      (onDelete)="requestDelete(table.uuid)"
-                    />
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+      @if (tablesByZone.length === 0) {
+        <div class="empty-state">
+          <h2>No hay mesas creadas</h2>
+          <p>Crea la primera mesa para empezar a organizar el salón por zonas.</p>
         </div>
+      }
+
+      @for (group of tablesByZone; track group.zone.uuid) {
+        <section class="zone-card">
+          <div class="zone-card__header">
+            <div>
+              <h2 class="zone-card__title">{{ group.zone.name }}</h2>
+              <p class="zone-card__meta">{{ group.tables.length }} mesas</p>
+            </div>
+          </div>
+
+          <div class="tables-grid">
+            @for (table of group.tables; track table.uuid) {
+              <article class="table-tile">
+                <div class="table-tile__content">
+                  <h3 class="table-tile__name">{{ table.name }}</h3>
+                </div>
+
+                <div class="table-tile__actions">
+                  <app-action-buttons
+                    [showToggle]="false"
+                    (onEdit)="openForm(table)"
+                    (onDelete)="requestDelete(table.uuid)"
+                  />
+                </div>
+              </article>
+            }
+          </div>
+        </section>
       }
 
       <app-form-modal
