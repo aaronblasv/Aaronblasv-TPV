@@ -14,7 +14,7 @@ class RemoveOrderLineController
 
     public function __invoke(Request $request, string $orderUuid, string $lineUuid): JsonResponse
     {
-        ($this->useCase)($lineUuid, $request->user()->restaurant_id);
+        ($this->useCase)($orderUuid, $lineUuid, $request->user()->restaurant_id);
 
         return new JsonResponse(null, 204);
     }

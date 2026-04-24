@@ -36,9 +36,11 @@
             <thead>
               <tr>
                 <th class="col-name">Artículo</th>
+                <th class="col-status">Estado</th>
                 <th class="col-qty">Uds.</th>
                 <th class="col-price">Precio</th>
                 <th class="col-total">Total</th>
+                <th class="col-actions"></th>
               </tr>
             </thead>
             <tbody>
@@ -46,9 +48,26 @@
                 @for (line of summaryOrderLines; track line.uuid) {
                   <tr>
                     <td class="col-name">{{ getProductName(line.product_id) }}</td>
+                    <td class="col-status">
+                      <span class="summary-line-status" [class.summary-line-status--sent]="line.sent_to_kitchen" [class.summary-line-status--pending]="!line.sent_to_kitchen">
+                        {{ line.sent_to_kitchen ? 'Enviado' : 'Pendiente' }}
+                      </span>
+                    </td>
                     <td class="col-qty">{{ line.quantity }}</td>
                     <td class="col-price">{{ line.price / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
                     <td class="col-total">{{ getLineSubtotal(line) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
+                    <td class="col-actions">
+                      @if (line.sent_to_kitchen) {
+                        <button
+                          class="summary-line-action"
+                          (click)="voidSentLine(line)"
+                          [disabled]="totalPaid > 0"
+                          [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Anular producto enviado'"
+                        >
+                          Anular
+                        </button>
+                      }
+                    </td>
                   </tr>
                 }
               }

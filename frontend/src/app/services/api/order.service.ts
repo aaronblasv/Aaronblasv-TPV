@@ -40,6 +40,10 @@ export class OrderService {
     return this.http.delete<void>(`${this.apiUrl}/orders/${orderUuid}/lines/${lineUuid}`);
   }
 
+  voidSentLine(orderUuid: string, lineUuid: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/orders/${orderUuid}/lines/${lineUuid}/void`, {});
+  }
+
   updateDiners(orderUuid: string, diners: number): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/orders/${orderUuid}/diners`, { diners });
   }

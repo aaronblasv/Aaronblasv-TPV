@@ -263,6 +263,10 @@ export class OrderPage implements OnInit {
     return this.summaryOrderLines.filter(line => !line.sent_to_kitchen);
   }
 
+  get sentOrderLines(): OrderLine[] {
+    return this.summaryOrderLines.filter(line => line.sent_to_kitchen);
+  }
+
   selectFamily(uuid: string | null) {
     this.selectedFamilyUuid = uuid;
   }
@@ -368,7 +372,20 @@ export class OrderPage implements OnInit {
   removeLine(line: OrderLine) {
     this.orderService.removeLine(this.order!.uuid, line.uuid).subscribe({
       next: () => { this.loadOrder(); },
-      error: (err) => this.logger.error('Error removing line:', err),
+      error: (err) => {
+        this.logger.error('Error removing line:', err);
+        alert(err?.error?.message ?? 'No se ha podido quitar la línea del pedido.');
+      },
+    });
+  }
+
+  voidSentLine(line: OrderLine) {
+    this.orderService.voidSentLine(this.order!.uuid, line.uuid).subscribe({
+      next: () => { this.loadOrder(); },
+      error: (err) => {
+        this.logger.error('Error voiding sent line:', err);
+        alert(err?.error?.message ?? 'No se ha podido anular la línea enviada a cocina.');
+      },
     });
   }
 

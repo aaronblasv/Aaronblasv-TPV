@@ -261,6 +261,56 @@ app-order {
     }
 
     .col-qty, .col-price, .col-total { text-align: right; font-family: 'Geist Mono', monospace; }
+    .col-status, .col-actions { text-align: center; }
+  }
+
+  .summary-line-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 82px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+  }
+
+  .summary-line-status--sent {
+    background: rgba($amber, .16);
+    color: $amber;
+    border: 1px solid rgba($amber, .24);
+  }
+
+  .summary-line-status--pending {
+    background: rgba($accent, .12);
+    color: $accent;
+    border: 1px solid rgba($accent, .24);
+  }
+
+  .summary-line-action {
+    border: 1px solid rgba($red, .22);
+    border-radius: 8px;
+    background: rgba($red, .12);
+    color: $red;
+    padding: 8px 10px;
+    min-height: 34px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    transition: opacity .15s, transform .15s;
+
+    &:hover:not(:disabled) {
+      opacity: .92;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
   }
 
   .summary-totals {
