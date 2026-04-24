@@ -348,7 +348,7 @@ app-floor {
 
   .table-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 14px;
   }
 
@@ -360,10 +360,12 @@ app-floor {
     padding: 16px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     gap: 10px;
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-    min-height: 120px;
+    min-height: 180px;
+    aspect-ratio: 1 / 0.82;
     position: relative;
     color: $text-primary;
     box-shadow: $shadow-card;
@@ -509,7 +511,7 @@ app-floor {
   }
 
   @media (max-width: 1024px) {
-    .table-grid { grid-template-columns: repeat(3, 1fr); }
+    .table-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
     .sidebar { width: 170px; }
   }
 }
