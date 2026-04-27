@@ -15,7 +15,9 @@ import { SuccessModalComponent } from '../../../components/success-modal/success
 import { WaiterModalComponent } from '../../../components/waiter-modal/waiter-modal.component';
 
 import { DiscountModalComponent, DiscountResult } from '../../../components/discount-modal/discount-modal.component';
+import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
 import { DinersModalComponent } from '../../../components/diners-modal/diners-modal.component';
+import { VoidLineModalComponent } from '../../../components/void-line-modal/void-line-modal.component';
 import { Order, OrderLine } from '../../../types/order.model';
 import { Product } from '../../../types/product.model';
 import { Family } from '../../../types/family.model';
@@ -30,7 +32,7 @@ registerLocaleData(localeEs);
 @Component({
   selector: 'app-order',
   standalone: true,
-  imports: [CommonModule, IonicModule, PinModalComponent, SuccessModalComponent, WaiterModalComponent, DiscountModalComponent, DinersModalComponent],
+  imports: [CommonModule, IonicModule, PinModalComponent, SuccessModalComponent, WaiterModalComponent, DiscountModalComponent, ConfirmModalComponent, DinersModalComponent, VoidLineModalComponent],
   templateUrl: './order.page.html',
   styleUrls: ['./order.page.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -64,10 +66,14 @@ export class OrderPage implements OnInit {
   showDiscountModal = false;
   showChangeDinersModal = false;
   showKitchenSentModal = false;
+  showVoidSentLineModal = false;
+  showVoidLineConfirmModal = false;
   discountModalTitle = 'Descuento';
   discountModalCurrentType: 'amount' | 'percentage' | null = null;
   discountModalCurrentValue = 0;
   discountTarget: 'order' | OrderLine | null = null;
+  voidLineConfirmTarget: OrderLine | null = null;
+  voidSentLineTarget: OrderLine | null = null;
   closeSelectedWaiter: User | null = null;
   availableTransferTables: Table[] = [];
   totalPaid = 0;
@@ -203,6 +209,8 @@ export class OrderPage implements OnInit {
     this.lastInvoiceNumber = '';
     this.lastTotalAmount = 0;
     this.showKitchenSentModal = false;
+    this.closeVoidLineConfirmModal();
+    this.closeVoidSentLineModal();
     this.order = null;
     this.locallySentToKitchenLineIds.clear();
   }
@@ -379,12 +387,48 @@ export class OrderPage implements OnInit {
     });
   }
 
-  voidSentLine(line: OrderLine) {
-    this.orderService.voidSentLine(this.order!.uuid, line.uuid).subscribe({
+  promptVoidSentLine(line: OrderLine) {
+    this.voidSentLineTarget = line;
+    this.showVoidSentLineModal = true;
+  }
+
+  closeVoidSentLineModal() {
+    this.showVoidSentLineModal = false;
+    this.voidSentLineTarget = null;
+  }
+
+  closeVoidLineConfirmModal() {
+    this.showVoidLineConfirmModal = false;
+    this.voidLineConfirmTarget = null;
+  }
+
+  onVoidSentLineQuantityConfirmed(quantity: number) {
+    if (!this.voidSentLineTarget) return;
+
+    const line = this.voidSentLineTarget;
+    this.closeVoidSentLineModal();
+    this.voidSentLine(line, quantity);
+  }
+
+  voidEntireSentLine(line: OrderLine) {
+    this.voidLineConfirmTarget = line;
+    this.showVoidLineConfirmModal = true;
+  }
+
+  confirmVoidEntireSentLine() {
+    if (!this.voidLineConfirmTarget) return;
+
+    const line = this.voidLineConfirmTarget;
+    this.closeVoidLineConfirmModal();
+    this.voidSentLine(line, line.quantity);
+  }
+
+  private voidSentLine(line: OrderLine, quantity: number) {
+    this.orderService.voidSentLine(this.order!.uuid, line.uuid, quantity).subscribe({
       next: () => { this.loadOrder(); },
       error: (err) => {
         this.logger.error('Error voiding sent line:', err);
-        alert(err?.error?.message ?? 'No se ha podido anular la línea enviada a cocina.');
+        alert(err?.error?.message ?? 'No se ha podido anular la cantidad solicitada de la línea enviada a cocina.');
       },
     });
   }

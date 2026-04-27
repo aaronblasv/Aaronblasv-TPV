@@ -1,0 +1,36 @@
+@if (visible) {
+  <div class="void-line-modal-overlay" (click)="cancel()">
+    <div class="void-line-modal" (click)="$event.stopPropagation()">
+      <div class="void-line-modal__header">
+        <h3>Quitar unidades</h3>
+        <button class="void-line-modal__close" (click)="cancel()">✕</button>
+      </div>
+
+      <p class="void-line-modal__description">
+        Indica cuántas unidades de <strong>{{ productName }}</strong> quieres quitar.
+      </p>
+
+      <div class="void-line-modal__field">
+        <label for="void-line-quantity">Cantidad</label>
+        <input
+          id="void-line-quantity"
+          type="number"
+          min="1"
+          [max]="maxQuantity"
+          [value]="quantity"
+          (input)="updateQuantity($any($event.target).value)"
+        />
+        <small>Disponible: {{ maxQuantity }} uds.</small>
+      </div>
+
+      @if (error) {
+        <p class="void-line-modal__error">{{ error }}</p>
+      }
+
+      <div class="void-line-modal__actions">
+        <button class="void-line-modal__btn void-line-modal__btn--ghost" (click)="cancel()">Cancelar</button>
+        <button class="void-line-modal__btn void-line-modal__btn--confirm" (click)="confirm()">Quitar</button>
+      </div>
+    </div>
+  </div>
+}

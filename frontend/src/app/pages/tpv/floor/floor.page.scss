@@ -348,105 +348,131 @@ app-floor {
 
   .table-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 14px;
   }
 
   /* ─── TABLE CARD — Gentle Lift ─── */
   .table-card {
-    background: $card;
-    border-radius: $radius;
-    border: 1px solid $border;
-    padding: 16px;
+    background: linear-gradient(180deg, rgba($card, .98) 0%, rgba($surface, .86) 100%);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.04);
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 10px;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-    min-height: 180px;
-    aspect-ratio: 1 / 0.82;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    min-height: 132px;
     position: relative;
     color: $text-primary;
-    box-shadow: $shadow-card;
+    box-shadow: 0 12px 30px rgba(0,0,0,.22);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: $shadow-hover;
+      background: linear-gradient(180deg, rgba($card, 1) 0%, rgba($surface, .96) 100%);
+      box-shadow: 0 18px 34px rgba(0,0,0,.26);
     }
 
-    &.libre        { border-color: $green; }
-    &.ocupada      { border-color: $orange; }
-    &.cobro        { border-color: $blue; }
     &.merged-parent {
-      border-color: $amber;
       padding-bottom: 56px;
     }
 
     &.merge-mode { opacity: 0.65; &:hover { opacity: 1; } }
     &.merge-selected {
       opacity: 1;
-      border-color: $accent !important;
-      box-shadow: 0 0 0 2px $accent-dim;
+      box-shadow: 0 0 0 2px rgba($accent, .32), 0 18px 34px rgba(0,0,0,.26);
     }
   }
 
   .table-card-head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 12px;
   }
 
   .table-name {
     font-family: 'Funnel Sans', sans-serif;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 17px;
+    letter-spacing: -.02em;
     color: $text-primary;
   }
 
   .status-badge {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 999px;
+    white-space: nowrap;
   }
 
-  .badge-libre   { background: $green-dim;  color: $green; }
-  .badge-ocupada { background: $orange-dim; color: $orange; }
-  .badge-cobro   { background: $blue-dim;   color: $blue; }
-  .badge-merged  { background: $amber-dim;  color: $amber; font-size: 10px; }
+  .badge-libre   { background: rgba($green, .14);  color: #2dd36f; }
+  .badge-ocupada { background: rgba($orange, .16); color: #f28c28; }
+  .badge-cobro   { background: rgba($blue, .16);   color: #4f8cff; }
+
+  .table-merged-note {
+    margin-top: -4px;
+    color: $text-dim;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .table-card-footer {
+    margin-top: auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+  }
 
   .table-amount {
     font-family: 'Geist Mono', monospace;
     font-size: 18px;
-    font-weight: 600;
-    color: $accent;
+    font-weight: 700;
+    color: $text-primary;
+    letter-spacing: -.02em;
+    text-align: right;
 
     &.empty {
-      font-size: 13px;
+      font-size: 18px;
       color: $text-muted;
-      font-family: 'Newsreader', serif;
-      font-style: italic;
-      font-weight: 400;
+      font-family: 'Geist Mono', monospace;
+      font-style: normal;
+      font-weight: 600;
     }
   }
 
   .table-meta {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    font-family: 'Newsreader', serif;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-family: 'Geist', sans-serif;
     font-size: 12px;
     color: $text-muted;
   }
 
-  .table-persons {
+  .table-persons,
+  .table-zone {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-family: 'Geist Mono', monospace;
+    gap: 6px;
+    min-height: 20px;
     font-size: 12px;
     color: $text-muted;
+  }
+
+  .table-persons ion-icon {
+    font-size: 15px;
+    color: $text-dim;
+    flex-shrink: 0;
+  }
+
+  .table-zone {
+    color: $text-dim;
   }
 
   .btn-unmerge {
@@ -511,7 +537,7 @@ app-floor {
   }
 
   @media (max-width: 1024px) {
-    .table-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .table-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
     .sidebar { width: 170px; }
   }
 }

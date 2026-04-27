@@ -58,14 +58,24 @@
                     <td class="col-total">{{ getLineSubtotal(line) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
                     <td class="col-actions">
                       @if (line.sent_to_kitchen) {
-                        <button
-                          class="summary-line-action"
-                          (click)="voidSentLine(line)"
-                          [disabled]="totalPaid > 0"
-                          [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Anular producto enviado'"
-                        >
-                          Anular
-                        </button>
+                        <div class="summary-line-actions">
+                          <button
+                            class="summary-line-action summary-line-action--compact"
+                            (click)="promptVoidSentLine(line)"
+                            [disabled]="totalPaid > 0"
+                            [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Quitar una cantidad de esta línea'"
+                          >
+                            −
+                          </button>
+                          <button
+                            class="summary-line-action summary-line-action--danger"
+                            (click)="voidEntireSentLine(line)"
+                            [disabled]="totalPaid > 0"
+                            [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Anular toda la línea enviada'"
+                          >
+                            Anular línea
+                          </button>
+                        </div>
                       }
                     </td>
                   </tr>
@@ -190,6 +200,18 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
+
+            @if (pendingAmount > 0) {
+              <div class="pay-quick-amounts">
+                <button
+                  class="pay-quick-btn"
+                  [class.active]="payInputCents === pendingAmount"
+                  (click)="setPayAmount(pendingAmount)"
+                >
+                  Total {{ pendingAmount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}
+                </button>
+              </div>
+            }
 
             @if (payMethod === 'cash' && payChange > 0) {
               <div class="pay-change-card">
@@ -370,3 +392,5 @@
 <app-success-modal [visible]="showSuccessModal" [invoiceNumber]="lastInvoiceNumber" [totalAmount]="lastTotalAmount" (onClose)="onSuccessModalClose()"></app-success-modal>
 <app-discount-modal [visible]="showDiscountModal" [title]="discountModalTitle" [currentType]="discountModalCurrentType" [currentValue]="discountModalCurrentValue" (onConfirm)="onDiscountConfirmed($event)" (onCancel)="onDiscountCancelled()"></app-discount-modal>
 <app-diners-modal [visible]="showChangeDinersModal" (onConfirm)="onChangeDinersConfirmed($event)" (onCancel)="onChangeDinersCancelled()"></app-diners-modal>
+<app-confirm-modal [visible]="showVoidLineConfirmModal" title="¿Anular toda la línea?" [message]="voidLineConfirmTarget ? 'Se anularán las ' + voidLineConfirmTarget.quantity + ' uds. de ' + getProductName(voidLineConfirmTarget.product_id) + '.' : 'Esta acción no se puede deshacer.'" (onConfirm)="confirmVoidEntireSentLine()" (onCancel)="closeVoidLineConfirmModal()"></app-confirm-modal>
+<app-void-line-modal [visible]="showVoidSentLineModal" [productName]="voidSentLineTarget ? getProductName(voidSentLineTarget.product_id) : 'Producto'" [maxQuantity]="voidSentLineTarget?.quantity ?? 1" (onConfirm)="onVoidSentLineQuantityConfirmed($event)" (onCancel)="closeVoidSentLineModal()"></app-void-line-modal>

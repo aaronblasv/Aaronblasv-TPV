@@ -93,24 +93,24 @@
                 @if (isOccupied(table.uuid)) {
                   <span class="status-badge badge-ocupada">Ocupada</span>
                 } @else {
-                  <span class="status-badge badge-libre">Libre</span>
+                  <span class="status-badge badge-libre">Disponible</span>
                 }
               </div>
               @if (isParentMerged(table.uuid)) {
-                <span class="status-badge badge-merged">🔗 {{ getMergedNames(table.uuid) }}</span>
+                <div class="table-merged-note">🔗 Unida con {{ getMergedNames(table.uuid) }}</div>
               }
-              @if (isOccupied(table.uuid)) {
-                <span class="table-amount">{{ getOrderTotal(table.uuid) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-              } @else {
-                <span class="table-amount empty">Sin pedido</span>
-              }
-              <div class="table-meta">
+              <div class="table-card-footer">
+                <div class="table-meta">
+                  <span class="table-persons">
+                    <ion-icon [icon]="peopleOutlineIcon" aria-hidden="true"></ion-icon>
+                    {{ isOccupied(table.uuid) ? (getOrder(table.uuid)?.diners ?? 0) : '—' }}
+                  </span>
+                  <span class="table-zone">{{ getZoneName(table.zone_id) }}</span>
+                </div>
                 @if (isOccupied(table.uuid)) {
-                  <span>{{ getZoneName(table.zone_id) }}</span>
-                  <span class="table-persons">👥 {{ getOrder(table.uuid)?.diners }}</span>
+                  <span class="table-amount">{{ getOrderTotal(table.uuid) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
                 } @else {
-                  <span>—</span>
-                  <span>{{ getZoneName(table.zone_id) }}</span>
+                  <span class="table-amount empty">—</span>
                 }
               </div>
             </div>

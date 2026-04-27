@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, inject, ViewEncapsulation } from '@angula
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { peopleOutline } from 'ionicons/icons';
 import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../../../services/api/auth.service';
 import { ZoneService } from '../../../services/api/zone.service';
@@ -72,6 +74,11 @@ export class FloorPage implements OnInit, OnDestroy {
   showBackofficeSupervisorModal = false;
   showBackofficePinModal = false;
   selectedBackofficeSupervisor: User | null = null;
+  readonly peopleOutlineIcon = peopleOutline;
+
+  constructor() {
+    addIcons({ peopleOutline });
+  }
 
   ngOnInit() {
     this.syncRoleFlags();

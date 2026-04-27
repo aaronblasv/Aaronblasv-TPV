@@ -313,6 +313,25 @@ app-order {
     }
   }
 
+  .summary-line-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .summary-line-action--compact {
+    min-width: 34px;
+    padding: 8px;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .summary-line-action--danger {
+    min-width: 108px;
+  }
+
   .summary-totals {
     margin-top: 20px;
     padding-top: 16px;
