@@ -3,14 +3,34 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Informes</span>
           <h1>Informes</h1>
-          <p>Análisis de ventas por periodo</p>
+          <p>Analiza el negocio por periodo con el mismo lenguaje visual Carbon del dashboard y gráficos más protagonistas.</p>
         </div>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+              <div class="bo-mini-stat">
+                <span>Tickets</span>
+                <strong>{{ sales.length }}</strong>
+                <small>Ventas listadas en el periodo</small>
+              </div>
+            <div class="bo-mini-stat">
+              <span>Días</span>
+              <strong>{{ report.by_day.length }}</strong>
+              <small>Puntos analizados en el periodo</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Perspectivas</span>
+                <strong>5</strong>
+                <small>Ventas, día, zona, producto y usuario</small>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <!-- Filtros -->
+      <div class="bo-toolbar-card">
       <div class="filter-bar">
         <div class="filter-group">
           <label>Desde</label>
@@ -22,6 +42,7 @@
         </div>
         <button class="btn-apply" (click)="applyFilter()">Filtrar</button>
         <button class="btn-clear" (click)="clearFilter()">Limpiar</button>
+      </div>
       </div>
 
       @if (loading) {
@@ -62,11 +83,52 @@
 
         <!-- Tabs de agrupados -->
         <div class="tabs">
+          <button class="tab" [class.active]="activeTab === 'sales'" (click)="activeTab = 'sales'">Ventas</button>
           <button class="tab" [class.active]="activeTab === 'day'" (click)="activeTab = 'day'">Por día</button>
           <button class="tab" [class.active]="activeTab === 'zone'" (click)="activeTab = 'zone'">Por zona</button>
           <button class="tab" [class.active]="activeTab === 'product'" (click)="activeTab = 'product'">Por producto</button>
           <button class="tab" [class.active]="activeTab === 'user'" (click)="activeTab = 'user'">Por usuario</button>
         </div>
+
+        @if (activeTab === 'sales') {
+          <div class="card table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Mesa</th>
+                  <th>Abierta por</th>
+                  <th>Cerrada por</th>
+                  <th>Apertura</th>
+                  <th>Cierre</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sale of sales; track sale.uuid) {
+                  <tr class="clickable-row" (click)="openDetail(sale)">
+                    <td class="ticket-cell">#{{ sale.ticket_number }}</td>
+                    <td>{{ sale.table_name }}</td>
+                    <td>{{ sale.open_user_name }}</td>
+                    <td>{{ sale.close_user_name }}</td>
+                    <td class="date-cell">{{ formatDateTime(sale.opened_at) }}</td>
+                    <td class="date-cell">{{ sale.closed_at ? formatDateTime(sale.closed_at) : '—' }}</td>
+                    <td class="total-cell text-right">
+                      {{ formatCurrency(sale.net_total) }}
+                      @if (sale.refunded_total > 0) {
+                        <div class="refund-note">Devuelto: {{ formatCurrency(sale.refunded_total) }}</div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            @if (sales.length === 0) {
+              <div class="empty-state">No hay ventas en el rango seleccionado</div>
+            }
+          </div>
+        }
 
         <!-- Por día -->
         @if (activeTab === 'day') {
@@ -173,6 +235,88 @@
           </div>
         }
 
+      }
+
+      @if (selectedSale) {
+        <div class="modal-overlay" (click)="closeDetail()">
+          <div class="modal-panel" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>Ticket #{{ selectedSale.ticket_number }}</h2>
+              <button class="modal-close" (click)="closeDetail()">✕</button>
+            </div>
+
+            <div class="modal-meta">
+              <span>Mesa: <strong>{{ selectedSale.table_name }}</strong></span>
+              <span>Camarero: <strong>{{ selectedSale.close_user_name }}</strong></span>
+              <span>Fecha: <strong>{{ formatDateTime(selectedSale.value_date) }}</strong></span>
+            </div>
+
+            <div class="refund-toolbar">
+              <select [(ngModel)]="refundMethod">
+                <option value="cash">Efectivo</option>
+                <option value="card">Tarjeta</option>
+                <option value="bizum">Bizum</option>
+              </select>
+              <input [(ngModel)]="refundReason" placeholder="Motivo de devolución" />
+              <button class="btn-refund-all" (click)="refundAllSale()">Devolver venta completa</button>
+            </div>
+
+            @if (linesLoading) {
+              <div class="modal-loading">Cargando líneas...</div>
+            } @else {
+              <table class="lines-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th class="text-center">Cant.</th>
+                    <th class="text-right">Precio u.</th>
+                    <th class="text-right">IVA</th>
+                    <th class="text-right">Subtotal</th>
+                    <th class="text-center">Devolución</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of saleLines; track line.uuid) {
+                    <tr>
+                      <td>{{ line.product_name }}</td>
+                      <td class="text-center">{{ line.quantity }}</td>
+                      <td class="text-right">{{ formatCurrency(line.price) }}</td>
+                      <td class="text-right">{{ line.tax_percentage }}%</td>
+                      <td class="text-right">
+                        {{ formatCurrency(line.line_total) }}
+                        @if (line.discount_amount > 0) {
+                          <div class="line-note">Dto: {{ formatCurrency(line.discount_amount) }}</div>
+                        }
+                        @if (line.refunded_quantity > 0) {
+                          <div class="line-note refund">Devueltas: {{ line.refunded_quantity }}</div>
+                        }
+                      </td>
+                      <td class="text-center refund-cell">
+                        @if (getRemainingQuantity(line) > 0) {
+                          <input type="number" min="1" [max]="getRemainingQuantity(line)" [(ngModel)]="refundQuantities[line.uuid]" />
+                          <button class="btn-refund-line" (click)="refundLine(line)">Devolver</button>
+                        } @else {
+                          <span class="line-note refund">Sin unidades</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="4" class="text-right"><strong>Total</strong></td>
+                    <td class="text-right total-cell"><strong>{{ formatCurrency(netLineTotal) }}</strong></td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+
+              @if (saleLines.length === 0) {
+                <div class="modal-loading">Sin líneas registradas</div>
+              }
+            }
+          </div>
+        </div>
       }
     </div>
   </div>

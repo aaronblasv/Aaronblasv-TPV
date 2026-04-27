@@ -3,112 +3,191 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-
-      <div class="page-header">
-        <div>
-          <h1>General</h1>
-          <p>Panel de administración</p>
-        </div>
-      </div>
-
       @if (loading) {
-        <div class="loading-state">Cargando datos...</div>
+        <div class="loading-state">
+          <div class="loading-state__panel">
+            <span class="dashboard-eyebrow">Backoffice</span>
+            <strong>Cargando panel de control...</strong>
+            <p>Preparando métricas, ventas y productos destacados.</p>
+          </div>
+        </div>
       } @else {
+        <section class="dashboard-hero">
+          <div class="dashboard-hero__copy">
+            <span class="dashboard-eyebrow">Dashboard</span>
+            <h1>Controla tu negocio.</h1>
+            <p>
+              Revisa rendimiento, actividad comercial y accesos rápidos desde un panel más elegante,
+              más claro y visualmente más potente.
+            </p>
 
-        <!-- KPI Cards -->
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-icon kpi-blue"></div>
+            <div class="dashboard-hero__actions">
+              @for (action of quickActions; track action.route) {
+                <button class="hero-action-chip" (click)="navigateTo(action.route)">
+                  <span class="hero-action-chip__icon">{{ action.icon }}</span>
+                  <span>{{ action.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="dashboard-hero__spotlight">
+            <div class="spotlight-card spotlight-card--primary">
+              <span class="spotlight-card__label">Facturación del mes</span>
+              <strong>{{ formatCurrency(monthlyRevenue) }}</strong>
+              <p>{{ stats.sales_this_month }} ventas registradas este mes</p>
+            </div>
+
+            <div class="spotlight-grid">
+              <div class="spotlight-card">
+                <span class="spotlight-card__label">Media diaria</span>
+                <strong>{{ formatCurrency(averageDailyRevenue) }}</strong>
+                <p>Promedio de los últimos 30 días</p>
+              </div>
+
+              <div class="spotlight-card">
+                <span class="spotlight-card__label">Mejor día</span>
+                <strong>{{ bestSalesDay ? formatCurrency(bestSalesDay.total) : '0,00 €' }}</strong>
+                <p>{{ bestSalesDay ? formatDate(bestSalesDay.day) : 'Sin ventas todavía' }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="kpi-grid">
+          <div class="kpi-card kpi-card--accent">
+            <div class="kpi-icon kpi-blue">PR</div>
             <div class="kpi-info">
               <p class="kpi-label">Productos</p>
               <p class="kpi-value">{{ stats.products }}</p>
             </div>
+            <span class="kpi-badge">Catálogo</span>
           </div>
+
           <div class="kpi-card">
-            <div class="kpi-icon kpi-purple"></div>
+            <div class="kpi-icon kpi-purple">FA</div>
             <div class="kpi-info">
               <p class="kpi-label">Familias</p>
               <p class="kpi-value">{{ stats.families }}</p>
             </div>
+            <span class="kpi-badge">Orden</span>
           </div>
+
           <div class="kpi-card">
-            <div class="kpi-icon kpi-orange"></div>
+            <div class="kpi-icon kpi-orange">US</div>
             <div class="kpi-info">
               <p class="kpi-label">Usuarios</p>
               <p class="kpi-value">{{ stats.users }}</p>
             </div>
+            <span class="kpi-badge">Equipo</span>
           </div>
+
           <div class="kpi-card">
-            <div class="kpi-icon kpi-green"></div>
+            <div class="kpi-icon kpi-green">VE</div>
             <div class="kpi-info">
               <p class="kpi-label">Ventas este mes</p>
               <p class="kpi-value">{{ stats.sales_this_month }}</p>
             </div>
+            <span class="kpi-badge">Actividad</span>
           </div>
+
           <div class="kpi-card kpi-card--wide">
-            <div class="kpi-icon kpi-teal"></div>
+            <div class="kpi-icon kpi-teal">€</div>
             <div class="kpi-info">
               <p class="kpi-label">Facturación este mes</p>
               <p class="kpi-value kpi-value--large">{{ formatCurrency(stats.revenue_this_month) }}</p>
             </div>
+            <span class="kpi-badge">Ingresos</span>
           </div>
+        </section>
+
+        <div class="section-head">
+          <div>
+            <span class="section-head__eyebrow">Operativa</span>
+            <h2>Acciones rápidas</h2>
+          </div>
+          <p>Atajos para las tareas más frecuentes del backoffice.</p>
         </div>
 
-        <!-- Quick actions -->
-        <div class="section-title">Acciones rápidas</div>
         <div class="actions-grid">
           @for (action of quickActions; track action.route) {
             <button class="action-card" (click)="navigateTo(action.route)">
               <span class="action-icon">{{ action.icon }}</span>
-              <span class="action-label">{{ action.label }}</span>
+              <span class="action-copy">
+                <strong>{{ action.label }}</strong>
+                <small>Acceso directo</small>
+              </span>
             </button>
           }
         </div>
 
-        <!-- Charts row -->
         <div class="charts-row">
-
-          <!-- Sales by day chart -->
           <div class="card chart-card">
-            <h2 class="card-title">Ventas últimos 30 días</h2>
+            <div class="card-head">
+              <div>
+                <span class="card-head__eyebrow">Rendimiento</span>
+                <h2 class="card-title">Ventas últimos 30 días</h2>
+              </div>
+              <div class="chart-summary-pills">
+                <span class="summary-pill">
+                  <strong>{{ formatCurrency(averageDailyRevenue) }}</strong>
+                  <small>Media</small>
+                </span>
+                <span class="summary-pill">
+                  <strong>{{ bestSalesDay ? formatCurrency(bestSalesDay.total) : '0,00 €' }}</strong>
+                  <small>Pico</small>
+                </span>
+              </div>
+            </div>
             @if (salesByDay.length === 0) {
               <div class="empty-chart">Sin datos en este periodo</div>
             } @else {
               <div class="chart-container">
                 <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" preserveAspectRatio="xMidYMid meet">
-                  <!-- Y axis labels -->
+                  <defs>
+                    <linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#7CB9E8" stop-opacity="0.34"></stop>
+                      <stop offset="100%" stop-color="#7CB9E8" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <linearGradient id="salesLineGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="#7CB9E8"></stop>
+                      <stop offset="100%" stop-color="#6BCB8B"></stop>
+                    </linearGradient>
+                  </defs>
+
                   @for (label of getYAxisLabels(); track label.y) {
                     <text [attr.x]="chartPaddingLeft - 6" [attr.y]="label.y + 4"
                           text-anchor="end" class="chart-label">{{ label.value }}</text>
                     <line [attr.x1]="chartPaddingLeft" [attr.y1]="label.y"
-                          [attr.x2]="chartWidth - 16" [attr.y2]="label.y"
+                          [attr.x2]="chartWidth - chartPaddingRight" [attr.y2]="label.y"
                           class="chart-grid-line" />
                   }
-                  <!-- Bars -->
-                  @for (day of salesByDay; track day.day; let i = $index) {
-                    <rect
-                      [attr.x]="getBarX(i)"
-                      [attr.y]="getBarY(day.total)"
-                      [attr.width]="getBarWidth()"
-                      [attr.height]="getBarHeight(day.total)"
-                      class="chart-bar"
-                      rx="3"
-                    />
+
+                  <path [attr.d]="chartAreaPath" class="chart-area"></path>
+                  <path [attr.d]="chartLinePath" class="chart-line"></path>
+
+                  @for (point of chartPoints; track point.day) {
+                    <circle [attr.cx]="point.x" [attr.cy]="point.y" r="4.5" class="chart-point"></circle>
                     <text
-                      [attr.x]="getBarX(i) + getBarWidth() / 2"
+                      [attr.x]="point.x"
                       [attr.y]="chartHeight - 6"
                       text-anchor="middle"
                       class="chart-label chart-label--day"
-                    >{{ getBarLabel(day) }}</text>
+                    >{{ point.label }}</text>
                   }
                 </svg>
               </div>
             }
           </div>
 
-          <!-- Top products chart -->
           <div class="card chart-card">
-            <h2 class="card-title">Productos más vendidos</h2>
+            <div class="card-head">
+              <div>
+                <span class="card-head__eyebrow">Popularidad</span>
+                <h2 class="card-title">Productos más vendidos</h2>
+              </div>
+              <span class="summary-tag">{{ totalTopProductsQuantity }} uds</span>
+            </div>
             @if (topProducts.length === 0) {
               <div class="empty-chart">Sin datos disponibles</div>
             } @else {
@@ -117,10 +196,13 @@
                   <div class="product-row">
                     <div class="product-rank">{{ i + 1 }}</div>
                     <div class="product-info">
-                      <div class="product-name">{{ product.name }}</div>
+                      <div class="product-line">
+                        <div class="product-name">{{ product.name }}</div>
+                        <div class="product-share">{{ getProductShareLabel(product.total_quantity) }}</div>
+                      </div>
                       <div class="product-bar-track">
                         <div class="product-bar-fill"
-                             [style.width.px]="getProductBarWidth(product.total_quantity)">
+                             [style.width.%]="getProductBarWidth(product.total_quantity)">
                         </div>
                       </div>
                     </div>
@@ -133,9 +215,14 @@
 
         </div>
 
-        <!-- Sales this month table -->
         <div class="card table-card">
-          <h2 class="card-title">Últimas ventas del mes</h2>
+          <div class="card-head">
+            <div>
+              <span class="card-head__eyebrow">Actividad</span>
+              <h2 class="card-title">Últimas ventas del mes</h2>
+            </div>
+            <span class="summary-tag">{{ salesThisMonth.length }} tickets</span>
+          </div>
           @if (salesThisMonth.length === 0) {
             <div class="empty-chart">No hay ventas este mes</div>
           } @else {

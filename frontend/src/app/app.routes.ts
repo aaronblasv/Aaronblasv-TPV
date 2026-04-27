@@ -49,8 +49,8 @@ export const routes: Routes = [
   },
   {
     path: 'sales',
-    loadComponent: () => import('./pages/backoffice/sales/sales.page').then(m => m.SalesPage),
-    canActivate: [authGuard],
+    redirectTo: 'reports',
+    pathMatch: 'full',
   },
   {
     path: 'reports',

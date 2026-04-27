@@ -1,32 +1,71 @@
 <ion-content [fullscreen]="true">
   <div class="login-container">
-    <div class="login-card">
-      <h1>TPV Pro</h1>
-      <p class="subtitle">Backoffice</p>
+    <div class="login-shell">
+      <section class="login-hero">
+        <div class="login-brand">
+          <div class="login-brand__icon">T</div>
+          <div>
+            <span class="login-brand__name">TPV Pro</span>
+            <span class="login-brand__subtitle">Acceso al panel de gestión</span>
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>Email</label>
-        <input
-          type="email"
-          [(ngModel)]="email"
-          placeholder="Enter your email"
-        />
-      </div>
+        <div class="login-copy">
+          <span class="login-copy__eyebrow">Carbon Frost</span>
+          <h1>Un acceso más cercano al estilo del TPV</h1>
+          <p>
+            Inicia sesión para gestionar tu restaurante con la misma estética sobria,
+            elegante y enfocada en operación que ya tiene el terminal de venta.
+          </p>
+        </div>
 
-      <div class="form-group">
-        <label>Password</label>
-        <input
-          type="password"
-          [(ngModel)]="password"
-          placeholder="Enter your password"
-        />
-      </div>
+        <div class="login-highlights">
+          <div class="login-highlight">
+            <strong>Operación fluida</strong>
+            <span>Interfaz visual coherente con caja, mesas y pedidos.</span>
+          </div>
+          <div class="login-highlight">
+            <strong>Control total</strong>
+            <span>Accede a productos, usuarios, impuestos y registro de actividad.</span>
+          </div>
+        </div>
+      </section>
 
-      <div class="error" *ngIf="error">{{ error }}</div>
+      <section class="login-card">
+        <div class="login-card__header">
+          <span class="login-card__badge">Backoffice</span>
+          <h2>Iniciar sesión</h2>
+          <p>Introduce tus credenciales para continuar.</p>
+        </div>
 
-      <button class="btn-primary" (click)="login()" [disabled]="loading">
-        {{ loading ? 'Logging in...' : 'Login' }}
-      </button>
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            [(ngModel)]="email"
+            placeholder="tu@email.com"
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="password"
+            placeholder="Escribe tu contraseña"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="error" *ngIf="error">{{ error }}</div>
+
+        <button class="btn-primary" (click)="login()" [disabled]="loading">
+          {{ loading ? 'Accediendo...' : 'Entrar al backoffice' }}
+        </button>
+
+        <p class="login-card__footer">Entorno interno para personal autorizado del restaurante.</p>
+      </section>
     </div>
   </div>
 </ion-content>

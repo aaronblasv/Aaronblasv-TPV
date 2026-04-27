@@ -3,52 +3,104 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Configuración</span>
           <h1>Ajustes</h1>
-          <p>Configuración de tu cuenta y la interfaz</p>
+          <p>Personaliza tu espacio de trabajo con el mismo lenguaje moderno Carbon que ahora marca todo el backoffice.</p>
         </div>
-      </div>
-
-      <div class="settings-card">
-        <h2>Mi cuenta</h2>
-        <div class="user-info-row">
-          <div class="user-avatar-large">
-            {{ currentUser?.name?.charAt(0) | uppercase }}
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Rol</span>
+              <strong>{{ getRoleLabel() }}</strong>
+              <small>Perfil activo en este backoffice</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Escala</span>
+              <strong>{{ uiScale }}%</strong>
+              <small>Tamaño visual actual</small>
+            </div>
           </div>
-          <div>
-            <p class="user-name">{{ currentUser?.name }}</p>
-            <p class="user-role">{{ getRoleLabel() }}</p>
-            <p class="user-email">{{ currentUser?.email }}</p>
-            <p class="user-restaurant">{{ currentUser?.restaurant_name }}</p>
+        </div>
+      </section>
+
+      <div class="settings-grid">
+        <section class="settings-card settings-card--account">
+          <div class="settings-card__header">
+            <div>
+              <span class="settings-card__eyebrow">Perfil</span>
+              <h2>Mi cuenta</h2>
+            </div>
+            <span class="settings-role-pill">{{ getRoleLabel() }}</span>
           </div>
-        </div>
-      </div>
 
-      <div class="settings-card">
-        <h2>Tamaño de la interfaz</h2>
-        <p class="settings-desc">Ajusta el tamaño de todos los elementos de la aplicación.</p>
+          <div class="user-info-row">
+            <div class="user-avatar-large">
+              {{ currentUser?.name?.charAt(0) | uppercase }}
+            </div>
 
-        <div class="scale-controls">
-          <button class="btn-scale" (click)="changeScale(80)" [class.active]="uiScale === 80">Pequeño</button>
-          <button class="btn-scale" (click)="changeScale(100)" [class.active]="uiScale === 100">Normal</button>
-          <button class="btn-scale" (click)="changeScale(115)" [class.active]="uiScale === 115">Grande</button>
-          <button class="btn-scale" (click)="changeScale(130)" [class.active]="uiScale === 130">Muy grande</button>
-        </div>
+            <div class="user-summary">
+              <p class="user-name">{{ currentUser?.name }}</p>
+              <p class="user-email">{{ currentUser?.email }}</p>
+              <p class="user-restaurant">{{ currentUser?.restaurant_name }}</p>
+            </div>
+          </div>
 
-        <div class="scale-slider">
-          <span>80%</span>
-          <input
-            type="range"
-            min="80"
-            max="130"
-            step="5"
-            [value]="uiScale"
-            (input)="changeScale(+$any($event.target).value)"
-          />
-          <span>130%</span>
-          <span class="scale-value">{{ uiScale }}%</span>
-        </div>
+          <div class="account-metadata">
+            <div class="account-meta-card">
+              <span class="account-meta-card__label">Rol actual</span>
+              <strong>{{ getRoleLabel() }}</strong>
+            </div>
+            <div class="account-meta-card">
+              <span class="account-meta-card__label">Restaurante</span>
+              <strong>{{ currentUser?.restaurant_name || 'Sin asignar' }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-card settings-card--scale">
+          <div class="settings-card__header">
+            <div>
+              <span class="settings-card__eyebrow">Interfaz</span>
+              <h2>Tamaño visual</h2>
+            </div>
+            <span class="scale-pill">{{ uiScale }}%</span>
+          </div>
+
+          <p class="settings-desc">Ajusta el tamaño de todos los elementos de la aplicación para mejorar lectura y comodidad.</p>
+
+          <div class="scale-controls">
+            <button class="btn-scale" (click)="changeScale(80)" [class.active]="uiScale === 80">Pequeño</button>
+            <button class="btn-scale" (click)="changeScale(100)" [class.active]="uiScale === 100">Normal</button>
+            <button class="btn-scale" (click)="changeScale(115)" [class.active]="uiScale === 115">Grande</button>
+            <button class="btn-scale" (click)="changeScale(130)" [class.active]="uiScale === 130">Muy grande</button>
+          </div>
+
+          <div class="scale-preview">
+            <div class="scale-preview__sample" [style.transform]="'scale(' + (uiScale / 100) + ')'">
+              <span class="scale-preview__title">Vista previa</span>
+              <div class="scale-preview__row">
+                <span class="scale-preview__chip">Mesa 12</span>
+                <strong>128,40 €</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="scale-slider">
+            <span>80%</span>
+            <input
+              type="range"
+              min="80"
+              max="130"
+              step="5"
+              [value]="uiScale"
+              (input)="changeScale(+$any($event.target).value)"
+            />
+            <span>130%</span>
+            <span class="scale-value">{{ uiScale }}%</span>
+          </div>
+        </section>
       </div>
     </div>
   </div>

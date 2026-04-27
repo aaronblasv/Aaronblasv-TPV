@@ -3,12 +3,27 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Caja</span>
           <h1>Caja</h1>
-          <p>Gestiona aperturas, cierres y el resumen del turno actual.</p>
+          <p>Controla aperturas, cierres y diferencias de caja con una interfaz más sobria, elegante y útil en presentación.</p>
         </div>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Turno</span>
+              <strong>{{ currentShift ? 'Abierto' : 'Cerrado' }}</strong>
+              <small>Estado actual de la caja</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Último cierre</span>
+              <strong>{{ lastClosedShift ? formatCurrency(lastClosedShift.counted_cash) : formatCurrency(0) }}</strong>
+              <small>Efectivo contado más reciente</small>
+            </div>
+          </div>
+        </div>
+      </section>
 
       @if (feedback) {
         <div class="cash-feedback" [class.is-error]="feedback.type === 'error'">
@@ -22,7 +37,7 @@
         <section class="cash-grid">
           <div class="cash-main-column">
             <div class="card cash-status-card">
-              <div>
+              <div class="cash-status-copy">
                 <span class="cash-status-label">Estado actual</span>
                 <strong>{{ currentShift ? 'Caja abierta' : 'Caja cerrada' }}</strong>
                 <p>{{ currentShift ? ('Turno iniciado el ' + formatDate(currentShift.opened_at)) : 'No hay ningún turno de caja activo.' }}</p>
@@ -46,45 +61,56 @@
                   <div class="cash-summary-item cash-summary-item--primary">
                     <span>Fondo inicial</span>
                     <strong>{{ formatCurrency(currentShift.opening_cash) }}</strong>
+                    <small>Base operativa del turno</small>
                   </div>
                   <div class="cash-summary-item">
                     <span>Efectivo neto</span>
                     <strong>{{ formatCurrency(currentShift.cash_total) }}</strong>
+                    <small>Entradas y salidas en metálico</small>
                   </div>
                   <div class="cash-summary-item">
                     <span>Tarjeta neto</span>
                     <strong>{{ formatCurrency(currentShift.card_total) }}</strong>
+                    <small>Cobro digital confirmado</small>
                   </div>
                   <div class="cash-summary-item">
                     <span>Bizum neto</span>
                     <strong>{{ formatCurrency(currentShift.bizum_total) }}</strong>
+                    <small>Transferencias instantáneas</small>
                   </div>
                   <div class="cash-summary-item">
                     <span>Devoluciones</span>
                     <strong>{{ formatCurrency(currentShift.refund_total) }}</strong>
+                    <small>Importes reembolsados</small>
                   </div>
                   <div class="cash-summary-item cash-summary-item--success">
                     <span>Efectivo esperado</span>
                     <strong>{{ formatCurrency(currentShift.expected_cash) }}</strong>
+                    <small>Referencia para el cierre</small>
                   </div>
                 </div>
 
                 <div class="cash-form-section">
                   <div class="cash-section-title">
+                    <span class="cash-section-kicker">Cierre operativo</span>
                     <h3>Cerrar caja</h3>
                     <p>Introduce el efectivo contado y cualquier incidencia del turno.</p>
                   </div>
 
-                  <div class="cash-form-grid">
-                    <label class="cash-field">
-                      <span>Efectivo contado</span>
-                      <input type="number" min="0" [(ngModel)]="countedCash" />
-                    </label>
+                  <div class="cash-form-shell">
+                    <div class="cash-form-grid">
+                      <label class="cash-field cash-field--accent">
+                        <span>Efectivo contado</span>
+                        <input type="number" min="0" [(ngModel)]="countedCash" />
+                        <small>Se precarga con el efectivo esperado del turno.</small>
+                      </label>
 
-                    <label class="cash-field">
-                      <span>Notas de cierre</span>
-                      <textarea rows="4" [(ngModel)]="closingNotes"></textarea>
-                    </label>
+                      <label class="cash-field">
+                        <span>Notas de cierre</span>
+                        <textarea rows="4" [(ngModel)]="closingNotes"></textarea>
+                        <small>Anota incidencias, arqueos o aclaraciones.</small>
+                      </label>
+                    </div>
                   </div>
 
                   <button class="btn-primary" (click)="closeShift()" [disabled]="submitting">
@@ -102,16 +128,20 @@
                   </div>
                 </div>
 
-                <div class="cash-form-grid">
-                  <label class="cash-field">
-                    <span>Fondo inicial</span>
-                    <input type="number" min="0" [(ngModel)]="openingCash" />
-                  </label>
+                <div class="cash-form-shell">
+                  <div class="cash-form-grid">
+                    <label class="cash-field cash-field--accent">
+                      <span>Fondo inicial</span>
+                      <input type="number" min="0" [(ngModel)]="openingCash" />
+                      <small>Importe base con el que arranca la caja.</small>
+                    </label>
 
-                  <label class="cash-field">
-                    <span>Notas de apertura</span>
-                    <textarea rows="4" [(ngModel)]="openingNotes"></textarea>
-                  </label>
+                    <label class="cash-field">
+                      <span>Notas de apertura</span>
+                      <textarea rows="4" [(ngModel)]="openingNotes"></textarea>
+                      <small>Turno, responsable o cualquier observación inicial.</small>
+                    </label>
+                  </div>
                 </div>
 
                 <button class="btn-primary" (click)="openShift()" [disabled]="submitting">
@@ -124,6 +154,7 @@
           <aside class="cash-side-column">
             <article class="card cash-side-card">
               <div class="cash-section-title">
+                <span class="cash-section-kicker">Snapshot</span>
                 <h3>Estado rápido</h3>
                 <p>Consulta el punto de situación antes de actuar.</p>
               </div>
@@ -147,6 +178,7 @@
             @if (lastClosedShift) {
               <article class="card cash-side-card">
                 <div class="cash-section-title">
+                  <span class="cash-section-kicker">Referencia</span>
                   <h3>Último cierre</h3>
                   <p>{{ formatDate(lastClosedShift.closed_at) }}</p>
                 </div>

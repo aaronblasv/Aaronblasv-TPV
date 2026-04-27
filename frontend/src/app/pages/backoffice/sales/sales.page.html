@@ -3,14 +3,29 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Ventas</span>
           <h1>Ventas</h1>
-          <p>{{ sales.length }} ventas registradas</p>
+          <p>Supervisa tickets, aperturas, cierres y devoluciones con un espacio más elegante y orientado al análisis.</p>
         </div>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Ventas</span>
+              <strong>{{ sales.length }}</strong>
+              <small>Tickets en el rango cargado</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Detalle</span>
+              <strong>Refunds</strong>
+              <small>Incluye devoluciones por línea o total</small>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <!-- Filtros -->
+      <div class="bo-toolbar-card">
       <div class="filter-bar">
         <div class="filter-group">
           <label>Desde</label>
@@ -22,6 +37,7 @@
         </div>
         <button class="btn-apply" (click)="applyFilter()">Filtrar</button>
         <button class="btn-clear" (click)="clearFilter()">Limpiar</button>
+      </div>
       </div>
 
       <div class="table-card">

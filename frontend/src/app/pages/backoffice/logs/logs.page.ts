@@ -31,13 +31,22 @@ export class LogsPage implements OnInit {
   readonly actionLabels: Record<string, string> = {
     'cash_shift.closed': 'Caja cerrada',
     'cash_shift.opened': 'Caja abierta',
+    'family.activated': 'Familia activada',
+    'family.deactivated': 'Familia desactivada',
     'invoice.generated': 'Factura generada',
     'order.cancelled': 'Pedido cancelado',
     'order.closed': 'Pedido cerrado',
     'order.discount.updated': 'Descuento de pedido actualizado',
+    'order.line.added': 'Producto añadido al pedido',
+    'order.line.discount.updated': 'Descuento de línea actualizado',
+    'order.line.voided_after_kitchen': 'Línea anulada tras enviar a cocina',
     'order.opened': 'Pedido abierto',
+    'order.sent_to_kitchen': 'Pedido enviado a cocina',
     'order.transferred': 'Pedido transferido',
     'payment.registered': 'Pago registrado',
+    'product.activated': 'Producto activado',
+    'product.deactivated': 'Producto desactivado',
+    'sale.refunded': 'Reembolso registrado',
   };
 
   ngOnInit() {
@@ -106,6 +115,9 @@ export class LogsPage implements OnInit {
     if (action.includes('cash_shift')) return 'badge-amber';
     if (action.includes('opened') || action.includes('generated')) return 'badge-green';
     if (action.includes('closed') || action.includes('registered')) return 'badge-blue';
+    if (action.includes('added') || action.includes('activated') || action.includes('sent_to_kitchen')) return 'badge-green';
+    if (action.includes('updated') || action.includes('transferred')) return 'badge-blue';
+    if (action.includes('voided') || action.includes('deactivated') || action.includes('refunded')) return 'badge-red';
     if (action.includes('cancelled')) return 'badge-red';
     return 'badge-gray';
   }

@@ -3,13 +3,28 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Equipo</span>
           <h1>Usuarios</h1>
-          <p>Gestiona los usuarios del restaurante</p>
+          <p>Administra el equipo con una vista más limpia, moderna y pensada para lectura rápida.</p>
         </div>
-        <button class="btn-primary" (click)="openForm()">+ Nuevo Usuario</button>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Usuarios</span>
+              <strong>{{ users.length }}</strong>
+              <small>Personal del restaurante</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Acceso</span>
+              <strong>Roles</strong>
+              <small>Admin, supervisor y sala</small>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="openForm()">+ Nuevo Usuario</button>
+        </div>
+      </section>
 
       <div class="table-card">
         <table>

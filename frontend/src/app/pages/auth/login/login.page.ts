@@ -28,7 +28,10 @@ export class LoginPage {
     this.error = '';
     this.loading = true;
 
-    this.authService.login(this.email, this.password).subscribe({
+    const normalizedEmail = this.email.trim().toLowerCase();
+    this.email = normalizedEmail;
+
+    this.authService.login(normalizedEmail, this.password).subscribe({
       next: () => {
         this.router.navigate(['/dashboard']);
       },

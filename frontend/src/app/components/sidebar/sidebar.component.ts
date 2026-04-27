@@ -4,7 +4,14 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/api/auth.service';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { homeOutline, settingsOutline, closeOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, menuOutline, documentTextOutline, cashOutline, barChartOutline, walletOutline } from 'ionicons/icons';
+import { homeOutline, settingsOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, barChartOutline, walletOutline, chevronDownOutline, arrowForwardOutline } from 'ionicons/icons';
+
+type SidebarItem = {
+  label: string;
+  route: string;
+  icon: string;
+  meta?: string;
+};
 
 @Component({
   selector: 'app-sidebar',
@@ -14,41 +21,39 @@ import { homeOutline, settingsOutline, closeOutline, receiptOutline, folderOutli
   imports: [CommonModule, RouterModule, IonIcon]
 })
 export class SidebarComponent implements OnInit {
-
-  collapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-  isOpen = false;
   currentUser: any = null;
   canSwitchToTpv = false;
+  isTpvMenuOpen = false;
 
-  menuItems = [
-    { label: 'General', route: '/dashboard', icon: 'home-outline' },
-    { label: 'Impuestos', route: '/taxes', icon: 'receipt-outline' },
-    { label: 'Familias', route: '/families', icon: 'folder-outline' },
-    { label: 'Productos', route: '/products', icon: 'cube-outline' },
-    { label: 'Zonas', route: '/zones', icon: 'location-outline' },
-    { label: 'Mesas', route: '/tables', icon: 'grid-outline' },
-    { label: 'Usuarios', route: '/users', icon: 'people-outline' },
-    { label: 'Ventas', route: '/sales', icon: 'cash-outline' },
-    { label: 'Caja', route: '/cash-shifts', icon: 'wallet-outline' },
-    { label: 'Informes', route: '/reports', icon: 'bar-chart-outline' },
-    { label: 'Registro', route: '/logs', icon: 'document-text-outline' },
-    { label: 'Ajustes', route: '/settings', icon: 'settings-outline' },
-];
+  menuItems: SidebarItem[] = [
+    { label: 'General', route: '/dashboard', icon: 'home-outline', meta: 'Resumen' },
+    { label: 'Caja', route: '/cash-shifts', icon: 'wallet-outline', meta: 'Turnos' },
+    { label: 'Informes', route: '/reports', icon: 'bar-chart-outline', meta: 'Ventas' },
+    { label: 'Registro', route: '/logs', icon: 'document-text-outline', meta: 'Actividad' },
+    { label: 'Ajustes', route: '/settings', icon: 'settings-outline', meta: 'Sistema' },
+  ];
+
+  tpvItems: SidebarItem[] = [
+    { label: 'Impuestos', route: '/taxes', icon: 'receipt-outline', meta: 'CRUD' },
+    { label: 'Familias', route: '/families', icon: 'folder-outline', meta: 'CRUD' },
+    { label: 'Productos', route: '/products', icon: 'cube-outline', meta: 'CRUD' },
+    { label: 'Zonas', route: '/zones', icon: 'location-outline', meta: 'CRUD' },
+    { label: 'Mesas', route: '/tables', icon: 'grid-outline', meta: 'CRUD' },
+    { label: 'Usuarios', route: '/users', icon: 'people-outline', meta: 'CRUD' },
+  ];
 
   constructor(
     private authService: AuthService,
     private router: Router,
 ) {
-    addIcons({ homeOutline, settingsOutline, closeOutline, menuOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, cashOutline, barChartOutline, walletOutline });
+  addIcons({ homeOutline, settingsOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, barChartOutline, walletOutline, chevronDownOutline, arrowForwardOutline });
 }
 
   ngOnInit() {
     const role = this.authService.getRole();
     this.canSwitchToTpv = role === 'admin' || role === 'supervisor';
 
-    if (this.canSwitchToTpv && !this.menuItems.some(i => i.route === '/tpv')) {
-      this.menuItems.splice(1, 0, { label: 'TPV', route: '/tpv', icon: 'restaurant-outline' });
-    }
+    this.isTpvMenuOpen = this.isTpvRouteActive();
 
     this.authService.me().subscribe({
       next: (user) => this.currentUser = user,
@@ -72,15 +77,20 @@ export class SidebarComponent implements OnInit {
   onNavItemClick(event: Event) {
     (event.currentTarget as HTMLElement | null)?.blur();
     this.releaseFocus();
-    this.toggleSidebar();
   }
 
-  toggleSidebar() {
-    this.isOpen = !this.isOpen;
+  toggleTpvMenu(event: Event) {
+    event.preventDefault();
+    this.isTpvMenuOpen = !this.isTpvMenuOpen;
+    this.onNavItemClick(event);
+  }
 
-    if (!this.isOpen) {
-      this.releaseFocus();
-    }
+  isRouteActive(route: string) {
+    return this.router.url === route;
+  }
+
+  isTpvRouteActive() {
+    return this.tpvItems.some((item) => this.router.url === item.route);
   }
 
   private releaseFocus() {

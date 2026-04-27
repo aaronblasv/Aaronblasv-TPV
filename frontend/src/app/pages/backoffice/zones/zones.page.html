@@ -3,13 +3,28 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Sala</span>
           <h1>Zonas</h1>
-          <p>Gestiona las zonas del restaurante</p>
+          <p>Distribuye el restaurante por zonas con un panel más moderno y visualmente alineado con el resto.</p>
         </div>
-        <button class="btn-primary" (click)="openForm()">+ Nueva Zona</button>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Zonas</span>
+              <strong>{{ zones.length }}</strong>
+              <small>Áreas disponibles en sala</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Uso</span>
+              <strong>Plano</strong>
+              <small>Base del reparto de mesas</small>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="openForm()">+ Nueva Zona</button>
+        </div>
+      </section>
 
       <div class="table-card">
         <table>

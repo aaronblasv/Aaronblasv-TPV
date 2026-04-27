@@ -3,16 +3,31 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Sala</span>
           <h1>Mesas</h1>
-          <p>Gestiona las mesas del restaurante</p>
+          <p>Visualiza la estructura de sala por zonas con un estilo más refinado y coherente con el dashboard.</p>
         </div>
-        <button class="btn-primary" (click)="openForm()">+ Nueva Mesa</button>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Zonas</span>
+              <strong>{{ tablesByZone.length }}</strong>
+              <small>Agrupaciones visibles</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Operativa</span>
+              <strong>TPV</strong>
+              <small>Base visual del plano de mesas</small>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="openForm()">+ Nueva Mesa</button>
+        </div>
+      </section>
 
       @if (tablesByZone.length === 0) {
-        <div class="empty-state">
+        <div class="empty-state bo-empty-panel">
           <h2>No hay mesas creadas</h2>
           <p>Crea la primera mesa para empezar a organizar el salón por zonas.</p>
         </div>

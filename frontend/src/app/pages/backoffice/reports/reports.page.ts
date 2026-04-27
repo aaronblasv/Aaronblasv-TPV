@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { SaleService } from '../../../services/api/sale.service';
-import { SalesReport } from '../../../types/sale.model';
+import { RefundPayload, Sale, SaleLine, SalesReport } from '../../../types/sale.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-reports',
@@ -18,34 +19,126 @@ export class ReportsPage implements OnInit {
 
   loading = false;
   report: SalesReport = { by_day: [], by_zone: [], by_product: [], by_user: [] };
+  sales: Sale[] = [];
 
   from = '';
   to = '';
 
-  activeTab: 'day' | 'zone' | 'product' | 'user' = 'day';
+  activeTab: 'sales' | 'day' | 'zone' | 'product' | 'user' = 'sales';
+
+  selectedSale: Sale | null = null;
+  saleLines: SaleLine[] = [];
+  linesLoading = false;
+  refundMethod: 'cash' | 'card' | 'bizum' = 'cash';
+  refundReason = '';
+  refundQuantities: Record<string, number> = {};
 
   ngOnInit() {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     this.from = firstDay.toISOString().split('T')[0];
     this.to   = now.toISOString().split('T')[0];
-    this.loadReport();
+    this.loadData();
   }
 
-  loadReport() {
+  loadData() {
     this.loading = true;
-    this.saleService.getReport(this.from || undefined, this.to || undefined).subscribe({
-      next: (data) => { this.report = data; this.loading = false; },
+    forkJoin({
+      report: this.saleService.getReport(this.from || undefined, this.to || undefined),
+      sales: this.saleService.getAll(this.from || undefined, this.to || undefined),
+    }).subscribe({
+      next: ({ report, sales }) => {
+        this.report = report;
+        this.sales = sales;
+        this.loading = false;
+      },
       error: () => { this.loading = false; },
     });
   }
 
-  applyFilter() { this.loadReport(); }
+  applyFilter() { this.loadData(); }
 
-  clearFilter() { this.from = ''; this.to = ''; this.loadReport(); }
+  clearFilter() { this.from = ''; this.to = ''; this.loadData(); }
 
   formatCurrency(cents: number): string {
     return (cents / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+  }
+
+  formatDateTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  openDetail(sale: Sale) {
+    this.selectedSale = sale;
+    this.saleLines = [];
+    this.linesLoading = true;
+    this.saleService.getLines(sale.uuid).subscribe({
+      next: (lines) => {
+        this.saleLines = lines;
+        this.refundQuantities = Object.fromEntries(lines.map(line => [line.uuid, Math.max(1, line.quantity - line.refunded_quantity)]));
+        this.linesLoading = false;
+      },
+      error: () => { this.linesLoading = false; },
+    });
+  }
+
+  closeDetail() {
+    this.selectedSale = null;
+    this.saleLines = [];
+  }
+
+  get netLineTotal(): number {
+    return this.saleLines.reduce((sum, line) => sum + (line.line_total - Math.round((line.line_total / line.quantity) * line.refunded_quantity)), 0);
+  }
+
+  getRemainingQuantity(line: SaleLine): number {
+    return Math.max(0, line.quantity - line.refunded_quantity);
+  }
+
+  refundAllSale() {
+    if (!this.selectedSale) {
+      return;
+    }
+
+    const payload: RefundPayload = {
+      method: this.refundMethod,
+      reason: this.refundReason || undefined,
+      refund_all: true,
+    };
+
+    this.saleService.createRefund(this.selectedSale.uuid, payload).subscribe({
+      next: () => {
+        this.loadData();
+        this.openDetail(this.selectedSale!);
+      },
+    });
+  }
+
+  refundLine(line: SaleLine) {
+    if (!this.selectedSale) {
+      return;
+    }
+
+    const quantity = Math.min(this.getRemainingQuantity(line), Math.max(1, Number(this.refundQuantities[line.uuid] || 0)));
+    const payload: RefundPayload = {
+      method: this.refundMethod,
+      reason: this.refundReason || undefined,
+      refund_all: false,
+      lines: [{
+        sale_line_uuid: line.uuid,
+        quantity,
+      }],
+    };
+
+    this.saleService.createRefund(this.selectedSale.uuid, payload).subscribe({
+      next: () => {
+        this.loadData();
+        this.openDetail(this.selectedSale!);
+      },
+    });
   }
 
   // ---- SVG bar chart (by_day) ----

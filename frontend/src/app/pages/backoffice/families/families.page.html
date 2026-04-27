@@ -3,13 +3,28 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Catálogo</span>
           <h1>Familias</h1>
-          <p>Gestiona las familias de productos</p>
+          <p>Organiza el catálogo por familias con una presentación más cuidada y fácil de revisar.</p>
         </div>
-        <button class="btn-primary" (click)="openForm()">+ Nueva Familia</button>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Familias</span>
+              <strong>{{ families.length }}</strong>
+              <small>Grupos activos e inactivos</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Control</span>
+              <strong>CRUD</strong>
+              <small>Edita y activa según operativa</small>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="openForm()">+ Nueva Familia</button>
+        </div>
+      </section>
 
       <div class="table-card">
         <table>

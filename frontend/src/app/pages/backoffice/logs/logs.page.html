@@ -3,14 +3,29 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Actividad</span>
           <h1>Registro de actividad</h1>
-          <p>{{ total }} registros</p>
+          <p>Consulta qué ha ocurrido en el sistema con una lectura más clara, ordenada y visualmente moderna.</p>
         </div>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Registros</span>
+              <strong>{{ total }}</strong>
+              <small>Eventos auditados en el sistema</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Vista</span>
+              <strong>Logs</strong>
+              <small>Filtra por acción y usuario</small>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div class="filters-card">
+      <div class="filters-card bo-toolbar-card">
         <div class="filters-grid">
           <label class="filter-field">
             <span>Tipo de acción</span>

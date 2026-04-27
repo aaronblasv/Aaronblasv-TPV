@@ -3,13 +3,28 @@
     <app-sidebar></app-sidebar>
 
     <div class="main-content">
-      <div class="page-header">
-        <div>
+      <section class="bo-page-hero">
+        <div class="bo-page-hero__copy">
+          <span class="bo-page-eyebrow">Catálogo</span>
           <h1>Productos</h1>
-          <p>Gestiona el catálogo de productos</p>
+          <p>Ordena el catálogo por familias con el mismo lenguaje moderno Carbon del dashboard y login.</p>
         </div>
-        <button class="btn-primary" (click)="openForm()">+ Nuevo Producto</button>
-      </div>
+        <div class="bo-page-hero__aside">
+          <div class="bo-mini-stats">
+            <div class="bo-mini-stat">
+              <span>Familias</span>
+              <strong>{{ productsByFamily.length }}</strong>
+              <small>Bloques visibles en catálogo</small>
+            </div>
+            <div class="bo-mini-stat">
+              <span>Fiscalidad</span>
+              <strong>{{ taxes.length }}</strong>
+              <small>Impuestos listos para asignar</small>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="openForm()">+ Nuevo Producto</button>
+        </div>
+      </section>
 
       @for (group of productsByFamily; track group.family.uuid) {
         <div class="table-card">
