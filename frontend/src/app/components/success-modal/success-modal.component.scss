@@ -1,70 +1,57 @@
 .success-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(17, 17, 17, 0.16);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 16px;
 }
 
 .success-modal {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 2px solid #d4d4cf;
+  border-radius: 24px;
   padding: 32px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: min(400px, 100%);
   text-align: center;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .success-icon {
-  font-size: 64px;
-  color: #4caf50;
-  margin-bottom: 16px;
-  animation: scaleIn 0.5s ease-out;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 22px;
+  border: 2px solid #d4d4cf;
+  background: #f6f6f2;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: 24px;
-  color: #333;
+  font-size: 28px;
+  color: #111111;
   margin: 0 0 8px 0;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: 'Funnel Sans', sans-serif;
 }
 
 .message {
-  color: #666;
+  color: #666662;
   font-size: 14px;
   margin: 0 0 24px 0;
 }
 
 .details {
-  background: #f5f5f5;
-  border-radius: 8px;
+  background: #f6f6f2;
+  border: 2px solid #d4d4cf;
+  border-radius: 20px;
   padding: 16px;
   margin-bottom: 24px;
   text-align: left;
@@ -74,43 +61,39 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e5df;
 
   &:last-child {
     border-bottom: none;
   }
 
   .label {
-    color: #666;
+    color: #666662;
     font-size: 13px;
     font-weight: 500;
   }
 
   .value {
-    color: #333;
+    color: #111111;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: 'Geist Mono', monospace;
   }
 }
 
 .btn-accept {
-  background: #4caf50;
+  background: #111111;
   color: white;
-  border: none;
+  border: 1.5px solid #111111;
   padding: 12px 32px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
   width: 100%;
 
   &:hover {
-    background: #45a049;
-  }
-
-  &:active {
-    background: #3d8b40;
+    opacity: .92;
   }
 }

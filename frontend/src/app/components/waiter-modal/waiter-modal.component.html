@@ -1,13 +1,25 @@
 @if (visible) {
   <div class="modal-overlay" (click)="cancel()">
     <div class="modal-content" (click)="$event.stopPropagation()">
-      <h2>{{ title }}</h2>
+      <div class="modal-head">
+        <h2>{{ title }}</h2>
+        <p>Selecciona el camarero para continuar.</p>
+      </div>
 
       <div class="waiters-grid">
         @for (waiter of waiters; track waiter.uuid) {
           <button class="waiter-card" (click)="selectWaiter(waiter)">
-            <div class="waiter-avatar">{{ waiter.name.charAt(0) }}</div>
-            <span class="waiter-name">{{ waiter.name }}</span>
+            <div class="waiter-avatar-wrap">
+              @if (waiter.image_src) {
+                <img [src]="waiter.image_src" alt="" class="waiter-avatar-img" (error)="onImageError(waiter)" />
+              } @else {
+                <div class="waiter-avatar">{{ getInitials(waiter.name) }}</div>
+              }
+            </div>
+            <div class="waiter-copy">
+              <span class="waiter-name">{{ waiter.name }}</span>
+              <span class="waiter-role">{{ getRoleLabel(waiter.role) }}</span>
+            </div>
           </button>
         }
       </div>

@@ -1,0 +1,90 @@
+<aside class="sidebar">
+  <div class="sidebar-main-actions">
+    <button class="sidebar-nav-button" type="button" (click)="openProfile()" aria-label="Abrir perfil">
+      <ion-icon [icon]="personIcon" aria-hidden="true"></ion-icon>
+    </button>
+
+    <button
+      class="sidebar-nav-button"
+      type="button"
+      [class.active]="activeSection === 'tables'"
+      (click)="navigateToTables()"
+      aria-label="Ir a mesas"
+      title="Mesas"
+    >
+      <ion-icon [icon]="tablesIcon" aria-hidden="true"></ion-icon>
+    </button>
+
+    <button
+      class="sidebar-nav-button"
+      type="button"
+      [class.active]="activeSection === 'tickets'"
+      (click)="navigateToTickets()"
+      aria-label="Ir a tickets"
+      title="Tickets"
+    >
+      <ion-icon [icon]="ticketsIcon" aria-hidden="true"></ion-icon>
+    </button>
+
+    <button
+      class="sidebar-nav-button"
+      type="button"
+      [class.active]="activeSection === 'cash'"
+      (click)="navigateToCash()"
+      aria-label="Ir a caja"
+      title="Caja"
+    >
+      <ion-icon [icon]="cashIcon" aria-hidden="true"></ion-icon>
+    </button>
+
+    @if (canGoBackoffice) {
+      <button class="sidebar-nav-button" type="button" (click)="openBackoffice()" aria-label="Abrir backoffice" title="Backoffice">
+        <ion-icon [icon]="backofficeIcon" aria-hidden="true"></ion-icon>
+      </button>
+    }
+  </div>
+
+  @if (feedbackMessage) {
+    <div class="sidebar-feedback">{{ feedbackMessage }}</div>
+  }
+
+  <button class="session-exit-button" type="button" (click)="requestLogout()" aria-label="Salir de la sesión" title="Salir de la sesión">
+    <ion-icon [icon]="logOutIcon" aria-hidden="true"></ion-icon>
+  </button>
+</aside>
+
+<app-waiter-modal
+  [visible]="showProfileWaiterModal"
+  (onSelected)="onProfileWaiterSelected($event)"
+  (onCancel)="onProfileWaiterCancelled()"
+></app-waiter-modal>
+
+<app-pin-modal
+  [visible]="showProfilePinModal"
+  [selectedWaiter]="profileWaiter"
+  (onValidated)="onProfilePinValidated($event)"
+  (onCancel)="onProfilePinCancelled()"
+></app-pin-modal>
+
+<app-waiter-modal
+  [visible]="showBackofficeSupervisorModal"
+  [title]="'Selecciona administrador o supervisor'"
+  [emptyMessage]="'No hay administradores o supervisores disponibles'"
+  [allowedRoles]="['admin', 'supervisor']"
+  (onSelected)="onBackofficeSupervisorSelected($event)"
+  (onCancel)="onBackofficeSupervisorCancelled()"
+></app-waiter-modal>
+
+<app-pin-modal
+  [visible]="showBackofficePinModal"
+  [selectedWaiter]="selectedBackofficeSupervisor"
+  (onValidated)="onBackofficePinValidated($event)"
+  (onCancel)="onBackofficePinCancelled()"
+></app-pin-modal>
+
+<app-profile-modal
+  [visible]="showProfileModal"
+  [user]="profileUser"
+  [restaurantName]="restaurantName"
+  (onClose)="onProfileClosed()"
+></app-profile-modal>

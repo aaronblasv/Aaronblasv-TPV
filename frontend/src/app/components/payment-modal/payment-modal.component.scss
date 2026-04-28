@@ -4,28 +4,28 @@
             Newsreader (captions), Geist Mono (data)
      ═══════════════════════════════════════════════════════ */
 
-  $bg:           #0C0F14;
-  $card:         #161B24;
-  $topbar:       #0E1117;
-  $surface:      #1C2230;
-  $border:       #1E2533;
-  $border-light: #2A3344;
-  $text-primary: #E8ECF1;
-  $text-muted:   #6B7A8D;
-  $text-dim:     #8D9BAD;
-  $accent:       #7CB9E8;
-  $accent-dim:   #1A2940;
-  $green:        #6BCB8B;
-  $orange:       #E8935A;
-  $red:          #E06060;
-  $radius:       10px;
-  $radius-sm:    7px;
-  $shadow:       0 12px 40px rgba(0,0,0,.55);
+  $bg:           #ffffff;
+  $card:         #ffffff;
+  $topbar:       #ffffff;
+  $surface:      #f6f6f2;
+  $border:       #deded8;
+  $border-light: #d4d4cf;
+  $text-primary: #111111;
+  $text-muted:   #666662;
+  $text-dim:     #84847d;
+  $accent:       #111111;
+  $accent-dim:   #ecece8;
+  $green:        #4d7c57;
+  $orange:       #b38a63;
+  $red:          #d63b31;
+  $radius:       20px;
+  $radius-sm:    16px;
+  $shadow:       none;
 
   .payment-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(12, 15, 20, 0.72);
+    background: rgba(17, 17, 17, 0.16);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,9 +39,8 @@
     max-height: 92vh;
     overflow: auto;
     background: $card;
-    border: 1px solid $border;
+    border: 2px solid $border-light;
     border-radius: $radius;
-    box-shadow: $shadow;
     color: $text-primary;
     font-family: 'Geist', sans-serif;
 
@@ -54,7 +53,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 18px 18px 14px;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid $border-light;
 
     h2 {
       margin: 0;
@@ -73,21 +72,21 @@
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    border: 1px solid $border-light;
-    background: rgba(255,255,255,0.02);
+    border: 1.5px solid $border-light;
+    background: $card;
     color: $text-dim;
     cursor: pointer;
     font-size: 16px;
     line-height: 1;
     touch-action: manipulation;
 
-    &:hover { border-color: $accent; color: $accent; }
+    &:hover { border-color: rgba($text-primary, .22); color: $text-primary; background: $surface; }
   }
 
   .payment-info {
     padding: 14px 18px;
     background: $surface;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid $border-light;
 
     .info-row {
       display: flex;
@@ -105,7 +104,7 @@
         font-weight: 700;
 
         .label { color: $text-muted; }
-        .amount { color: $orange; }
+        .amount { color: $text-primary; }
       }
 
       .label {
@@ -166,8 +165,8 @@
   .tip-section {
     margin-bottom: 16px;
     padding: 12px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid $border;
+    background: $surface;
+    border: 1.5px solid $border-light;
     border-radius: $radius;
 
     label {
@@ -202,22 +201,22 @@
     touch-action: manipulation;
 
     &:hover {
-      border-color: $accent;
-      color: $accent;
-      background: rgba(124,185,232,0.06);
+      border-color: rgba($text-primary, .22);
+      color: $text-primary;
+      background: $surface;
     }
 
     &.active {
-      background: $accent;
-      border-color: $accent;
-      color: $bg;
+      background: $accent-dim;
+      border-color: $text-primary;
+      color: $text-primary;
     }
   }
 
   .tip-amount {
     font-family: 'Newsreader', serif;
     font-size: 13px;
-    color: $accent;
+    color: $text-primary;
     font-style: italic;
     font-weight: 500;
     text-align: center;
@@ -232,12 +231,12 @@
     font-size: 14px;
     font-family: inherit;
     color: $text-primary;
-    background: rgba(255,255,255,0.02);
+    background: #ffffff;
 
     &:focus {
       outline: none;
-      border-color: $accent;
-      box-shadow: 0 0 0 2px $accent-dim;
+      border-color: rgba($text-primary, .22);
+      box-shadow: none;
     }
 
     &:disabled {
@@ -261,11 +260,11 @@
     .percentage-display {
       min-height: 44px;
       padding: 10px 12px;
-      background: rgba(255,255,255,0.02);
+      background: #ffffff;
       border: 1px solid $border-light;
       border-radius: $radius-sm;
       font-weight: 700;
-      color: $accent;
+      color: $text-primary;
       white-space: nowrap;
       min-width: 140px;
       text-align: right;
@@ -294,24 +293,24 @@
     &:disabled { opacity: 0.45; cursor: not-allowed; }
 
     &.btn-full-payment {
-      border: 1px solid rgba($green, 0.35);
-      background: rgba($green, 0.16);
+      border: 1.5px solid rgba($green, 0.25);
+      background: #ffffff;
       color: $green;
 
       &:hover:not(:disabled) { filter: brightness(1.08); }
     }
 
     &.btn-partial-payment {
-      border: 1px solid rgba($accent, 0.35);
-      background: rgba($accent, 0.16);
-      color: $accent;
+      border: 1.5px solid $border-light;
+      background: $accent;
+      color: #ffffff;
 
       &:hover:not(:disabled) { filter: brightness(1.08); }
     }
 
     &.btn-cancel {
-      border: 1px solid rgba($red, 0.35);
-      background: rgba($red, 0.14);
+      border: 1.5px solid rgba($red, 0.24);
+      background: #ffffff;
       color: $red;
 
       &:hover:not(:disabled) { filter: brightness(1.08); }
@@ -321,7 +320,7 @@
   .modal-footer {
     padding: 12px 18px 16px;
     background: $topbar;
-    border-top: 1px solid $border;
+    border-top: 1px solid $border-light;
     text-align: center;
 
     .footer-text {
@@ -330,6 +329,6 @@
       color: $text-dim;
 
       .paid-complete { color: $green; }
-      .pending-text { color: $orange; }
+      .pending-text { color: $text-primary; }
     }
   }

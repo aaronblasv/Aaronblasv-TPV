@@ -14,6 +14,7 @@ export interface OrderLine {
 export interface Order {
   uuid: string;
   table_id: string;
+  opened_by_user_id?: string;
   diners: number;
   status: string;
   discount_type: 'amount' | 'percentage' | null;
@@ -22,5 +23,6 @@ export interface Order {
   subtotal?: number;
   tax_amount?: number;
   total?: number;
+  opened_at?: string;
   lines?: OrderLine[];
 }

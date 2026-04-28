@@ -73,12 +73,22 @@ export const routes: Routes = [
   },
   {
     path: 'cash-shifts',
-    loadComponent: () => import('./pages/backoffice/cash-shifts/cash-shifts.page').then(m => m.CashShiftsPage),
-    canActivate: [authGuard],
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
   },
   {
     path: 'tpv',
     loadComponent: () => import('./pages/tpv/floor/floor.page').then(m => m.FloorPage),
+    canActivate: [tpvGuard],
+  },
+  {
+    path: 'tpv/tickets',
+    loadComponent: () => import('./pages/tpv/tickets/tickets.page').then(m => m.TicketsPage),
+    canActivate: [tpvGuard],
+  },
+  {
+    path: 'tpv/cash',
+    loadComponent: () => import('./pages/tpv/cash/cash.page').then(m => m.CashPage),
     canActivate: [tpvGuard],
   },
   {

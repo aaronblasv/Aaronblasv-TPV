@@ -1,34 +1,27 @@
-/* ═══════════════════════════════════════════════════════
-   TPV Order — Carbon Frost palette
-   Fonts: Funnel Sans (headings), Geist (body),
-          Newsreader (captions), Geist Mono (data)
-   ═══════════════════════════════════════════════════════ */
-
-// ── Carbon Frost Palette ──
-$bg:           #0C0F14;
-$card:         #161B24;
-$sidebar:      #0E1117;
-$topbar:       #0E1117;
-$surface:      #1C2230;
-$surface2:     #243044;
-$border:       #1E2533;
-$border-light: #2A3344;
-$text-primary: #E8ECF1;
-$text-muted:   #6B7A8D;
-$text-dim:     #8D9BAD;
-$accent:       #7CB9E8;
-$accent-dim:   #1A2940;
-$orange:       #E8935A;
-$orange-dim:   #2C1E12;
-$green:        #6BCB8B;
-$green-dim:    #122218;
-$amber:        #D4A957;
-$red:          #E06060;
-$red-dim:      #2A1414;
-$radius:       8px;
-$radius-sm:    5px;
-$shadow-card:  0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.2);
-$shadow-hover: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.25);
+$bg:           #ffffff;
+$card:         #ffffff;
+$sidebar:      #ffffff;
+$topbar:       #ffffff;
+$surface:      #f6f6f2;
+$surface2:     #efefea;
+$border:       #deded8;
+$border-light: #d4d4cf;
+$text-primary: #111111;
+$text-muted:   #666662;
+$text-dim:     #84847d;
+$accent:       #111111;
+$accent-dim:   #ecece8;
+$orange:       #b38a63;
+$orange-dim:   #f3ece5;
+$green:        #4d7c57;
+$green-dim:    #ebf3ed;
+$amber:        #967845;
+$red:          #d63b31;
+$red-dim:      #fbeceb;
+$radius:       18px;
+$radius-sm:    12px;
+$shadow-card:  none;
+$shadow-hover: none;
 
 app-order {
   display: block;
@@ -50,16 +43,33 @@ app-order {
     overflow: hidden;
   }
 
-  // ── TOP BAR ──
   .topbar {
     height: 56px;
     background: $topbar;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid $border-light;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0 20px;
     gap: 14px;
     flex-shrink: 0;
+  }
+
+  .topbar-left,
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .topbar-left {
+    flex: 1;
+  }
+
+  .topbar-actions {
+    justify-content: flex-end;
+    flex: 1;
   }
 
   .back-btn {
@@ -77,12 +87,12 @@ app-order {
     transition: background .15s, color .15s;
     min-height: 44px;
 
-    &:hover { background: rgba(255,255,255,.06); color: $text-primary; }
+    &:hover { background: $surface; color: $text-primary; }
   }
 
   .mesa-badge {
     background: $accent;
-    color: #0C0F14;
+    color: #ffffff;
     font-weight: 700;
     font-size: 14px;
     padding: 6px 16px;
@@ -90,7 +100,7 @@ app-order {
     font-family: 'Geist Mono', monospace;
   }
 
-  .topbar-diners {
+  .topbar-action-btn {
     background: $surface;
     border: 1px solid $border-light;
     color: $text-muted;
@@ -101,8 +111,17 @@ app-order {
     font-family: 'Geist', sans-serif;
     min-height: 36px;
     transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
     &:hover { color: $text-primary; border-color: $accent; }
+
+    ion-icon {
+      font-size: 16px;
+      color: $text-primary;
+    }
   }
 
   .category-tabs {
@@ -127,17 +146,16 @@ app-order {
     min-height: 44px;
     transition: all .15s;
 
-    &:hover { color: $text-primary; background: rgba(255,255,255,.06); }
+    &:hover { color: $text-primary; background: $surface; }
 
     &.active {
-      background: rgba($accent, .15);
-      color: $accent;
-      border-color: rgba($accent, .3);
+      background: $accent-dim;
+      color: $text-primary;
+      border-color: $border-light;
       font-weight: 600;
     }
   }
 
-  // ── LAYOUT ──
   .layout {
     flex: 1;
     display: flex;
@@ -145,17 +163,18 @@ app-order {
     min-height: 0;
   }
 
-  // ── TAB SIDEBAR ──
   .tab-sidebar {
     width: 100px;
     background: $sidebar;
-    border-right: 1px solid $border;
+    border-right: 1px solid $border-light;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 0;
+    justify-content: center;
+    padding: 0;
     gap: 8px;
     flex-shrink: 0;
+    position: relative;
   }
 
   .tab-sidebar-btn {
@@ -163,10 +182,10 @@ app-order {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 0;
     width: 84px;
     min-height: 72px;
-    padding: 14px 6px;
+    padding: 0 6px;
     border: none;
     border-radius: $radius;
     background: transparent;
@@ -178,23 +197,65 @@ app-order {
     transition: background .15s, color .15s;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    position: relative;
 
-    svg { opacity: .6; transition: opacity .15s; }
+    svg {
+      opacity: .6;
+      transition: opacity .15s;
+      margin: auto;
+      flex-shrink: 0;
+    }
+
+    span {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1;
+    }
 
     &:hover {
-      background: rgba(255,255,255,.06);
+      background: $surface;
       color: $text-primary;
       svg { opacity: .85; }
     }
 
     &:active {
-      background: rgba(255,255,255,.10);
+      background: $accent-dim;
     }
 
     &.active {
       background: $accent-dim;
-      color: $accent;
-      svg { opacity: 1; stroke: $accent; }
+      color: $text-primary;
+      svg { opacity: 1; stroke: $text-primary; }
+    }
+  }
+
+  .session-exit-button {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 18px;
+    min-height: 48px;
+    padding: 10px 8px;
+    border-radius: 16px;
+    border: 1.5px solid rgba($red, .22);
+    background: #ffffff;
+    color: $red;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Geist', sans-serif;
+    transition: background .15s, border-color .15s, transform .15s;
+
+    &:hover {
+      background: $red-dim;
+      border-color: rgba($red, .34);
+      transform: translateY(-1px);
     }
   }
 
@@ -203,11 +264,10 @@ app-order {
     font-size: 16px;
     font-weight: 600;
     color: $text-primary;
-    margin-left: auto;
-    margin-right: auto;
+    flex: 0 1 auto;
+    text-align: center;
   }
 
-  // ── SUMMARY TAB ──
   .summary-content {
     flex: 1;
     display: flex;
@@ -218,7 +278,17 @@ app-order {
   .summary-table-wrap {
     flex: 1;
     padding: 24px 28px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .summary-table-scroll {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    padding-right: 2px;
   }
 
   .summary-title {
@@ -251,17 +321,21 @@ app-order {
       tr {
         border-bottom: 1px solid $border;
         transition: background .12s;
-        &:hover { background: rgba(255,255,255,.03); }
+        &:hover { background: $surface; }
       }
       td {
         padding: 12px;
-        font-size: 14px;
+        font-size: 15px;
         color: $text-primary;
       }
     }
 
     .col-qty, .col-price, .col-total { text-align: right; font-family: 'Geist Mono', monospace; }
     .col-status, .col-actions { text-align: center; }
+    .col-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
   }
 
   .summary-line-status {
@@ -278,21 +352,21 @@ app-order {
   }
 
   .summary-line-status--sent {
-    background: rgba($amber, .16);
-    color: $amber;
-    border: 1px solid rgba($amber, .24);
+    background: rgba($red, .08);
+    color: $red;
+    border: 1px solid rgba($red, .2);
   }
 
   .summary-line-status--pending {
-    background: rgba($accent, .12);
-    color: $accent;
-    border: 1px solid rgba($accent, .24);
+    background: $accent-dim;
+    color: $text-primary;
+    border: 1px solid $border-light;
   }
 
   .summary-line-action {
     border: 1px solid rgba($red, .22);
-    border-radius: 8px;
-    background: rgba($red, .12);
+    border-radius: 999px;
+    background: #ffffff;
     color: $red;
     padding: 8px 10px;
     min-height: 34px;
@@ -332,9 +406,16 @@ app-order {
     min-width: 108px;
   }
 
+  .summary-footer {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba($border-light, .85);
+    background: $card;
+  }
+
   .summary-totals {
-    margin-top: 20px;
-    padding-top: 16px;
+    margin-top: 14px;
+    padding: 14px 0 0;
     border-top: 2px solid $border-light;
   }
 
@@ -359,7 +440,7 @@ app-order {
   }
 
   .summary-discount-actions {
-    margin-top: 16px;
+    margin-top: 0;
     padding: 14px 16px;
     border: 1px solid rgba($accent, .22);
     border-radius: 14px;
@@ -408,7 +489,6 @@ app-order {
     }
   }
 
-  // ── SUMMARY SIDEBAR ──
   .summary-sidebar {
     width: 360px;
     background: $card;
@@ -421,7 +501,6 @@ app-order {
     flex-shrink: 0;
   }
 
-  // ── Pay Mode Tabs ──
   .pay-mode-tabs {
     display: flex;
     gap: 6px;
@@ -452,7 +531,6 @@ app-order {
     }
   }
 
-  // ── Pay Totals Bar ──
   .pay-totals-bar {
     padding: 10px 14px;
     background: $surface;
@@ -489,26 +567,11 @@ app-order {
     letter-spacing: .5px;
   }
 
-  .pay-spacer { flex: 1; }
-
-  .summary-sidebar-section {
-    h4 {
-      font-family: 'Funnel Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      color: $text-muted;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      margin-bottom: 10px;
-    }
-  }
-
   .summary-pay-methods {
     display: flex;
     gap: 8px;
   }
 
-  // ── ORDER ACTIONS (new order tab) ──
   .btn-send-kitchen {
     flex: 1;
     display: flex;
@@ -523,7 +586,7 @@ app-order {
     cursor: pointer;
     border: none;
     background: $green;
-    color: #0C0F14;
+    color: #ffffff;
     transition: opacity .15s;
     &:hover { opacity: .9; }
     &:disabled {
@@ -558,7 +621,6 @@ app-order {
     color: $green;
   }
 
-  // ── PRODUCT GRID (left / main area) ──
   .product-area {
     flex: 1;
     overflow-y: auto;
@@ -574,30 +636,42 @@ app-order {
 
   .product-card {
     background: $card;
-    border: 1px solid $border;
-    border-radius: 14px;
+    border: none;
+    border-radius: 24px;
     padding: 0;
     cursor: pointer;
-    transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+    transition: background .15s, transform .1s;
     display: flex;
     flex-direction: column;
     text-align: left;
     overflow: hidden;
+    position: relative;
+    min-height: 220px;
+    aspect-ratio: 1 / 1;
 
     &:hover {
-      border-color: rgba($accent, .4);
-      box-shadow: $shadow-hover;
       transform: translateY(-2px);
+      background: #fcfcfa;
     }
 
     &:active { transform: scale(.97); }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(17,17,17,.04) 0%, rgba(17,17,17,.14) 48%, rgba(17,17,17,.42) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
   }
 
   .product-img-wrap {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 140px;
+    height: 100%;
     overflow: hidden;
-    flex-shrink: 0;
   }
 
   .product-img {
@@ -605,50 +679,61 @@ app-order {
     height: 100%;
     object-fit: cover;
     display: block;
+    filter: brightness(.8);
+    transform: scale(1.02);
   }
 
   .product-img-placeholder {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 140px;
-    background: $surface;
+    height: 100%;
+    background: linear-gradient(180deg, #73736c 0%, #32322e 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    z-index: 0;
 
     span {
-      font-size: 36px;
+      font-size: 54px;
       font-weight: 700;
-      color: $text-muted;
+      color: rgba(255,255,255,.92);
       font-family: 'Funnel Sans', sans-serif;
       text-transform: uppercase;
     }
   }
 
   .product-info {
-    padding: 12px 14px 14px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 18px 16px 16px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    z-index: 2;
   }
 
   .product-name {
     font-size: 15px;
-    font-weight: 600;
-    color: $text-primary;
+    font-weight: 700;
+    color: #ffffff;
     line-height: 1.3;
     font-family: 'Geist', sans-serif;
+    text-shadow: 0 1px 2px rgba(0,0,0,.22);
   }
 
   .product-price {
     font-family: 'Geist Mono', monospace;
     font-size: 16px;
     font-weight: 700;
-    color: $text-primary;
-    opacity: .85;
+    color: #ffffff;
+    opacity: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,.22);
   }
 
-  // ── ORDER PANEL (right sidebar) ──
   .order-panel {
     width: 440px;
     min-width: 440px;
@@ -805,12 +890,10 @@ app-order {
     font-family: 'Newsreader', serif;
   }
 
-  // ── Order Footer (totals + meta + actions) ──
   .order-footer {
     flex-shrink: 0;
   }
 
-  // ── Totals ──
   .order-totals {
     padding: 8px 16px;
     border-top: 1px solid $border;
@@ -835,10 +918,6 @@ app-order {
     color: $text-muted;
   }
 
-  .discount-row {
-    .total-label, .total-value { color: $amber; }
-  }
-
   .total-grand {
     padding-top: 4px;
     margin-top: 2px;
@@ -858,42 +937,6 @@ app-order {
     }
   }
 
-  // ── Meta Actions ──
-  .order-meta-actions {
-    padding: 6px 14px;
-    border-top: 1px solid $border;
-    display: flex;
-    gap: 4px;
-    justify-content: space-between;
-  }
-
-  .meta-btn {
-    flex: 1;
-    padding: 6px 4px;
-    border-radius: 6px;
-    border: 1px solid $border-light;
-    background: $surface;
-    color: $text-muted;
-    font-size: 12px;
-    font-family: 'Geist', sans-serif;
-    cursor: pointer;
-    min-height: 36px;
-    transition: all .15s;
-    white-space: nowrap;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover { color: $text-primary; border-color: $accent; }
-
-    &:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-    }
-  }
-
-  // ── Order Actions ──
   .order-actions {
     padding: 10px 14px;
     display: flex;
@@ -930,16 +973,10 @@ app-order {
     border: 1px solid rgba($red, .2);
   }
 
-  .btn-pay {
-    background: #16A34A;
-    color: #fff;
-  }
-
-  // ── Transfer Modal ──
   .transfer-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.6);
+    background: rgba(17,17,17,.16);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -953,7 +990,6 @@ app-order {
     border: 1px solid $border;
     border-radius: 16px;
     padding: 1.25rem;
-    box-shadow: 0 24px 48px rgba(0,0,0,.4);
   }
 
   .transfer-header {
@@ -1008,7 +1044,7 @@ app-order {
 
     &:hover {
       border-color: $accent;
-      background: rgba($accent, .1);
+      background: $accent-dim;
     }
 
     &:active { transform: scale(.98); }
@@ -1034,7 +1070,7 @@ app-order {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background: rgba(0, 0, 0, .62);
+    background: rgba(17, 17, 17, .16);
     z-index: 1100;
   }
 
@@ -1042,9 +1078,8 @@ app-order {
     width: min(420px, 100%);
     padding: 1.5rem;
     border-radius: 20px;
-    border: 1px solid $border;
-    background: linear-gradient(180deg, rgba($card, .98) 0%, rgba($surface, .98) 100%);
-    box-shadow: 0 28px 56px rgba(0, 0, 0, .45);
+    border: 2px solid $border-light;
+    background: $card;
     text-align: center;
 
     h3 {
@@ -1081,39 +1116,17 @@ app-order {
     border: none;
     border-radius: 12px;
     background: $green;
-    color: $bg;
+    color: #ffffff;
     font-size: .95rem;
     font-weight: 700;
     cursor: pointer;
-  }
-
-  // ── Payment View ──
-  .topbar-spacer { flex: 1; }
-
-  .topbar-action-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid $border-light;
-    background: transparent;
-    color: $text-primary;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'Geist', sans-serif;
-    cursor: pointer;
-    min-height: 40px;
-    transition: all .15s;
-
-    &:hover { background: rgba(255,255,255,.06); border-color: $accent; }
   }
 
   .pay-order-summary {
     width: 340px;
     min-width: 340px;
     background: $sidebar;
-    border-left: 1px solid $border;
+    border-left: 1px solid $border-light;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -1158,7 +1171,7 @@ app-order {
     font-family: 'Geist Mono', monospace;
     font-size: 13px;
     font-weight: 600;
-    color: $accent;
+    color: $text-primary;
     width: 26px;
     flex-shrink: 0;
   }
@@ -1180,7 +1193,7 @@ app-order {
   .pay-summary-totals {
     padding: 16px 20px;
     border-top: 1px solid $border;
-    background: rgba(0,0,0,.15);
+    background: $surface;
   }
 
   .pay-total-row {
@@ -1210,7 +1223,7 @@ app-order {
       font-family: 'Geist Mono', monospace;
       font-size: 20px;
       font-weight: 700;
-      color: $accent;
+      color: $text-primary;
     }
   }
 
@@ -1260,9 +1273,9 @@ app-order {
     }
 
     &.active {
-      border-color: $accent;
-      color: $accent;
-      background: rgba($accent, .06);
+      border-color: $text-primary;
+      color: $text-primary;
+      background: $accent-dim;
     }
   }
 
@@ -1297,7 +1310,7 @@ app-order {
     height: 40px;
     border-radius: 8px;
     border: none;
-    background: rgba(255,255,255,.05);
+    background: $surface;
     color: $text-muted;
     cursor: pointer;
     display: flex;
@@ -1305,7 +1318,7 @@ app-order {
     justify-content: center;
     transition: all .15s;
 
-    &:hover { color: $red; background: rgba($red, .1); }
+    &:hover { color: $red; background: #f9ecea; }
   }
 
   .pay-quick-amounts {
@@ -1330,9 +1343,9 @@ app-order {
     &:hover { color: $text-primary; border-color: $accent; }
 
     &.active {
-      background: rgba($accent, .12);
-      border-color: $accent;
-      color: $accent;
+      background: $accent-dim;
+      border-color: $text-primary;
+      color: $text-primary;
     }
   }
 
@@ -1432,7 +1445,6 @@ app-order {
     &:hover { color: $text-primary; border-color: $text-dim; }
   }
 
-  // ── Split Shares (inline) ──
   .split-shares {
     overflow-y: auto;
     flex: 1;
@@ -1524,7 +1536,6 @@ app-order {
     font-weight: 600;
   }
 
-  // ── Scrollbar ──
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: $border; border-radius: 2px; }

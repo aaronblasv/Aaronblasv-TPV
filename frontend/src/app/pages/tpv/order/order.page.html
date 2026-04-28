@@ -2,15 +2,23 @@
 
   <!-- TOP BAR -->
   <header class="topbar">
-    <button class="back-btn" (click)="goBack()">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      Volver
-    </button>
-    <span class="mesa-badge">{{ tableName }}</span>
+    <div class="topbar-left">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver
+      </button>
+      <span class="mesa-badge">{{ tableName }}</span>
+    </div>
     <span class="topbar-tab-title">{{ currentTab === 'summary' ? 'Resumen del Pedido' : 'Nuevo Pedido' }}</span>
-    @if (order && currentTab === 'order') {
-      <button class="topbar-diners" (click)="changeDiners()">👤 {{ order.diners }}</button>
-    }
+    <div class="topbar-actions">
+      @if (order && currentTab === 'order') {
+        <button class="topbar-action-btn" (click)="changeDiners()">
+          <ion-icon [icon]="peopleOutlineIcon"></ion-icon>
+          {{ order.diners }}
+        </button>
+        <button class="topbar-action-btn" (click)="requestTransfer()">Mover</button>
+      }
+    </div>
   </header>
 
   <div class="layout">
@@ -25,6 +33,7 @@
         <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span>Resumen</span>
       </button>
+      <button class="session-exit-button" (click)="logoutTpvSession()">Salir de la sesión</button>
     </nav>
 
     <!-- ═══ TAB: SUMMARY ═══ -->
@@ -32,94 +41,98 @@
       <main class="summary-content">
         <div class="summary-table-wrap">
           <h2 class="summary-title">{{ tableName }} — Resumen del Pedido</h2>
-          <table class="summary-table">
-            <thead>
-              <tr>
-                <th class="col-name">Artículo</th>
-                <th class="col-status">Estado</th>
-                <th class="col-qty">Uds.</th>
-                <th class="col-price">Precio</th>
-                <th class="col-total">Total</th>
-                <th class="col-actions"></th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (order) {
-                @for (line of summaryOrderLines; track line.uuid) {
-                  <tr>
-                    <td class="col-name">{{ getProductName(line.product_id) }}</td>
-                    <td class="col-status">
-                      <span class="summary-line-status" [class.summary-line-status--sent]="line.sent_to_kitchen" [class.summary-line-status--pending]="!line.sent_to_kitchen">
-                        {{ line.sent_to_kitchen ? 'Enviado' : 'Pendiente' }}
-                      </span>
-                    </td>
-                    <td class="col-qty">{{ line.quantity }}</td>
-                    <td class="col-price">{{ line.price / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
-                    <td class="col-total">{{ getLineSubtotal(line) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
-                    <td class="col-actions">
-                      @if (line.sent_to_kitchen) {
-                        <div class="summary-line-actions">
-                          <button
-                            class="summary-line-action summary-line-action--compact"
-                            (click)="promptVoidSentLine(line)"
-                            [disabled]="totalPaid > 0"
-                            [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Quitar una cantidad de esta línea'"
-                          >
-                            −
-                          </button>
-                          <button
-                            class="summary-line-action summary-line-action--danger"
-                            (click)="voidEntireSentLine(line)"
-                            [disabled]="totalPaid > 0"
-                            [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Anular toda la línea enviada'"
-                          >
-                            Anular línea
-                          </button>
-                        </div>
-                      }
-                    </td>
-                  </tr>
+          <div class="summary-table-scroll">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="col-name">Artículo</th>
+                  <th class="col-status">Estado</th>
+                  <th class="col-qty">Uds.</th>
+                  <th class="col-price">Precio</th>
+                  <th class="col-total">Total</th>
+                  <th class="col-actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (order) {
+                  @for (line of summaryOrderLines; track line.uuid) {
+                    <tr>
+                      <td class="col-name">{{ getProductName(line.product_id) }}</td>
+                      <td class="col-status">
+                        <span class="summary-line-status" [class.summary-line-status--sent]="line.sent_to_kitchen" [class.summary-line-status--pending]="!line.sent_to_kitchen">
+                          {{ line.sent_to_kitchen ? 'Enviado' : 'Pendiente' }}
+                        </span>
+                      </td>
+                      <td class="col-qty">{{ line.quantity }}</td>
+                      <td class="col-price">{{ line.price / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
+                      <td class="col-total">{{ getLineSubtotal(line) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
+                      <td class="col-actions">
+                        @if (line.sent_to_kitchen) {
+                          <div class="summary-line-actions">
+                            <button
+                              class="summary-line-action summary-line-action--compact"
+                              (click)="promptVoidSentLine(line)"
+                              [disabled]="totalPaid > 0"
+                              [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Quitar una cantidad de esta línea'"
+                            >
+                              −
+                            </button>
+                            <button
+                              class="summary-line-action summary-line-action--danger"
+                              (click)="voidEntireSentLine(line)"
+                              [disabled]="totalPaid > 0"
+                              [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Anular toda la línea enviada'"
+                            >
+                              Anular línea
+                            </button>
+                          </div>
+                        }
+                      </td>
+                    </tr>
+                  }
                 }
-              }
-            </tbody>
-          </table>
-
-          <div class="summary-totals">
-            <div class="summary-total-row">
-              <span>Subtotal</span>
-              <span>{{ orderSubtotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-            </div>
-            <div class="summary-total-row">
-              <span>IVA</span>
-              <span>{{ orderTax / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-            </div>
-            @if (getOrderDiscountAmount() > 0) {
-              <div class="summary-total-row summary-discount-row">
-                <span>Descuento</span>
-                <span>-{{ getOrderDiscountAmount() / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-              </div>
-            }
-            <div class="summary-total-row summary-grand">
-              <span>TOTAL</span>
-              <span>{{ orderTotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-            </div>
+              </tbody>
+            </table>
           </div>
 
-          @if (order) {
-            <div class="summary-discount-actions">
-              <div class="summary-discount-copy">
-                <span class="summary-discount-title">Descuento del pedido</span>
-                <small>
-                  {{ getOrderDiscountAmount() > 0
-                    ? formatDiscountLabel(order.discount_type, order.discount_value)
-                    : 'Sin descuento aplicado' }}
-                </small>
+          <div class="summary-footer">
+            @if (order) {
+              <div class="summary-discount-actions">
+                <div class="summary-discount-copy">
+                  <span class="summary-discount-title">Descuento del pedido</span>
+                  <small>
+                    {{ getOrderDiscountAmount() > 0
+                      ? formatDiscountLabel(order.discount_type, order.discount_value)
+                      : 'Sin descuento aplicado' }}
+                  </small>
+                </div>
+                <button class="summary-discount-btn" (click)="requestOrderDiscount()">
+                  {{ getOrderDiscountAmount() > 0 ? 'Editar descuento' : 'Aplicar descuento' }}
+                </button>
               </div>
-              <button class="summary-discount-btn" (click)="requestOrderDiscount()">
-                {{ getOrderDiscountAmount() > 0 ? 'Editar descuento' : 'Aplicar descuento' }}
-              </button>
+            }
+
+            <div class="summary-totals">
+              <div class="summary-total-row">
+                <span>Subtotal</span>
+                <span>{{ orderSubtotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              </div>
+              <div class="summary-total-row">
+                <span>IVA</span>
+                <span>{{ orderTax / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              </div>
+              @if (getOrderDiscountAmount() > 0) {
+                <div class="summary-total-row summary-discount-row">
+                  <span>Descuento</span>
+                  <span>-{{ getOrderDiscountAmount() / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                </div>
+              }
+              <div class="summary-total-row summary-grand">
+                <span>TOTAL</span>
+                <span>{{ orderTotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              </div>
             </div>
-          }
+          </div>
         </div>
 
         <!-- Right panel: payment -->
@@ -317,13 +330,6 @@
         </div>
 
         <div class="order-footer">
-          <div class="order-meta-actions">
-            @if (order) {
-              <button class="meta-btn" (click)="requestTransfer()">Mover</button>
-              <button class="meta-btn" (click)="printProvisionalTicket()">Imprimir</button>
-            }
-          </div>
-
           <div class="order-totals">
             <div class="total-row">
               <span class="total-label">Subtotal</span>
@@ -387,8 +393,6 @@
   </div>
 }
 
-<app-waiter-modal [visible]="showCloseWaiterModal" (onSelected)="onCloseWaiterSelected($event)" (onCancel)="onCloseWaiterCancelled()"></app-waiter-modal>
-<app-pin-modal [visible]="showClosePinModal" [selectedWaiter]="closeSelectedWaiter" (onValidated)="onClosePinValidated($event)" (onCancel)="onClosePinCancelled()"></app-pin-modal>
 <app-success-modal [visible]="showSuccessModal" [invoiceNumber]="lastInvoiceNumber" [totalAmount]="lastTotalAmount" (onClose)="onSuccessModalClose()"></app-success-modal>
 <app-discount-modal [visible]="showDiscountModal" [title]="discountModalTitle" [currentType]="discountModalCurrentType" [currentValue]="discountModalCurrentValue" (onConfirm)="onDiscountConfirmed($event)" (onCancel)="onDiscountCancelled()"></app-discount-modal>
 <app-diners-modal [visible]="showChangeDinersModal" (onConfirm)="onChangeDinersConfirmed($event)" (onCancel)="onChangeDinersCancelled()"></app-diners-modal>

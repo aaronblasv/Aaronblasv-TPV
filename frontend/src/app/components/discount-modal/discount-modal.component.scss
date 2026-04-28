@@ -1,7 +1,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 6, 12, 0.78);
+  background: rgba(17, 17, 17, 0.16);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
@@ -11,11 +11,10 @@
 }
 
 .modal-content {
-  background: linear-gradient(180deg, #1C2230 0%, #161B24 100%);
-  border: 1px solid #2A3344;
-  border-radius: 18px;
+  background: #ffffff;
+  border: 2px solid #d4d4cf;
+  border-radius: 24px;
   width: min(420px, 100%);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   overflow: hidden;
 }
 
@@ -24,12 +23,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #2A3344;
+  border-bottom: 1px solid #e5e5df;
 
   h2 {
     margin: 0;
     font-size: 1.15rem;
-    color: #F8FAFC;
+    color: #111111;
     font-family: 'Funnel Sans', sans-serif;
     font-weight: 700;
   }
@@ -38,15 +37,17 @@
     width: 36px;
     height: 36px;
     border: none;
-    border-radius: 10px;
-    background: #0E1117;
-    color: #F8FAFC;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1.5px solid #d4d4cf;
+    color: #666662;
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.15s ease, transform 0.15s ease;
 
     &:hover {
-      background: #243044;
+      background: #f6f6f2;
+      color: #111111;
     }
 
     &:active {
@@ -64,9 +65,9 @@
 .mode-tab {
   flex: 1;
   padding: 0.65rem 1rem;
-  border: 1px solid #2A3344;
-  background: #0E1117;
-  color: #F8FAFC;
+  border: 1.5px solid #d4d4cf;
+  background: #ffffff;
+  color: #666662;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -82,14 +83,14 @@
   }
 
   &:hover {
-    background: #161B24;
-    color: #FFFFFF;
+    background: #f6f6f2;
+    color: #111111;
   }
 
   &.active {
-    background: rgba(232, 147, 90, 0.16);
-    color: #E8935A;
-    border-color: rgba(232, 147, 90, 0.45);
+    background: #ecece8;
+    color: #111111;
+    border-color: #111111;
   }
 }
 
@@ -100,7 +101,7 @@
     display: block;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #F8FAFC;
+    color: #111111;
     margin-bottom: 0.5rem;
   }
 }
@@ -110,9 +111,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem;
-  border: 1px solid #2A3344;
-  border-radius: 14px;
-  background: #0E1117;
+  border: 2px solid #d4d4cf;
+  border-radius: 18px;
+  background: #ffffff;
 }
 
 .discount-input {
@@ -122,7 +123,7 @@
   border-radius: 12px;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #FFFFFF;
+  color: #111111;
   background: transparent;
   outline: none;
   font-family: 'Geist Mono', monospace;
@@ -132,7 +133,7 @@
   }
 
   &::placeholder {
-    color: #8D9BAD;
+    color: #84847d;
     font-weight: 400;
   }
 }
@@ -140,7 +141,7 @@
 .input-suffix {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #F8FAFC;
+  color: #111111;
   padding-right: 0.9rem;
 }
 
@@ -149,7 +150,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-top: 1px solid #2A3344;
+  border-top: 1px solid #e5e5df;
   gap: 0.75rem;
 }
 
@@ -160,17 +161,17 @@
 
 .btn-remove {
   padding: 0.6rem 1rem;
-  border: 1px dashed rgba(224, 96, 96, 0.45);
+  border: 1.5px dashed rgba(214, 59, 49, 0.4);
   border-radius: 10px;
   background: transparent;
-  color: #FFFFFF;
+  color: #d63b31;
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(224, 96, 96, 0.1);
+    background: #fbeceb;
     border-color: rgba(224, 96, 96, 0.7);
   }
 
@@ -179,26 +180,26 @@
 
 .btn-cancel {
   padding: 0.6rem 1.25rem;
-  border: 1px solid #2A3344;
-  border-radius: 10px;
-  background: #0E1117;
-  color: #FFFFFF;
+  border: 1.5px solid #d4d4cf;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111111;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #161B24;
-    border-color: #3A465D;
+    background: #f6f6f2;
+    border-color: rgba(17,17,17,.2);
   }
 }
 
 .btn-confirm {
   padding: 0.6rem 1.5rem;
-  border: none;
-  border-radius: 10px;
-  background: #E8935A;
+  border: 1.5px solid #111111;
+  border-radius: 999px;
+  background: #111111;
   color: white;
   font-weight: 700;
   font-size: 0.85rem;
@@ -211,12 +212,11 @@
   }
 
   &:active:not(:disabled) {
-    background: #D98347;
+    opacity: .92;
   }
 
   &:hover:not(:disabled) {
-    filter: brightness(1.05);
-    box-shadow: 0 10px 24px rgba(232, 147, 90, 0.22);
+    filter: none;
   }
 }
 

@@ -2,6 +2,8 @@ import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { peopleOutline } from 'ionicons/icons';
 import { forkJoin } from 'rxjs';
 import { OrderService } from '../../../services/api/order.service';
 import { ProductService } from '../../../services/api/product.service';
@@ -10,9 +12,8 @@ import { TaxService } from '../../../services/api/tax.service';
 import { TableService } from '../../../services/api/table.service';
 import { PaymentService } from '../../../services/api/payment.service';
 import { LoggerService } from '../../../services/logger.service';
-import { PinModalComponent } from '../../../components/pin-modal/pin-modal.component';
 import { SuccessModalComponent } from '../../../components/success-modal/success-modal.component';
-import { WaiterModalComponent } from '../../../components/waiter-modal/waiter-modal.component';
+import { TpvSessionService } from '../../../services/tpv-session.service';
 
 import { DiscountModalComponent, DiscountResult } from '../../../components/discount-modal/discount-modal.component';
 import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
@@ -32,7 +33,7 @@ registerLocaleData(localeEs);
 @Component({
   selector: 'app-order',
   standalone: true,
-  imports: [CommonModule, IonicModule, PinModalComponent, SuccessModalComponent, WaiterModalComponent, DiscountModalComponent, ConfirmModalComponent, DinersModalComponent, VoidLineModalComponent],
+  imports: [CommonModule, IonicModule, SuccessModalComponent, DiscountModalComponent, ConfirmModalComponent, DinersModalComponent, VoidLineModalComponent],
   templateUrl: './order.page.html',
   styleUrls: ['./order.page.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -47,6 +48,7 @@ export class OrderPage implements OnInit {
   private tableService = inject(TableService);
   private paymentService = inject(PaymentService);
   private logger = inject(LoggerService);
+  private tpvSessionService = inject(TpvSessionService);
 
   tableUuid = '';
   tableName = '';
@@ -60,8 +62,6 @@ export class OrderPage implements OnInit {
   selectedFamilyUuid: string | null = null;
   currentTab: 'summary' | 'order' = 'order';
   showSuccessModal = false;
-  showCloseWaiterModal = false;
-  showClosePinModal = false;
   showTransferModal = false;
   showDiscountModal = false;
   showChangeDinersModal = false;
@@ -74,7 +74,6 @@ export class OrderPage implements OnInit {
   discountTarget: 'order' | OrderLine | null = null;
   voidLineConfirmTarget: OrderLine | null = null;
   voidSentLineTarget: OrderLine | null = null;
-  closeSelectedWaiter: User | null = null;
   availableTransferTables: Table[] = [];
   totalPaid = 0;
   lastInvoiceNumber = '';
@@ -89,6 +88,11 @@ export class OrderPage implements OnInit {
   payInputCents = 0;
   numpadKeys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'];
   private locallySentToKitchenLineIds = new Set<string>();
+  readonly peopleOutlineIcon = peopleOutline;
+
+  constructor() {
+    addIcons({ peopleOutline });
+  }
 
   get pendingAmount(): number {
     return Math.max(0, this.orderTotal - this.totalPaid);
@@ -185,10 +189,14 @@ export class OrderPage implements OnInit {
     this.tableUuid = this.route.snapshot.paramMap.get('tableUuid') || '';
 
     const nav = this.router.getCurrentNavigation();
-    this.currentUser = nav?.extras?.state?.['user'] || history.state?.['user'];
+    this.currentUser = this.tpvSessionService.getUser() ?? nav?.extras?.state?.['user'] ?? history.state?.['user'];
+
+    if (this.currentUser) {
+      this.tpvSessionService.setUser(this.currentUser);
+    }
 
     if (!this.currentUser) {
-      this.router.navigate(['/tpv']);
+      this.router.navigate(['/tpv'], { replaceUrl: true });
       return;
     }
 
@@ -200,10 +208,7 @@ export class OrderPage implements OnInit {
     this.selectedFamilyUuid = null;
     this.currentTab = 'order';
     this.showSuccessModal = false;
-    this.showCloseWaiterModal = false;
-    this.showClosePinModal = false;
     this.showTransferModal = false;
-    this.closeSelectedWaiter = null;
     this.availableTransferTables = [];
     this.totalPaid = 0;
     this.lastInvoiceNumber = '';
@@ -552,7 +557,6 @@ export class OrderPage implements OnInit {
         this.loadOrder();
         this.router.navigate(['/tpv/order', targetTableUuid], {
           replaceUrl: true,
-          state: { user: this.currentUser },
         });
       },
       error: (err) => this.logger.error('Error transferring order:', err),
@@ -814,35 +818,6 @@ export class OrderPage implements OnInit {
     };
   }
 
-  requestClose() {
-    this.showCloseWaiterModal = true;
-  }
-
-  onCloseWaiterSelected(waiter: User) {
-    this.closeSelectedWaiter = waiter;
-    this.showCloseWaiterModal = false;
-    this.showClosePinModal = true;
-  }
-
-  onCloseWaiterCancelled() {
-    this.showCloseWaiterModal = false;
-    this.closeSelectedWaiter = null;
-  }
-
-  onClosePinValidated(user: User) {
-    this.logger.log('onClosePinValidated called with user:', user);
-    this.showClosePinModal = false;
-    this.closeSelectedWaiter = null;
-    this.currentUser = user;
-    this.payMode = 'payment';
-    this.currentTab = 'summary';
-  }
-
-  onClosePinCancelled() {
-    this.showClosePinModal = false;
-    this.closeSelectedWaiter = null;
-  }
-
   onPaymentRegistered(payment: PaymentData) {
     this.logger.log('onPaymentRegistered:', payment);
 
@@ -930,6 +905,12 @@ export class OrderPage implements OnInit {
     this.router.navigate(['/tpv'], { replaceUrl: true });
   }
 
+  logoutTpvSession() {
+    this.tpvSessionService.clear();
+    this.currentUser = null;
+    this.router.navigate(['/tpv'], { replaceUrl: true });
+  }
+
   sendToKitchen() {
     if (!this.order?.uuid || this.pendingOrderLines.length === 0) {
       return;
@@ -937,7 +918,7 @@ export class OrderPage implements OnInit {
 
     const sentLineIds = this.pendingOrderLines.map((line) => line.uuid);
 
-    this.orderService.sendToKitchen(this.order.uuid).subscribe({
+    this.orderService.sendToKitchen(this.order.uuid, this.currentUser?.uuid).subscribe({
       next: () => {
         sentLineIds.forEach((lineUuid) => this.locallySentToKitchenLineIds.add(lineUuid));
 

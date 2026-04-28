@@ -1,0 +1,38 @@
+import { Injectable } from '@angular/core';
+import { User } from '../types/user.model';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class TpvSessionService {
+  private readonly storageKey = 'tpv-active-user-v1';
+
+  getUser(): User | null {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      return raw ? JSON.parse(raw) as User : null;
+    } catch {
+      return null;
+    }
+  }
+
+  setUser(user: User) {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(user));
+    } catch {
+      // no-op
+    }
+  }
+
+  clear() {
+    try {
+      localStorage.removeItem(this.storageKey);
+    } catch {
+      // no-op
+    }
+  }
+
+  hasUser(): boolean {
+    return !!this.getUser();
+  }
+}

@@ -1,0 +1,102 @@
+<div class="tickets-page">
+  <div class="body-row">
+    <app-tpv-sidebar activeSection="tickets" (logout)="logoutTpvSession()"></app-tpv-sidebar>
+
+    <main class="tickets-content">
+      <header class="page-header">
+        <div>
+          <span class="page-kicker">Frontoffice</span>
+          <h1>Tickets y estado de servicio</h1>
+          <p>Revisa qué mesas siguen abiertas, cuánto tiempo llevan activas y los últimos tickets cerrados.</p>
+        </div>
+      </header>
+
+      <section class="overview-grid">
+        <article class="overview-card">
+          <span class="overview-label">Mesas abiertas</span>
+          <strong>{{ openOrders.length }}</strong>
+        </article>
+        <article class="overview-card">
+          <span class="overview-label">Tiempo medio abierto</span>
+          <strong>{{ getAverageElapsedLabel() }}</strong>
+        </article>
+        <article class="overview-card">
+          <span class="overview-label">Tickets recientes</span>
+          <strong>{{ recentSales.length }}</strong>
+        </article>
+      </section>
+
+      <div class="panels-grid">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Pedidos</span>
+              <h2>Mesas con pedido abierto</h2>
+            </div>
+            <span class="panel-count">{{ openOrders.length }}</span>
+          </div>
+
+          @if (loading) {
+            <div class="panel-empty">Cargando pedidos abiertos…</div>
+          } @else if (!openOrders.length) {
+            <div class="panel-empty">Ahora mismo no hay mesas abiertas.</div>
+          } @else {
+            <div class="open-orders-list">
+              @for (order of openOrders; track order.uuid) {
+                <button class="open-order-card" type="button" (click)="openOrder(order)">
+                  <div class="open-order-main">
+                    <div>
+                      <span class="open-order-table">{{ getTableName(order.table_id) }}</span>
+                      <span class="open-order-status">{{ formatStatus(order.status) }}</span>
+                    </div>
+                    <strong>{{ formatCurrency(order.total ?? 0) }}</strong>
+                  </div>
+                  <div class="open-order-meta">
+                    <span>{{ order.diners }} comensales</span>
+                    <span>Abierta hace {{ getElapsedLabel(order.opened_at) }}</span>
+                    <span>{{ formatDate(order.opened_at ?? null) }}</span>
+                  </div>
+                </button>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Cerrados</span>
+              <h2>Últimos tickets</h2>
+            </div>
+            <span class="panel-count">{{ recentSales.length }}</span>
+          </div>
+
+          @if (loading) {
+            <div class="panel-empty">Cargando tickets…</div>
+          } @else if (!recentSales.length) {
+            <div class="panel-empty">Aún no hay tickets cerrados para mostrar.</div>
+          } @else {
+            <div class="sales-list">
+              @for (sale of recentSales; track sale.uuid) {
+                <article class="sale-card">
+                  <div class="sale-topline">
+                    <div>
+                      <span class="sale-ticket">Ticket #{{ sale.ticket_number }}</span>
+                      <h3>{{ sale.table_name || 'Sin mesa' }}</h3>
+                    </div>
+                    <strong>{{ formatCurrency(sale.net_total) }}</strong>
+                  </div>
+                  <div class="sale-meta">
+                    <span>Apertura {{ formatDate(sale.opened_at) }}</span>
+                    <span>Cierre {{ formatDate(sale.closed_at) }}</span>
+                    <span>{{ sale.open_user_name }} → {{ sale.close_user_name }}</span>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    </main>
+  </div>
+</div>

@@ -25,6 +25,26 @@ export class WaiterModalComponent implements OnInit {
 
   waiters: User[] = [];
 
+  getRoleLabel(role: string): string {
+    const roles: Record<string, string> = {
+      admin: 'Administrador',
+      supervisor: 'Supervisor',
+      waiter: 'Camarero',
+      staff: 'Staff',
+    };
+
+    return roles[role] ?? role;
+  }
+
+  getInitials(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      return '?';
+    }
+
+    return parts.slice(0, 2).map(part => part.charAt(0).toUpperCase()).join('');
+  }
+
   ngOnInit() {
     this.loadWaiters();
   }
@@ -40,6 +60,10 @@ export class WaiterModalComponent implements OnInit {
 
   selectWaiter(waiter: User) {
     this.onSelected.emit(waiter);
+  }
+
+  onImageError(waiter: User) {
+    waiter.image_src = null;
   }
 
   cancel() {

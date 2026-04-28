@@ -1,102 +1,74 @@
 <div class="app">
-  <!-- ─── TOP BAR ─── -->
-  <header class="topbar">
-    <div class="topbar-logo">
-      <div class="logo-icon">T</div>
-      <span class="logo-text">TPV Pro</span>
-    </div>
-
-    <div class="topbar-center">
-      @if (!mergeMode) {
-        <button class="btn-merge-start" (click)="startMergeMode()">🔗 Juntar mesas</button>
-      } @else {
-        <span class="merge-hint">
-          @if (!mergeParent) {
-            Selecciona la mesa principal
-          } @else {
-            Mesa principal: <strong>{{ mergeParent.name }}</strong> — selecciona mesas a unir
-          }
-        </span>
-        <button class="btn-merge-confirm" (click)="confirmMerge()" [disabled]="!mergeParent || mergeSelected.size === 0">✓ Confirmar</button>
-        <button class="btn-merge-cancel" (click)="cancelMergeMode()">✕ Cancelar</button>
-      }
-    </div>
-
-    <div class="topbar-right">
-      @if (canGoBackoffice) {
-        <button class="btn-backoffice" (click)="goToBackoffice()">Backoffice</button>
-      }
-      <span class="topbar-date">{{ today }}</span>
-      <span class="topbar-time">{{ currentTime }}</span>
-      <div class="avatar" (click)="onAvatarClick()" style="cursor:pointer">👤</div>
-    </div>
-  </header>
-
   <!-- ─── BODY ─── -->
   <div class="body-row">
-    <!-- ─── SIDEBAR: ZONES ─── -->
-    <aside class="sidebar">
-      <div class="sidebar-title">Zonas</div>
-      <button
-        class="zone-item"
-        [class.active]="selectedZoneUuid === null"
-        (click)="selectZone(null)"
-      >
-        <span class="zone-name">Todas</span>
-        <span class="zone-badge">{{ allVisibleTables }}</span>
-      </button>
-      @for (zone of zones; track zone.uuid) {
-        <button
-          class="zone-item"
-          [class.active]="selectedZoneUuid === zone.uuid"
-          (click)="selectZone(zone.uuid)"
-        >
-          <span class="zone-name">{{ zone.name }}</span>
-          <span class="zone-badge">{{ getTablesInZone(zone.uuid) }}</span>
-        </button>
-      }
-    </aside>
+    <app-tpv-sidebar activeSection="tables" (logout)="logoutTpvSession()"></app-tpv-sidebar>
 
     <!-- ─── FLOOR AREA ─── -->
     <main class="floor-area">
-      @if (cashShiftAlert) {
-        <div class="cash-shift-alert">{{ cashShiftAlert }}</div>
-      }
-
       <div class="floor-header">
-        <h2 class="floor-title">{{ selectedZoneUuid ? getZoneName(selectedZoneUuid) : 'Todas las mesas' }}</h2>
-        <div class="legend">
-          <div class="legend-item"><span class="legend-dot dot-green"></span> Libre</div>
-          <div class="legend-item"><span class="legend-dot dot-orange"></span> Ocupada</div>
-          <div class="legend-item"><span class="legend-dot dot-blue"></span> Cobro</div>
-          <div class="legend-item"><span class="legend-dot dot-amber"></span> Fusionada</div>
+        <div class="floor-header-main">
+          <div class="floor-heading-row">
+            <h2 class="floor-title">Plano de mesas</h2>
+            <div class="zone-toolbar">
+              @for (zone of zones; track zone.uuid) {
+                <button
+                  class="zone-item"
+                  [class.active]="selectedZoneUuid === zone.uuid"
+                  (click)="selectZone(zone.uuid)"
+                >
+                  <span class="zone-name">{{ zone.name }}</span>
+                  <span class="zone-badge">{{ getTablesInZone(zone.uuid) }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="floor-actions">
+          <button class="layout-edit-button" type="button" (click)="onLayoutEditAction()">
+            {{ isLayoutEditMode ? 'Guardar' : 'Editar' }}
+          </button>
+          @if (!mergeMode && !isLayoutEditMode) {
+            <button class="btn-merge-start" type="button" (click)="startMergeMode()">Juntar mesas</button>
+          } @else if (mergeMode && !isLayoutEditMode) {
+            <button class="btn-merge-confirm" type="button" (click)="confirmMerge()" [disabled]="!mergeParent || mergeSelected.size === 0">Confirmar</button>
+            <button class="btn-merge-cancel" type="button" (click)="cancelMergeMode()">Cancelar</button>
+          }
         </div>
       </div>
 
       <div class="table-grid-wrap">
-        <div class="table-grid">
-          @for (table of filteredTables; track table.uuid) {
+        <div class="table-grid" #tableCanvas [class.is-editing]="isLayoutEditMode" [style.height.px]="tableCanvasHeight">
+          @for (table of selectedZoneTables; track table.uuid) {
             <div
               class="table-card"
               [class.ocupada]="isOccupied(table.uuid)"
               [class.libre]="!isOccupied(table.uuid)"
               [class.merged-parent]="isParentMerged(table.uuid)"
+              [class.merged-child]="isMergedChild(table.uuid)"
               [class.merge-mode]="mergeMode"
               [class.merge-selected]="isMergeSelected(table.uuid)"
+              [class.is-editing]="isLayoutEditMode"
+              [class.is-dragging]="isDraggingTable(table.uuid)"
+              [style.left.px]="getTablePosition(table).x"
+              [style.top.px]="getTablePosition(table).y"
+              (pointerdown)="onTablePointerDown($event, table)"
               (click)="onTableClick(table)"
             >
               @if (isParentMerged(table.uuid) && !mergeMode) {
                 <button class="btn-unmerge" (click)="$event.stopPropagation(); unmergeTable(table.uuid)">Separar</button>
               }
+              <span
+                class="table-status-dot"
+                [class.is-occupied]="isOccupied(table.uuid)"
+                [class.is-free]="!isOccupied(table.uuid)"
+                aria-hidden="true"></span>
               <div class="table-card-head">
                 <span class="table-name">{{ table.name }}</span>
-                @if (isOccupied(table.uuid)) {
-                  <span class="status-badge badge-ocupada">Ocupada</span>
-                } @else {
-                  <span class="status-badge badge-libre">Disponible</span>
-                }
               </div>
-              @if (isParentMerged(table.uuid)) {
+              @if (isMergedChild(table.uuid)) {
+                <div class="table-merged-note">🔗 Unida a {{ getMergedParentName(table.uuid) }}</div>
+              } @else if (isParentMerged(table.uuid)) {
                 <div class="table-merged-note">🔗 Unida con {{ getMergedNames(table.uuid) }}</div>
               }
               <div class="table-card-footer">
@@ -105,7 +77,6 @@
                     <ion-icon [icon]="peopleOutlineIcon" aria-hidden="true"></ion-icon>
                     {{ isOccupied(table.uuid) ? (getOrder(table.uuid)?.diners ?? 0) : '—' }}
                   </span>
-                  <span class="table-zone">{{ getZoneName(table.zone_id) }}</span>
                 </div>
                 @if (isOccupied(table.uuid)) {
                   <span class="table-amount">{{ getOrderTotal(table.uuid) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
@@ -118,16 +89,9 @@
         </div>
       </div>
 
-      <!-- ─── BOTTOM STATUS BAR ─── -->
-      <footer class="statusbar">
-        <div class="statusbar-stats">
-          <div class="stat-item">Mesas ocupadas <span class="stat-value">{{ occupiedTables }}/{{ filteredTables.length }}</span></div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">Venta acumulada <span class="stat-value orange">{{ totalSales / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span></div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">Comensales <span class="stat-value">{{ totalDiners }}</span></div>
-        </div>
-      </footer>
+      @if (cashShiftAlert) {
+        <div class="cash-shift-alert">{{ cashShiftAlert }}</div>
+      }
     </main>
   </div>
 </div>
@@ -150,40 +114,3 @@
   (onConfirm)="onDinersConfirmed($event)"
   (onCancel)="onDinersCancelled()"
 ></app-diners-modal>
-
-<!-- Profile flow modals -->
-<app-waiter-modal
-  [visible]="showProfileWaiterModal"
-  (onSelected)="onProfileWaiterSelected($event)"
-  (onCancel)="onProfileWaiterCancelled()"
-></app-waiter-modal>
-
-<app-pin-modal
-  [visible]="showProfilePinModal"
-  [selectedWaiter]="profileWaiter"
-  (onValidated)="onProfilePinValidated($event)"
-  (onCancel)="onProfilePinCancelled()"
-></app-pin-modal>
-
-<app-waiter-modal
-  [visible]="showBackofficeSupervisorModal"
-  [title]="'Selecciona administrador o supervisor'"
-  [emptyMessage]="'No hay administradores o supervisores disponibles'"
-  [allowedRoles]="['admin', 'supervisor']"
-  (onSelected)="onBackofficeSupervisorSelected($event)"
-  (onCancel)="onBackofficeSupervisorCancelled()"
-></app-waiter-modal>
-
-<app-pin-modal
-  [visible]="showBackofficePinModal"
-  [selectedWaiter]="selectedBackofficeSupervisor"
-  (onValidated)="onBackofficePinValidated($event)"
-  (onCancel)="onBackofficePinCancelled()"
-></app-pin-modal>
-
-<app-profile-modal
-  [visible]="showProfileModal"
-  [user]="profileUser"
-  [restaurantName]="restaurantName"
-  (onClose)="onProfileClosed()"
-></app-profile-modal>

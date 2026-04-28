@@ -4,8 +4,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(17, 17, 17, 0.16);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,17 +13,16 @@
 }
 
 .modal-content {
-  background: var(--tpv-card, #1E2A3B);
-  border: 1px solid var(--tpv-border, #1E293B);
-  border-radius: 14px;
+  background: #ffffff;
+  border: 2px solid #d4d4cf;
+  border-radius: 24px;
   padding: 2rem;
   width: 340px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   text-align: center;
 
   h2 {
     margin: 0 0 1.5rem;
-    color: var(--tpv-text-primary, #F1F5F9);
+    color: #111111;
     font-family: 'Funnel Sans', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
@@ -42,8 +41,9 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--tpv-orange, #FF8400);
-  color: white;
+  background: #f6f6f2;
+  border: 2px solid #d4d4cf;
+  color: #111111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +55,7 @@
 .waiter-name {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--tpv-text-primary, #F1F5F9);
+  color: #111111;
   font-family: 'Geist', sans-serif;
 }
 
@@ -70,26 +70,25 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid var(--tpv-border-light, #263347);
+  border: 2px solid #d4d4cf;
   background: transparent;
   transition: all 0.15s;
 
   &.filled {
-    background: var(--tpv-orange, #FF8400);
-    border-color: var(--tpv-orange, #FF8400);
-    box-shadow: 0 0 8px rgba(255, 132, 0, 0.4);
+    background: #111111;
+    border-color: #111111;
   }
 }
 
 .error-message {
-  color: var(--tpv-red, #EF4444);
+  color: #d63b31;
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 1rem;
 }
 
 .loading-message {
-  color: var(--tpv-text-muted, #64748B);
+  color: #666662;
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
@@ -103,22 +102,23 @@
 .key {
   height: 64px;
   min-width: 64px;
-  border-radius: 10px;
-  border: 1px solid var(--tpv-border-light, #263347);
-  background: var(--tpv-sidebar, #0F172A);
+  border-radius: 18px;
+  border: 2px solid #d4d4cf;
+  background: #ffffff;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--tpv-text-primary, #F1F5F9);
+  color: #111111;
   font-family: 'Geist Mono', monospace;
   cursor: pointer;
   transition: all 0.15s;
 
   &:hover {
-    border-color: var(--tpv-orange-border, rgba(255,132,0,.35));
+    border-color: rgba(17,17,17,.22);
+    background: #f6f6f2;
   }
 
   &:active {
-    background: rgba(255, 132, 0, 0.1);
+    background: #f0f0eb;
     transform: scale(0.95);
   }
 
@@ -128,15 +128,15 @@
   }
 
   &.key-delete {
-    color: var(--tpv-text-muted, #64748B);
+    color: #666662;
     font-size: 1.25rem;
     font-family: 'Geist', sans-serif;
   }
 
   &.key-cancel {
     font-size: 0.75rem;
-    color: var(--tpv-red, #EF4444);
-    border-color: rgba(239, 68, 68, 0.2);
+    color: #d63b31;
+    border-color: rgba(214, 59, 49, 0.22);
     font-family: 'Geist', sans-serif;
   }
 }

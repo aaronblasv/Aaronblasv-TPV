@@ -1,0 +1,143 @@
+<div class="cash-page">
+  <div class="body-row">
+    <app-tpv-sidebar activeSection="cash" (logout)="logoutTpvSession()"></app-tpv-sidebar>
+
+    <main class="cash-shell">
+      <header class="cash-header">
+        <div class="cash-header-main">
+          <div class="cash-heading-row">
+            <div>
+              <span class="page-kicker">Frontoffice</span>
+              <h1 class="cash-title">Caja</h1>
+            </div>
+            <p class="cash-subtitle">Controla el estado actual de caja desde el TPV con la misma vista limpia y directa del resto del frontoffice.</p>
+          </div>
+        </div>
+
+        @if (currentShift) {
+          <span class="cash-status-chip">Caja abierta</span>
+        } @else {
+          <span class="cash-status-chip cash-status-chip--muted">Caja cerrada</span>
+        }
+      </header>
+
+      @if (feedback) {
+        <div class="cash-feedback" [class.cash-feedback--error]="feedback.type === 'error'">
+          {{ feedback.message }}
+        </div>
+      }
+
+      @if (loading) {
+        <section class="cash-panel cash-panel--empty">Cargando estado de caja…</section>
+      } @else if (currentShift) {
+        <div class="cash-panels">
+          <section class="cash-panel cash-panel--summary">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Turno actual</span>
+                <h2>Caja abierta</h2>
+              </div>
+            </div>
+
+            <div class="summary-grid">
+              <article class="summary-card">
+                <span>Apertura</span>
+                <strong>{{ formatCurrency(currentShift.opening_cash) }}</strong>
+              </article>
+              <article class="summary-card">
+                <span>Efectivo</span>
+                <strong>{{ formatCurrency(currentShift.cash_total) }}</strong>
+              </article>
+              <article class="summary-card">
+                <span>Tarjeta</span>
+                <strong>{{ formatCurrency(currentShift.card_total) }}</strong>
+              </article>
+              <article class="summary-card">
+                <span>Bizum</span>
+                <strong>{{ formatCurrency(currentShift.bizum_total) }}</strong>
+              </article>
+              <article class="summary-card summary-card--wide">
+                <span>Esperado en caja</span>
+                <strong>{{ formatCurrency(currentShift.expected_cash) }}</strong>
+              </article>
+              <article class="summary-card summary-card--wide muted">
+                <span>Abierta desde</span>
+                <strong>{{ formatDate(currentShift.opened_at) }}</strong>
+              </article>
+            </div>
+          </section>
+
+          <section class="cash-panel action-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Cierre</span>
+                <h2>Cerrar caja</h2>
+              </div>
+            </div>
+
+            <label class="field-label" for="countedCash">Efectivo contado</label>
+            <input id="countedCash" class="field-input" type="number" min="0" step="0.01" [(ngModel)]="countedCash" />
+
+            <label class="field-label" for="closingNotes">Notas de cierre</label>
+            <textarea id="closingNotes" class="field-textarea" rows="4" [(ngModel)]="closingNotes"></textarea>
+
+            <button class="action-button action-button--danger" type="button" [disabled]="submitting" (click)="closeShift()">
+              {{ submitting ? 'Cerrando…' : 'Cerrar caja' }}
+            </button>
+          </section>
+        </div>
+      } @else {
+        <div class="cash-panels cash-panels--single">
+          <section class="cash-panel action-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Inicio</span>
+                <h2>Abrir caja</h2>
+              </div>
+            </div>
+
+            <label class="field-label" for="openingCash">Importe inicial</label>
+            <input id="openingCash" class="field-input" type="number" min="0" step="0.01" [(ngModel)]="openingCash" />
+
+            <label class="field-label" for="openingNotes">Notas de apertura</label>
+            <textarea id="openingNotes" class="field-textarea" rows="4" [(ngModel)]="openingNotes"></textarea>
+
+            <button class="action-button" type="button" [disabled]="submitting" (click)="openShift()">
+              {{ submitting ? 'Abriendo…' : 'Abrir caja' }}
+            </button>
+          </section>
+
+          @if (lastClosedShift) {
+            <section class="cash-panel cash-panel--summary">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">Último cierre</span>
+                  <h2>Resumen final</h2>
+                </div>
+              </div>
+
+              <div class="summary-grid">
+                <article class="summary-card">
+                  <span>Esperado</span>
+                  <strong>{{ formatCurrency(lastClosedShift.expected_cash) }}</strong>
+                </article>
+                <article class="summary-card">
+                  <span>Contado</span>
+                  <strong>{{ formatCurrency(lastClosedShift.counted_cash) }}</strong>
+                </article>
+                <article class="summary-card">
+                  <span>Diferencia</span>
+                  <strong>{{ formatCurrency(lastClosedShift.cash_difference) }}</strong>
+                </article>
+                <article class="summary-card summary-card--wide muted">
+                  <span>Cerrada el</span>
+                  <strong>{{ formatDate(lastClosedShift.closed_at) }}</strong>
+                </article>
+              </div>
+            </section>
+          }
+        </div>
+      }
+    </main>
+  </div>
+</div>

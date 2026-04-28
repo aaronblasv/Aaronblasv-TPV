@@ -1,42 +1,48 @@
-import { Component, OnInit, OnDestroy, inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewEncapsulation, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { addIcons } from 'ionicons';
 import { peopleOutline } from 'ionicons/icons';
 import { catchError, forkJoin, of } from 'rxjs';
-import { AuthService } from '../../../services/api/auth.service';
 import { ZoneService } from '../../../services/api/zone.service';
 import { TableService } from '../../../services/api/table.service';
 import { OrderService } from '../../../services/api/order.service';
 import { CashShiftService } from '../../../services/api/cash-shift.service';
 import { LoggerService } from '../../../services/logger.service';
+import { TpvSessionService } from '../../../services/tpv-session.service';
+import { TpvSidebarComponent } from '../../../components/tpv-sidebar/tpv-sidebar.component';
 import { PinModalComponent } from '../../../components/pin-modal/pin-modal.component';
 import { DinersModalComponent } from '../../../components/diners-modal/diners-modal.component';
 import { WaiterModalComponent } from '../../../components/waiter-modal/waiter-modal.component';
-import { ProfileModalComponent } from '../../../components/profile-modal/profile-modal.component';
 import { Zone } from '../../../types/zone.model';
 import { Table } from '../../../types/table.model';
 import { Order } from '../../../types/order.model';
 import { User } from '../../../types/user.model';
 import { CashShiftSummary } from '../../../types/cash-shift.model';
 
+interface TablePosition {
+  x: number;
+  y: number;
+}
+
 @Component({
   selector: 'app-floor',
   standalone: true,
-  imports: [CommonModule, IonicModule, PinModalComponent, DinersModalComponent, WaiterModalComponent, ProfileModalComponent],
+  imports: [CommonModule, IonicModule, TpvSidebarComponent, PinModalComponent, DinersModalComponent, WaiterModalComponent],
   templateUrl: './floor.page.html',
   styleUrls: ['./floor.page.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class FloorPage implements OnInit, OnDestroy {
+  @ViewChild('tableCanvas') tableCanvasRef?: ElementRef<HTMLElement>;
+
   private router = inject(Router);
-  private authService = inject(AuthService);
   private zoneService = inject(ZoneService);
   private tableService = inject(TableService);
   private orderService = inject(OrderService);
   private cashShiftService = inject(CashShiftService);
   private logger = inject(LoggerService);
+  private tpvSessionService = inject(TpvSessionService);
 
   zones: Zone[] = [];
   tables: Table[] = [];
@@ -48,7 +54,7 @@ export class FloorPage implements OnInit, OnDestroy {
   showDinersModal = false;
   selectedTable: Table | null = null;
   selectedWaiter: User | null = null;
-  validatedUser: User | null = null;
+  activeUser: User | null = null;
 
   // Merge tables state
   mergeMode = false;
@@ -60,28 +66,29 @@ export class FloorPage implements OnInit, OnDestroy {
   today = '';
   private clockInterval: ReturnType<typeof setInterval> | null = null;
 
-  canGoBackoffice = false;
   currentCashShift: CashShiftSummary | null = null;
   cashShiftAlert = '';
+  private cashShiftAlertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // Profile modal state
-  showProfileWaiterModal = false;
-  showProfilePinModal = false;
-  showProfileModal = false;
-  profileUser: User | null = null;
-  profileWaiter: User | null = null;
-  restaurantName = '';
-  showBackofficeSupervisorModal = false;
-  showBackofficePinModal = false;
-  selectedBackofficeSupervisor: User | null = null;
+  isLayoutEditMode = false;
+  draggingTableUuid: string | null = null;
+  tableCanvasHeight = 420;
   readonly peopleOutlineIcon = peopleOutline;
+  readonly tableCardWidth = 208;
+  readonly tableCardHeight = 172;
+  readonly tableSnap = 24;
+  private readonly tableCanvasPadding = 24;
+  private readonly layoutStorageKey = 'tpv-floor-layout-v1';
+  private zoneLayouts: Record<string, Record<string, TablePosition>> = {};
+  private dragPointerOffset = { x: 0, y: 0 };
 
   constructor() {
-    addIcons({ peopleOutline });
+    this.zoneLayouts = this.loadLayoutsFromStorage();
   }
 
   ngOnInit() {
-    this.syncRoleFlags();
+    this.restoreActiveUser();
+    this.promptSessionLoginIfNeeded();
     this.loadData();
     this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
@@ -89,6 +96,7 @@ export class FloorPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.clockInterval) clearInterval(this.clockInterval);
+    if (this.cashShiftAlertTimeout) clearTimeout(this.cashShiftAlertTimeout);
   }
 
   private updateClock() {
@@ -98,88 +106,15 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
-    this.syncRoleFlags();
+    this.restoreActiveUser();
+    this.promptSessionLoginIfNeeded();
     this.logger.log('ionViewWillEnter triggered - reloading data');
     this.loadData();
   }
 
-  private syncRoleFlags() {
-    const role = this.authService.getRole();
-    this.canGoBackoffice = role === 'admin' || role === 'supervisor';
-  }
-
-  goToBackoffice() {
-    if (!this.canGoBackoffice) return;
-    this.selectedBackofficeSupervisor = null;
-    this.showBackofficeSupervisorModal = true;
-  }
-
-  onBackofficeSupervisorSelected(user: User) {
-    this.selectedBackofficeSupervisor = user;
-    this.showBackofficeSupervisorModal = false;
-    this.showBackofficePinModal = true;
-  }
-
-  onBackofficeSupervisorCancelled() {
-    this.showBackofficeSupervisorModal = false;
-    this.selectedBackofficeSupervisor = null;
-  }
-
-  onBackofficePinValidated(user: User) {
-    this.showBackofficePinModal = false;
-    this.selectedBackofficeSupervisor = null;
-
-    if (user.role !== 'admin' && user.role !== 'supervisor') {
-      this.cashShiftAlert = 'Solo un administrador o supervisor puede acceder al backoffice.';
-      return;
-    }
-
-    this.router.navigate(['/dashboard']);
-  }
-
-  onBackofficePinCancelled() {
-    this.showBackofficePinModal = false;
-    this.selectedBackofficeSupervisor = null;
-  }
-
-  // ─── Profile flow (avatar click) ───
-  onAvatarClick() {
-    this.showProfileWaiterModal = true;
-  }
-
-  onProfileWaiterSelected(waiter: User) {
-    this.profileWaiter = waiter;
-    this.showProfileWaiterModal = false;
-    this.showProfilePinModal = true;
-  }
-
-  onProfileWaiterCancelled() {
-    this.showProfileWaiterModal = false;
-    this.profileWaiter = null;
-  }
-
-  onProfilePinValidated(user: User) {
-    this.profileUser = user;
-    this.showProfilePinModal = false;
-    // Fetch full user info (with restaurant name)
-    this.authService.me().subscribe({
-      next: (me: any) => {
-        this.restaurantName = me.restaurant_name ?? '';
-      },
-      error: () => {},
-    });
-    this.showProfileModal = true;
-  }
-
-  onProfilePinCancelled() {
-    this.showProfilePinModal = false;
-    this.profileWaiter = null;
-  }
-
-  onProfileClosed() {
-    this.showProfileModal = false;
-    this.profileUser = null;
-    this.profileWaiter = null;
+  logoutTpvSession() {
+    this.clearActiveTpvSession();
+    this.promptSessionLoginIfNeeded();
   }
 
   ionViewDidLoad() {
@@ -221,6 +156,8 @@ export class FloorPage implements OnInit, OnDestroy {
         this.tables = tables;
         this.openOrders = openOrders;
         this.currentCashShift = currentCashShift;
+        this.ensureSelectedZone();
+        this.syncZoneLayout();
 
         tables.forEach(table => {
           this.logger.log(`  Mesa ${table.name}: ${this.isOccupied(table.uuid) ? 'OCUPADA' : 'LIBRE'}`);
@@ -231,11 +168,15 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   get filteredTables(): Table[] {
-    let tables = this.tables.filter(t => !t.merged_with);
-    if (this.selectedZoneUuid) {
-      tables = tables.filter(t => t.zone_id === this.selectedZoneUuid);
+    if (!this.selectedZoneUuid) {
+      return [];
     }
-    return tables;
+
+    return this.tables.filter(t => t.zone_id === this.selectedZoneUuid);
+  }
+
+  get selectedZoneTables(): Table[] {
+    return this.filteredTables;
   }
 
   getMergedChildren(parentUuid: string): Table[] {
@@ -256,7 +197,14 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   selectZone(uuid: string | null) {
+    if (this.isLayoutEditMode) {
+      this.showCashShiftAlert('Guarda la distribución antes de cambiar de zona.');
+      return;
+    }
+
     this.selectedZoneUuid = uuid;
+    this.clearCashShiftAlert();
+    this.syncZoneLayout();
   }
 
   isOccupied(tableUuid: string): boolean {
@@ -272,7 +220,7 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   getTablesInZone(zoneId: string): number {
-    return this.tables.filter(t => t.zone_id === zoneId && !t.merged_with).length;
+    return this.tables.filter(t => t.zone_id === zoneId).length;
   }
 
   get freeTables(): number {
@@ -284,7 +232,91 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   get allVisibleTables(): number {
-    return this.tables.filter(t => !t.merged_with).length;
+    return this.tables.length;
+  }
+
+  isMergedChild(tableUuid: string): boolean {
+    return this.tables.some(table => table.uuid === tableUuid && !!table.merged_with);
+  }
+
+  getMergedParentName(tableUuid: string): string {
+    const table = this.tables.find(item => item.uuid === tableUuid);
+    if (!table?.merged_with) {
+      return '';
+    }
+
+    return this.tables.find(item => item.uuid === table.merged_with)?.name ?? '';
+  }
+
+  getTablePosition(table: Table): TablePosition {
+    const zoneLayout = this.zoneLayouts[table.zone_id];
+    if (zoneLayout?.[table.uuid]) {
+      return zoneLayout[table.uuid];
+    }
+
+    this.syncZoneLayout();
+    return this.zoneLayouts[table.zone_id]?.[table.uuid] ?? { x: this.tableCanvasPadding, y: this.tableCanvasPadding };
+  }
+
+  isDraggingTable(tableUuid: string): boolean {
+    return this.draggingTableUuid === tableUuid;
+  }
+
+  onLayoutEditAction() {
+    if (this.isLayoutEditMode) {
+      this.saveLayout();
+      return;
+    }
+
+    this.isLayoutEditMode = true;
+    this.syncZoneLayout();
+    this.clearCashShiftAlert();
+  }
+
+  onTablePointerDown(event: PointerEvent, table: Table) {
+    if (!this.isLayoutEditMode || !this.selectedZoneUuid || !this.tableCanvasRef) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const canvasBounds = this.tableCanvasRef.nativeElement.getBoundingClientRect();
+    const position = this.getTablePosition(table);
+
+    this.draggingTableUuid = table.uuid;
+    this.dragPointerOffset = {
+      x: event.clientX - canvasBounds.left - position.x,
+      y: event.clientY - canvasBounds.top - position.y,
+    };
+  }
+
+  @HostListener('window:pointermove', ['$event'])
+  onWindowPointerMove(event: PointerEvent) {
+    if (!this.draggingTableUuid || !this.selectedZoneUuid || !this.tableCanvasRef) {
+      return;
+    }
+
+    const canvas = this.tableCanvasRef.nativeElement;
+    const canvasBounds = canvas.getBoundingClientRect();
+    const canvasWidth = Math.max(canvasBounds.width, this.tableCardWidth + this.tableCanvasPadding * 2);
+
+    const rawX = event.clientX - canvasBounds.left - this.dragPointerOffset.x;
+    const rawY = event.clientY - canvasBounds.top - this.dragPointerOffset.y;
+
+    const maxX = Math.max(this.tableCanvasPadding, canvasWidth - this.tableCardWidth - this.tableCanvasPadding);
+    const nextX = this.snap(this.clamp(rawX, this.tableCanvasPadding, maxX));
+    const nextY = this.snap(this.clamp(rawY, this.tableCanvasPadding, 4000));
+
+    this.zoneLayouts[this.selectedZoneUuid] ??= {};
+    this.zoneLayouts[this.selectedZoneUuid][this.draggingTableUuid] = { x: nextX, y: nextY };
+    this.updateTableCanvasHeight();
+  }
+
+  @HostListener('window:pointerup')
+  @HostListener('window:pointercancel')
+  onWindowPointerUp() {
+    this.draggingTableUuid = null;
   }
 
   get totalDiners(): number {
@@ -353,20 +385,41 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   onTableClick(table: Table) {
+    if (!this.ensureActiveSession(table)) {
+      return;
+    }
+
+    if (this.isLayoutEditMode) {
+      return;
+    }
+
+    if (this.isMergedChild(table.uuid)) {
+      const parentName = this.getMergedParentName(table.uuid);
+      this.showCashShiftAlert(parentName
+        ? `${table.name} está unida a ${parentName}. Accede desde la mesa principal.`
+        : `${table.name} está unida a otra mesa.`);
+      return;
+    }
+
     if (this.mergeMode) {
       this.onMergeTableClick(table);
       return;
     }
 
     if (!this.isOccupied(table.uuid) && !this.currentCashShift) {
-      this.cashShiftAlert = 'No se puede comenzar un pedido si la caja esta cerrada.';
+      this.showCashShiftAlert('No se puede comenzar un pedido si la caja esta cerrada.');
       return;
     }
 
-    this.cashShiftAlert = '';
+    this.clearCashShiftAlert();
 
     this.selectedTable = table;
-    this.showWaiterModal = true;
+
+    if (this.isOccupied(this.selectedTable.uuid)) {
+      this.router.navigate(['/tpv/order', this.selectedTable.uuid]);
+    } else {
+      this.showDinersModal = true;
+    }
   }
 
   onWaiterSelected(waiter: User) {
@@ -376,19 +429,28 @@ export class FloorPage implements OnInit, OnDestroy {
   }
 
   onWaiterCancelled() {
+    if (!this.activeUser) {
+      this.promptSessionLoginIfNeeded();
+      return;
+    }
+
     this.showWaiterModal = false;
     this.selectedTable = null;
     this.selectedWaiter = null;
   }
 
   onPinValidated(user: User) {
-    this.validatedUser = user;
+    this.activeUser = user;
+    this.tpvSessionService.setUser(user);
     this.showPinModal = false;
+    this.selectedWaiter = null;
+
+    if (!this.selectedTable) {
+      return;
+    }
 
     if (this.isOccupied(this.selectedTable!.uuid)) {
-      this.router.navigate(['/tpv/order', this.selectedTable!.uuid], {
-        state: { user: this.validatedUser },
-      });
+      this.router.navigate(['/tpv/order', this.selectedTable!.uuid]);
     } else {
       this.showDinersModal = true;
     }
@@ -396,22 +458,26 @@ export class FloorPage implements OnInit, OnDestroy {
 
   onPinCancelled() {
     this.showPinModal = false;
-    this.selectedTable = null;
     this.selectedWaiter = null;
-    this.validatedUser = null;
+
+    if (!this.activeUser) {
+      this.selectedTable = null;
+      this.promptSessionLoginIfNeeded();
+      return;
+    }
+
+    this.selectedTable = null;
   }
 
   onDinersConfirmed(diners: number) {
     this.showDinersModal = false;
-    this.orderService.openOrder(this.selectedTable!.uuid, this.validatedUser!.uuid, diners).subscribe({
+    this.orderService.openOrder(this.selectedTable!.uuid, this.activeUser!.uuid, diners).subscribe({
       next: () => {
-        this.cashShiftAlert = '';
-        this.router.navigate(['/tpv/order', this.selectedTable!.uuid], {
-          state: { user: this.validatedUser },
-        });
+        this.clearCashShiftAlert();
+        this.router.navigate(['/tpv/order', this.selectedTable!.uuid]);
       },
       error: (err) => {
-        this.cashShiftAlert = err?.error?.message ?? 'No se pudo abrir la mesa.';
+        this.showCashShiftAlert(err?.error?.message ?? 'No se pudo abrir la mesa.');
         this.logger.error('Error opening order:', err);
       },
     });
@@ -421,51 +487,56 @@ export class FloorPage implements OnInit, OnDestroy {
     this.showDinersModal = false;
     this.selectedTable = null;
     this.selectedWaiter = null;
-    this.validatedUser = null;
   }
 
   // === Merge tables ===
 
   startMergeMode() {
+    if (this.isLayoutEditMode) {
+      return;
+    }
+
     this.mergeMode = true;
     this.mergeParent = null;
     this.mergeSelected = new Set();
-    this.cashShiftAlert = 'Selecciona primero una mesa con pedido abierto y luego solo mesas vacías.';
+    this.clearCashShiftAlert();
   }
 
   cancelMergeMode() {
     this.mergeMode = false;
     this.mergeParent = null;
     this.mergeSelected = new Set();
-    this.cashShiftAlert = '';
+    this.clearCashShiftAlert();
   }
 
   onMergeTableClick(table: Table) {
+    if (this.isMergedChild(table.uuid) || this.isParentMerged(table.uuid)) {
+      this.showCashShiftAlert('No se pueden volver a unir mesas que ya forman parte de una agrupación.');
+      return;
+    }
+
     if (!this.mergeParent) {
       if (!this.isOccupied(table.uuid)) {
-        this.cashShiftAlert = 'La mesa principal debe tener un pedido abierto.';
+        this.showCashShiftAlert('La mesa principal debe tener un pedido abierto.');
         return;
       }
 
-      this.cashShiftAlert = 'Ahora selecciona solo mesas vacías para unirlas a la mesa abierta.';
+      this.clearCashShiftAlert();
       this.mergeParent = table;
       return;
     }
     if (table.uuid === this.mergeParent.uuid) return;
 
     if (this.isOccupied(table.uuid)) {
-      this.cashShiftAlert = 'No se pueden unir dos o más mesas con pedido abierto.';
+      this.showCashShiftAlert('No se pueden unir dos o más mesas con pedido abierto.');
       return;
     }
 
     if (this.mergeSelected.has(table.uuid)) {
       this.mergeSelected.delete(table.uuid);
-      if (this.mergeSelected.size === 0) {
-        this.cashShiftAlert = 'Selecciona al menos una mesa vacía para completar la unión.';
-      }
     } else {
       this.mergeSelected.add(table.uuid);
-      this.cashShiftAlert = '';
+      this.clearCashShiftAlert();
     }
   }
 
@@ -475,35 +546,35 @@ export class FloorPage implements OnInit, OnDestroy {
 
   confirmMerge() {
     if (!this.mergeParent) {
-      this.cashShiftAlert = 'Selecciona una mesa con pedido abierto.';
+      this.showCashShiftAlert('Selecciona una mesa con pedido abierto.');
       return;
     }
 
     if (!this.isOccupied(this.mergeParent.uuid)) {
-      this.cashShiftAlert = 'La mesa principal debe tener un pedido abierto.';
+      this.showCashShiftAlert('La mesa principal debe tener un pedido abierto.');
       return;
     }
 
     if (this.mergeSelected.size === 0) {
-      this.cashShiftAlert = 'Selecciona al menos una mesa vacía para unir.';
+      this.showCashShiftAlert('Selecciona al menos una mesa vacía para unir.');
       return;
     }
 
     const hasOccupiedChild = Array.from(this.mergeSelected).some((tableUuid) => this.isOccupied(tableUuid));
     if (hasOccupiedChild) {
-      this.cashShiftAlert = 'Solo se puede unir una mesa con pedido abierto con mesas vacías.';
+      this.showCashShiftAlert('Solo se puede unir una mesa con pedido abierto con mesas vacías.');
       return;
     }
 
     const childUuids = Array.from(this.mergeSelected);
     this.tableService.mergeTables(this.mergeParent.uuid, childUuids).subscribe({
       next: () => {
-        this.cashShiftAlert = '';
+        this.clearCashShiftAlert();
         this.cancelMergeMode();
         this.loadData();
       },
       error: (err) => {
-        this.cashShiftAlert = err?.error?.message ?? 'No se pudieron unir las mesas.';
+        this.showCashShiftAlert(err?.error?.message ?? 'No se pudieron unir las mesas.');
         this.logger.error('Error merging tables:', err);
       },
     });
@@ -514,5 +585,148 @@ export class FloorPage implements OnInit, OnDestroy {
       next: () => this.loadData(),
       error: (err) => this.logger.error('Error unmerging tables:', err),
     });
+  }
+
+  private ensureSelectedZone() {
+    if (this.selectedZoneUuid && this.zones.some(zone => zone.uuid === this.selectedZoneUuid)) {
+      return;
+    }
+
+    this.selectedZoneUuid = this.zones[0]?.uuid ?? null;
+  }
+
+  private syncZoneLayout() {
+    if (!this.selectedZoneUuid) {
+      this.tableCanvasHeight = 420;
+      return;
+    }
+
+    const zoneTables = this.tables.filter(table => table.zone_id === this.selectedZoneUuid);
+    const existing = this.zoneLayouts[this.selectedZoneUuid] ?? {};
+    const defaults = this.buildDefaultZoneLayout(zoneTables);
+    const nextLayout: Record<string, TablePosition> = {};
+
+    zoneTables.forEach(table => {
+      nextLayout[table.uuid] = existing[table.uuid] ?? defaults[table.uuid];
+    });
+
+    this.zoneLayouts[this.selectedZoneUuid] = nextLayout;
+    this.updateTableCanvasHeight();
+  }
+
+  private buildDefaultZoneLayout(zoneTables: Table[]): Record<string, TablePosition> {
+    const columns = 4;
+    const gap = 24;
+
+    return zoneTables.reduce<Record<string, TablePosition>>((acc, table, index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+
+      acc[table.uuid] = {
+        x: this.tableCanvasPadding + column * (this.tableCardWidth + gap),
+        y: this.tableCanvasPadding + row * (this.tableCardHeight + gap),
+      };
+
+      return acc;
+    }, {});
+  }
+
+  private updateTableCanvasHeight() {
+    if (!this.selectedZoneUuid) {
+      this.tableCanvasHeight = 420;
+      return;
+    }
+
+    const positions = Object.values(this.zoneLayouts[this.selectedZoneUuid] ?? {});
+    const maxBottom = positions.reduce((max, position) => Math.max(max, position.y + this.tableCardHeight), 0);
+    this.tableCanvasHeight = Math.max(420, maxBottom + this.tableCanvasPadding);
+  }
+
+  private saveLayout() {
+    this.saveLayoutsToStorage();
+    this.isLayoutEditMode = false;
+    this.draggingTableUuid = null;
+    this.clearCashShiftAlert();
+  }
+
+  private showCashShiftAlert(message: string) {
+    if (this.cashShiftAlertTimeout) {
+      clearTimeout(this.cashShiftAlertTimeout);
+    }
+
+    this.cashShiftAlert = message;
+    this.cashShiftAlertTimeout = setTimeout(() => {
+      this.cashShiftAlert = '';
+      this.cashShiftAlertTimeout = null;
+    }, 2200);
+  }
+
+  private clearCashShiftAlert() {
+    if (this.cashShiftAlertTimeout) {
+      clearTimeout(this.cashShiftAlertTimeout);
+      this.cashShiftAlertTimeout = null;
+    }
+
+    this.cashShiftAlert = '';
+  }
+
+  private loadLayoutsFromStorage(): Record<string, Record<string, TablePosition>> {
+    try {
+      const raw = localStorage.getItem(this.layoutStorageKey);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private saveLayoutsToStorage() {
+    try {
+      localStorage.setItem(this.layoutStorageKey, JSON.stringify(this.zoneLayouts));
+    } catch {
+      this.logger.error('No se pudo guardar la distribución del plano.');
+    }
+  }
+
+  private snap(value: number): number {
+    return Math.round(value / this.tableSnap) * this.tableSnap;
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  private restoreActiveUser() {
+    this.activeUser = this.tpvSessionService.getUser();
+  }
+
+  private promptSessionLoginIfNeeded() {
+    if (this.activeUser) {
+      this.showWaiterModal = false;
+      return;
+    }
+
+    this.showWaiterModal = true;
+    this.showPinModal = false;
+    this.selectedWaiter = null;
+  }
+
+  private ensureActiveSession(table?: Table): boolean {
+    if (this.activeUser) {
+      return true;
+    }
+
+    this.selectedTable = table ?? null;
+    this.promptSessionLoginIfNeeded();
+    return false;
+  }
+
+  private clearActiveTpvSession() {
+    this.tpvSessionService.clear();
+    this.activeUser = null;
+    this.selectedTable = null;
+    this.selectedWaiter = null;
+    this.showWaiterModal = false;
+    this.showPinModal = false;
+    this.showDinersModal = false;
   }
 }

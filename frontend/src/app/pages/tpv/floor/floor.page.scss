@@ -4,35 +4,29 @@
           Newsreader (captions), Geist Mono (data)
    ═══════════════════════════════════════════════════════ */
 
-// ── Carbon Frost Palette ──
-$bg:           #0C0F14;
-$card:         #161B24;
-$sidebar:      #0E1117;
-$topbar:       #0E1117;
-$surface:      #1C2230;
-$border:       #1E2533;
-$border-light: #2A3344;
-$text-primary: #E8ECF1;
-$text-muted:   #6B7A8D;
-$text-dim:     #8D9BAD;
-$accent:       #7CB9E8;   // ice blue accent
-$accent-dim:   #1A2940;
-$accent-hover: #5BA3D9;
-$orange:       #E8935A;   // warm frost
-$orange-dim:   #2C1E12;
-$green:        #6BCB8B;   // mint frost
-$green-dim:    #122218;
-$amber:        #D4A957;   // gold frost
-$amber-dim:    #261E0E;
-$blue:         #7CB9E8;   // ice blue
-$blue-dim:     #142233;
-$red:          #E06060;
-$radius:       8px;       // basic roundness
-$radius-sm:    5px;
+@use 'sass:color';
 
-// ── Elevation: Gentle Lift ──
-$shadow-card:  0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.2);
-$shadow-hover: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.25);
+// ── Minimal TPV palette ──
+$bg:           #ffffff;
+$card:         #ffffff;
+$sidebar:      #ffffff;
+$topbar:       #ffffff;
+$surface:      #f0f0eb;
+$border:       #111111;
+$border-light: #d4d4cf;
+$text-primary: #111111;
+$text-muted:   #666662;
+$text-dim:     #84847d;
+$accent:       #111111;
+$accent-dim:   #ecece8;
+$accent-hover: #2f2f2f;
+$orange:       #d96b38;
+$green:        #a9a9a2;
+$amber:        #b7b1a3;
+$blue:         #111111;
+$red:          #d63b31;
+$radius:       18px;
+$radius-sm:    12px;
 
 app-floor {
   display: block;
@@ -53,220 +47,180 @@ app-floor {
     width: 100%;
   }
 
-  /* ─── TOP BAR ─── */
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    padding: 0 24px;
-    background: $topbar;
-    border-bottom: 1px solid $border;
-    flex-shrink: 0;
-  }
-
-  .topbar-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-icon {
-    width: 32px;
-    height: 32px;
-    background: $accent;
-    border-radius: $radius;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Funnel Sans', sans-serif;
-    font-weight: 800;
-    font-size: 16px;
-    color: $bg;
-    flex-shrink: 0;
-  }
-
-  .logo-text {
-    font-family: 'Funnel Sans', sans-serif;
-    font-weight: 700;
-    font-size: 17px;
+  .btn-merge-start,
+  .btn-merge-confirm,
+  .btn-merge-cancel {
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1.5px solid $border-light;
+    background: $card;
     color: $text-primary;
-    letter-spacing: -0.3px;
-  }
-
-  .topbar-center {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .merge-hint {
-    font-size: 13px;
-    color: $text-dim;
-    strong { color: $accent; }
-  }
-
-  .btn-merge-start {
-    padding: 6px 14px;
-    border-radius: $radius-sm;
-    border: 1px solid $border-light;
-    background: transparent;
-    color: $text-dim;
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
     font-family: 'Geist', sans-serif;
-    transition: all .15s;
-    &:hover { border-color: $accent; color: $accent; }
+    letter-spacing: .02em;
+    transition: transform .15s, background .15s, color .15s, border-color .15s;
+
+    &:hover {
+      border-color: rgba($border, .28);
+      background: #fafaf7;
+      transform: translateY(-1px);
+    }
   }
 
   .btn-merge-confirm {
-    padding: 6px 14px;
-    border-radius: $radius-sm;
-    border: none;
-    background: $green;
-    color: $bg;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Geist', sans-serif;
-    &:disabled { opacity: 0.4; cursor: default; }
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+      transform: none;
+    }
   }
 
   .btn-merge-cancel {
-    padding: 6px 14px;
-    border-radius: $radius-sm;
-    border: 1px solid rgba($red, .25);
-    background: rgba($red, .1);
+    border-color: $red;
     color: $red;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'Geist', sans-serif;
-  }
 
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .btn-backoffice {
-    padding: 7px 12px;
-    border-radius: $radius-sm;
-    border: 1px solid $border-light;
-    background: rgba($accent, 0.08);
-    color: $accent;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Geist', sans-serif;
-    transition: all .15s;
-    &:hover { background: rgba($accent, 0.14); border-color: rgba($accent, 0.6); }
-    &:active { transform: translateY(1px); }
-  }
-
-  .topbar-time {
-    font-family: 'Geist Mono', monospace;
-    font-size: 15px;
-    font-weight: 600;
-    color: $text-primary;
-    letter-spacing: 1px;
-  }
-
-  .topbar-date {
-    font-family: 'Newsreader', serif;
-    font-size: 13px;
-    font-style: italic;
-    color: $text-muted;
-  }
-
-  .avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: $surface;
-    border: 2px solid $border-light;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: $text-dim;
-    cursor: pointer;
-    transition: border-color .15s;
-    &:hover { border-color: $accent; }
+    &:hover {
+      background: $red;
+      color: $card;
+    }
   }
 
   /* ─── BODY ROW ─── */
   .body-row {
     display: flex;
     flex: 1;
+    height: 100vh;
     overflow: hidden;
   }
 
   /* ─── SIDEBAR ─── */
   .sidebar {
-    width: 240px;
+    width: 104px;
     flex-shrink: 0;
     background: $sidebar;
-    border-right: 1px solid $border;
     display: flex;
-    flex-direction: column;
-    padding: 20px 12px;
-    gap: 3px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 14px;
+    position: relative;
   }
 
-  .sidebar-title {
-    font-family: 'Funnel Sans', sans-serif;
+  .sidebar-main-actions {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .sidebar-user-button,
+  .sidebar-backoffice-button {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
     font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: $text-muted;
-    padding: 0 10px 12px;
-    text-transform: uppercase;
+    color: $text-primary;
+    cursor: pointer;
+    transition: transform .15s, background .15s;
+
+    &:hover {
+      transform: translateY(-1px);
+      background: transparent;
+    }
+  }
+
+  .sidebar-user-button ion-icon,
+  .sidebar-backoffice-button ion-icon {
+    font-size: 30px;
+    color: #111111;
+  }
+
+  .session-exit-button {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 20px;
+    height: 60px;
+    border-radius: 18px;
+    border: none;
+    background: $red;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, transform .15s;
+
+    ion-icon {
+      font-size: 28px;
+      color: #ffffff;
+    }
+
+    &:hover {
+      background: #bf2f27;
+      transform: translateY(-1px);
+    }
   }
 
   .zone-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 14px;
-    min-height: 46px;
-    border-radius: $radius-sm;
+    padding: 0 18px;
+    min-height: 50px;
+    border-radius: 999px;
     cursor: pointer;
     transition: background 0.15s;
-    gap: 8px;
-    border: none;
-    background: transparent;
-    width: 100%;
+    gap: 10px;
+    border: 1.5px solid transparent;
+    background: rgba($card, .9);
+    width: auto;
     text-align: left;
     font-family: 'Geist', sans-serif;
     color: $text-dim;
     touch-action: manipulation;
 
-    &:hover { background: rgba(255,255,255,0.04); }
+    &:hover {
+      background: #f6f6f2;
+      border-color: rgba($border, .18);
+    }
 
     &.active {
-      background: $accent;
-      .zone-name { color: $bg; font-weight: 600; }
-      .zone-badge { background: rgba(0,0,0,0.2); color: $bg; }
+      background: $card;
+      border-color: rgba($border, .28);
+
+      .zone-name { color: $text-primary; font-weight: 700; }
+      .zone-badge { background: $text-primary; color: $card; }
     }
   }
 
   .zone-name {
     font-size: 15px;
     color: $text-dim;
-    font-weight: 500;
-    flex: 1;
+    font-weight: 600;
   }
 
   .zone-badge {
     font-family: 'Geist Mono', monospace;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     background: $surface;
     color: $text-muted;
-    border-radius: 20px;
-    padding: 4px 10px;
+    border-radius: 999px;
+    padding: 5px 11px;
     flex-shrink: 0;
   }
 
@@ -276,103 +230,152 @@ app-floor {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: $bg;
+    background: $card;
+    position: relative;
   }
 
   .cash-shift-alert {
-    margin: 16px 24px 0;
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    z-index: 8;
+    max-width: min(420px, calc(100% - 48px));
     padding: 12px 14px;
     border-radius: 12px;
-    border: 1px solid rgba($red, .35);
-    background: rgba($red, .12);
-    color: #FFB1B1;
+    border: 1.5px solid rgba($red, .5);
+    background: rgba($card, .96);
+    backdrop-filter: blur(12px);
+    color: $red;
     font-size: 13px;
     font-weight: 600;
-    box-shadow: $shadow-card;
+    box-shadow: 0 10px 24px rgba(17, 17, 17, .08);
+    pointer-events: none;
   }
 
   .floor-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 14px 24px;
-    border-bottom: 1px solid $border;
+    padding: 20px 24px 16px;
+    gap: 20px;
     flex-shrink: 0;
+  }
+
+  .floor-header-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .floor-heading-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
   }
 
   .floor-title {
     font-family: 'Funnel Sans', sans-serif;
     font-weight: 700;
-    font-size: 19px;
+    font-size: 30px;
+    line-height: 1;
     color: $text-primary;
     margin: 0;
   }
 
-  .legend {
+  .zone-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .floor-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
-  .legend-item {
+  .layout-edit-button {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-family: 'Newsreader', serif;
-    font-size: 12px;
-    color: $text-muted;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 140px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1.5px solid $border-light;
+    background: $card;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: $text-primary;
+    cursor: pointer;
+
+    &:hover {
+      background: #fafaf7;
+      border-color: rgba($border, .2);
+      color: $text-primary;
+    }
   }
 
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .btn-merge-start {
+    min-height: 44px;
+    min-width: 140px;
+    padding: 0 18px;
+    font-size: 13px;
+    color: $text-primary;
   }
-
-  .dot-green  { background: $green !important; }
-  .dot-orange { background: $orange !important; }
-  .dot-blue   { background: $blue !important; }
-  .dot-amber  { background: $amber !important; }
 
   /* ─── TABLE GRID ─── */
   .table-grid-wrap {
     flex: 1;
-    overflow-y: auto;
+    overflow: auto;
     padding: 20px 24px;
+    background: $card;
 
     &::-webkit-scrollbar { width: 4px; }
     &::-webkit-scrollbar-track { background: transparent; }
-    &::-webkit-scrollbar-thumb { background: $border-light; border-radius: 4px; }
+    &::-webkit-scrollbar-thumb { background: #c6c6bf; border-radius: 4px; }
   }
 
   .table-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 14px;
+    position: relative;
+    min-width: 100%;
+    border-radius: 28px;
+
+    &.is-editing {
+      background-image:
+        linear-gradient(to right, rgba($border, .05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba($border, .05) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: 0 0;
+    }
   }
 
-  /* ─── TABLE CARD — Gentle Lift ─── */
   .table-card {
-    background: linear-gradient(180deg, rgba($card, .98) 0%, rgba($surface, .86) 100%);
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,.04);
-    padding: 16px 20px;
+    background: $card;
+    border-radius: 28px;
+    border: 3px solid $border-light;
+    padding: 18px;
+    width: 208px;
+    min-width: 208px;
+    height: 172px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-    min-height: 132px;
-    position: relative;
+    position: absolute;
     color: $text-primary;
-    box-shadow: 0 12px 30px rgba(0,0,0,.22);
+    user-select: none;
 
     &:hover {
       transform: translateY(-2px);
-      background: linear-gradient(180deg, rgba($card, 1) 0%, rgba($surface, .96) 100%);
-      box-shadow: 0 18px 34px rgba(0,0,0,.26);
+      background: #fcfcfa;
     }
 
     &.merged-parent {
@@ -382,39 +385,68 @@ app-floor {
     &.merge-mode { opacity: 0.65; &:hover { opacity: 1; } }
     &.merge-selected {
       opacity: 1;
-      box-shadow: 0 0 0 2px rgba($accent, .32), 0 18px 34px rgba(0,0,0,.26);
+      outline: 2px solid rgba($border, .28);
+      outline-offset: 0;
+    }
+
+    &.merged-child {
+      opacity: 0.48;
+    }
+
+    &.is-editing {
+      cursor: grab;
+      touch-action: none;
+
+      &:hover {
+        transform: none;
+      }
+    }
+
+    &.is-dragging {
+      cursor: grabbing;
+      z-index: 3;
+    }
+  }
+
+  .table-status-dot {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1.5px solid rgba($border, .86);
+    background: #c0c0b8;
+
+    &.is-occupied {
+      background: $red;
+      border-color: color.adjust($red, $lightness: -12%);
+    }
+
+    &.is-free {
+      background: #b8b8af;
+      border-color: rgba($border, .75);
     }
   }
 
   .table-card-head {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 12px;
+    padding-right: 24px;
   }
 
   .table-name {
     font-family: 'Funnel Sans', sans-serif;
     font-weight: 700;
-    font-size: 17px;
+    font-size: 18px;
     letter-spacing: -.02em;
     color: $text-primary;
   }
 
-  .status-badge {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
-  .badge-libre   { background: rgba($green, .14);  color: #2dd36f; }
-  .badge-ocupada { background: rgba($orange, .16); color: #f28c28; }
-  .badge-cobro   { background: rgba($blue, .16);   color: #4f8cff; }
-
   .table-merged-note {
-    margin-top: -4px;
+    margin-top: -2px;
     color: $text-dim;
     font-size: 11px;
     line-height: 1.4;
@@ -430,7 +462,7 @@ app-floor {
 
   .table-amount {
     font-family: 'Geist Mono', monospace;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: $text-primary;
     letter-spacing: -.02em;
@@ -447,16 +479,16 @@ app-floor {
 
   .table-meta {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
     flex-wrap: wrap;
     font-family: 'Geist', sans-serif;
     font-size: 12px;
     color: $text-muted;
   }
 
-  .table-persons,
-  .table-zone {
+  .table-persons {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -471,10 +503,6 @@ app-floor {
     flex-shrink: 0;
   }
 
-  .table-zone {
-    color: $text-dim;
-  }
-
   .btn-unmerge {
     position: absolute;
     left: 50%;
@@ -483,8 +511,8 @@ app-floor {
     padding: 10px 16px;
     min-height: 44px;
     border-radius: $radius-sm;
-    border: 1px solid rgba($red, .25);
-    background: rgba($red, .1);
+    border: 1.5px solid $border;
+    background: $card;
     color: $red;
     font-size: 13px;
     font-weight: 600;
@@ -495,49 +523,15 @@ app-floor {
   }
 
   /* ─── BOTTOM STATUS BAR ─── */
-  .statusbar {
-    height: 50px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 24px;
-    background: $topbar;
-    border-top: 1px solid $border;
-  }
-
-  .statusbar-stats {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-  }
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Newsreader', serif;
-    font-size: 13px;
-    color: $text-muted;
-  }
-
-  .stat-value {
-    font-family: 'Geist Mono', monospace;
-    font-weight: 600;
-    font-size: 14px;
-    color: $text-primary;
-
-    &.orange { color: $accent; }
-  }
-
-  .stat-divider {
-    width: 1px;
-    height: 18px;
-    background: $border-light;
-  }
-
   @media (max-width: 1024px) {
-    .table-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .sidebar { width: 170px; }
+    .sidebar { width: 72px; }
+    .floor-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .floor-actions {
+      justify-content: flex-start;
+    }
   }
 }
