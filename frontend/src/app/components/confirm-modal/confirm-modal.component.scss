@@ -1,8 +1,8 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.72);
-  backdrop-filter: blur(4px);
+  background: rgba(17, 17, 17, 0.16);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,17 +13,16 @@
 .modal {
   width: 100%;
   max-width: 420px;
-  background: var(--tpv-card, var(--bo-surface, #1E2A3B));
-  border: 1px solid var(--tpv-border, var(--bo-border, #2D3B52));
-  border-radius: 14px;
+  background: #ffffff;
+  border: 2px solid #d4d4cf;
+  border-radius: 24px;
   padding: 1.5rem;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 
   h2 {
     margin: 0 0 0.75rem;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--tpv-text-primary, var(--bo-text-1, #F1F5F9));
+    color: #111111;
     font-family: 'Funnel Sans', sans-serif;
   }
 }
@@ -32,7 +31,7 @@
   max-width: 400px;
 
   p {
-    color: var(--tpv-text-muted, var(--bo-text-2, #6B7280));
+    color: #666662;
     font-size: 0.875rem;
     margin: 0 0 1.5rem;
     line-height: 1.5;
@@ -48,7 +47,7 @@
 .btn-secondary,
 .btn-danger {
   min-height: 42px;
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
   font-weight: 700;
@@ -59,11 +58,12 @@
 
 .btn-secondary {
   background: transparent;
-  border-color: var(--tpv-border, var(--bo-border, #2D3B52));
-  color: var(--tpv-text-primary, var(--bo-text-1, #F1F5F9));
+  border-color: #d4d4cf;
+  color: #111111;
+  background: #ffffff;
 }
 
 .btn-danger {
-  background: var(--tpv-red, #E06060);
+  background: #d63b31;
   color: white;
 }

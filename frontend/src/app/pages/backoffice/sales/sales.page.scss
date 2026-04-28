@@ -25,7 +25,7 @@
     border-radius: 8px;
     font-size: 0.875rem;
     color: var(--bo-text-1, #F1F5F9);
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     cursor: pointer;
 
     &:focus {
@@ -58,7 +58,7 @@
   font-size: 0.875rem;
   cursor: pointer;
 
-  &:hover { background: var(--bo-surface2, #243044); color: var(--bo-text-1, #F1F5F9); }
+  &:hover { background: var(--bo-surface2, #F8FAFC); color: var(--bo-text-1, #18212F); }
 }
 
 .table-card {
@@ -86,7 +86,7 @@
     td {
       padding: 0.875rem 1.25rem;
       color: var(--bo-text-1, #F1F5F9);
-      border-bottom: 1px solid rgba(45,59,82,.5);
+      border-bottom: 1px solid var(--bo-row-border, rgba(24,33,47,.06));
       font-size: 0.875rem;
     }
 
@@ -98,7 +98,7 @@
   cursor: pointer;
   transition: background 0.1s;
 
-  &:hover td { background: var(--bo-surface2, #243044); }
+  &:hover td { background: var(--bo-row-hover, #FCFDFE); }
 }
 
 .ticket-cell {
@@ -189,7 +189,7 @@
   flex-wrap: wrap;
   margin-bottom: 1.25rem;
   padding: 0.75rem 1rem;
-  background: var(--bo-surface2, #243044);
+  background: var(--bo-surface2, #F8FAFC);
   border: 1px solid var(--bo-border, #2D3B52);
   border-radius: 8px;
   font-size: 0.875rem;
@@ -217,7 +217,7 @@
     border-radius: 8px;
     padding: 0.65rem 0.8rem;
     font: inherit;
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     color: var(--bo-text-1, #F1F5F9);
   }
 }
@@ -285,7 +285,7 @@
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
     color: var(--bo-text-1, #F1F5F9);
-    border-bottom: 1px solid rgba(45,59,82,.5);
+    border-bottom: 1px solid var(--bo-row-border, rgba(24,33,47,.06));
   }
 
   tfoot td {

@@ -36,7 +36,7 @@ table {
   td {
     padding: 0.75rem 1rem;
     color: var(--bo-text-1, #F1F5F9);
-    border-bottom: 1px solid rgba(45,59,82,.5);
+    border-bottom: 1px solid var(--bo-row-border, rgba(24,33,47,.06));
   }
 }
 
@@ -73,7 +73,7 @@ table {
     border: 1px solid var(--bo-border);
     border-radius: 8px;
     font-size: 0.875rem;
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     color: var(--bo-text-1);
     box-sizing: border-box;
   }
@@ -90,7 +90,7 @@ table {
     border: 1px solid var(--bo-border);
     border-radius: 8px;
     font-size: 0.875rem;
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     color: var(--bo-text-1);
     box-sizing: border-box;
   }
@@ -104,7 +104,7 @@ table {
   height: 38px;
   border-radius: 8px;
   border: 1px solid var(--bo-border);
-  background: rgba(255,255,255,.04);
+  background: var(--bo-surface2, #F8FAFC);
   color: var(--bo-text-2);
   cursor: pointer;
   flex-shrink: 0;
@@ -113,7 +113,7 @@ table {
   ion-icon { font-size: 18px; }
 
   &:hover {
-    background: rgba(255,255,255,.08);
+    background: var(--bo-surface3, #EEF2F6);
     color: var(--bo-text-1);
     border-color: var(--bo-text-3);
   }
@@ -150,7 +150,7 @@ select {
   border: 1px solid var(--bo-border, #2D3B52);
   border-radius: 8px;
   font-size: 0.875rem;
-  background: rgba(255,255,255,.02);
+  background: var(--bo-surface, #FFFFFF);
   color: var(--bo-text-1, #F1F5F9);
   box-sizing: border-box;
 }

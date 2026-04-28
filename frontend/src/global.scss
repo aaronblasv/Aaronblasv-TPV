@@ -187,16 +187,21 @@ table {
 @supports selector(.layout:has(app-sidebar)) {
   .layout:has(app-sidebar) {
     --bo-sidebar-width: 296px;
-    --bo-bg:       #111827;
-    --bo-sidebar:  #0F172A;
-    --bo-surface:  #1E2A3B;
-    --bo-surface2: #243044;
-    --bo-surface3: #2D3B52;
-    --bo-border:   #2D3B52;
-    --bo-border2:  #374558;
-    --bo-blue:     #3B82F6;
-    --bo-blue-bg:  rgba(59,130,246,.15);
-    --bo-blue-border: rgba(59,130,246,.35);
+    --bo-bg:       #F5F7FA;
+    --bo-sidebar:  #FFFFFF;
+    --bo-surface:  #FFFFFF;
+    --bo-surface2: #F8FAFC;
+    --bo-surface3: #EEF2F6;
+    --bo-border:   #E5EAF0;
+    --bo-border2:  #D6DEE7;
+    --bo-blue:     #18212F;
+    --bo-blue-bg:  rgba(24,33,47,.08);
+    --bo-blue-border: rgba(24,33,47,.18);
+    --bo-row-border: rgba(24,33,47,.06);
+    --bo-row-hover: #FCFDFE;
+    --bo-chart-grid: rgba(24,33,47,.08);
+    --bo-chart-fill: rgba(24,33,47,.14);
+    --bo-chart-fill-strong: rgba(24,33,47,.22);
     --bo-green:    #22C55E;
     --bo-green-bg: rgba(34,197,94,.15);
     --bo-red:      #EF4444;
@@ -205,20 +210,20 @@ table {
     --bo-amber-bg: rgba(245,158,11,.15);
     --bo-purple:   #8B5CF6;
     --bo-purple-bg:rgba(139,92,246,.15);
-    --bo-text-1:   #F1F5F9;
-    --bo-text-2:   #94A3B8;
-    --bo-text-3:   #64748B;
+    --bo-text-1:   #18212F;
+    --bo-text-2:   #5C6B7D;
+    --bo-text-3:   #8391A2;
 
-    background: var(--bo-bg);
+    background: linear-gradient(180deg, #FAFBFC 0%, var(--bo-bg) 100%);
     color: var(--bo-text-1);
     font-family: 'Geist', sans-serif;
   }
 
   .layout:has(app-sidebar) .main-content {
     background:
-      radial-gradient(circle at top right, rgba(124,185,232,.10), transparent 22%),
-      radial-gradient(circle at left top, rgba(107,203,139,.05), transparent 18%),
-      linear-gradient(180deg, #0A0D12 0%, var(--bo-bg) 100%);
+      radial-gradient(circle at top right, rgba(124,185,232,.16), transparent 22%),
+      radial-gradient(circle at left top, rgba(107,203,139,.08), transparent 18%),
+      linear-gradient(180deg, #FCFDFE 0%, var(--bo-bg) 100%);
     color: var(--bo-text-1);
     padding: 32px;
     padding-top: 64px;
@@ -238,8 +243,6 @@ table {
     }
 
     p {
-      font-family: 'Newsreader', serif;
-      font-style: italic;
       font-size: 13px;
       color: var(--bo-text-2);
       margin-top: 4px;
@@ -250,10 +253,10 @@ table {
   .layout:has(app-sidebar) .bo-toolbar-card,
   .layout:has(app-sidebar) .bo-surface-card,
   .layout:has(app-sidebar) .bo-empty-panel {
-    border: 1px solid rgba(255,255,255,.05);
+    border: 1px solid var(--bo-border);
     border-radius: 28px;
-    background: linear-gradient(180deg, rgba(22,27,36,.98) 0%, rgba(28,34,48,.94) 100%);
-    box-shadow: 0 24px 60px rgba(0,0,0,.26);
+    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,250,252,.96) 100%);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
   }
 
   .layout:has(app-sidebar) .bo-page-hero {
@@ -265,7 +268,7 @@ table {
     background:
       radial-gradient(circle at top left, rgba(124,185,232,.14), transparent 26%),
       radial-gradient(circle at bottom right, rgba(107,203,139,.08), transparent 24%),
-      linear-gradient(180deg, rgba(22,27,36,.98) 0%, rgba(28,34,48,.94) 100%);
+      linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,250,252,.96) 100%);
   }
 
   .layout:has(app-sidebar) .bo-page-hero__copy {
@@ -275,7 +278,7 @@ table {
 
     h1 {
       margin: 0;
-      color: #E8ECF1;
+      color: var(--bo-text-1);
       font-family: 'Funnel Sans', sans-serif;
       font-size: clamp(2rem, 3.8vw, 3rem);
       line-height: 1.05;
@@ -285,7 +288,7 @@ table {
     p {
       margin: 0;
       max-width: 58ch;
-      color: #6B7A8D;
+      color: var(--bo-text-2);
       font-size: 15px;
       line-height: 1.7;
     }
@@ -298,8 +301,8 @@ table {
     align-items: center;
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(124,185,232,.12);
-    color: #7CB9E8;
+    background: rgba(24,33,47,.06);
+    color: var(--bo-blue);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -322,14 +325,14 @@ table {
   .layout:has(app-sidebar) .bo-mini-stat {
     padding: 18px;
     border-radius: 20px;
-    background: rgba(36,48,68,.42);
-    border: 1px solid rgba(255,255,255,.05);
+    background: var(--bo-surface2);
+    border: 1px solid var(--bo-border);
     display: flex;
     flex-direction: column;
     gap: 6px;
 
     span {
-      color: #8D9BAD;
+      color: var(--bo-text-3);
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
@@ -337,14 +340,14 @@ table {
     }
 
     strong {
-      color: #E8ECF1;
+      color: var(--bo-text-1);
       font-family: 'Funnel Sans', sans-serif;
       font-size: 1.6rem;
       line-height: 1.05;
     }
 
     small {
-      color: #6B7A8D;
+      color: var(--bo-text-2);
       font-size: 12px;
       line-height: 1.5;
     }
@@ -355,7 +358,7 @@ table {
     min-height: 48px;
     padding: 0 18px;
     border-radius: 14px;
-    box-shadow: 0 12px 24px rgba(59,130,246,.16);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .10);
   }
 
   .layout:has(app-sidebar) .bo-toolbar-card,
@@ -378,14 +381,14 @@ table {
 
     h2 {
       margin: 10px 0 0;
-      color: #E8ECF1;
+      color: var(--bo-text-1);
       font-family: 'Funnel Sans', sans-serif;
       font-size: 1.2rem;
     }
 
     p {
       margin: 0;
-      color: #6B7A8D;
+      color: var(--bo-text-2);
       font-size: 14px;
       line-height: 1.7;
       max-width: 34ch;
@@ -399,8 +402,8 @@ table {
     align-self: flex-start;
     padding: 8px 12px;
     border-radius: 999px;
-    background: rgba(255,255,255,.04);
-    color: #8D9BAD;
+    background: var(--bo-surface3);
+    color: var(--bo-text-2);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -410,18 +413,18 @@ table {
   .layout:has(app-sidebar) .bo-empty-panel {
     padding: 28px;
     text-align: center;
-    color: #8D9BAD;
+    color: var(--bo-text-2);
 
     h2 {
       margin: 0 0 8px;
-      color: #E8ECF1;
+      color: var(--bo-text-1);
       font-family: 'Funnel Sans', sans-serif;
       font-size: 1.4rem;
     }
 
     p {
       margin: 0;
-      color: #6B7A8D;
+      color: var(--bo-text-2);
       line-height: 1.7;
     }
   }
@@ -430,7 +433,7 @@ table {
     background: var(--bo-surface);
     border: 1px solid var(--bo-border);
     border-radius: 24px;
-    box-shadow: 0 18px 40px rgba(0,0,0,.20);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, .05);
   }
 
   .layout:has(app-sidebar) table {
@@ -440,7 +443,7 @@ table {
   }
 
   .layout:has(app-sidebar) thead tr {
-    border-bottom: 1px solid var(--bo-border);
+    border-bottom: 1px solid var(--bo-row-border);
   }
 
   .layout:has(app-sidebar) th {
@@ -457,12 +460,12 @@ table {
   .layout:has(app-sidebar) td {
     padding: 16px 18px;
     font-size: 13px;
-    border-bottom: 1px solid rgba(45,59,82,.5);
+    border-bottom: 1px solid var(--bo-row-border);
     color: var(--bo-text-1);
   }
 
   .layout:has(app-sidebar) tbody tr:last-child td { border-bottom: none; }
-  .layout:has(app-sidebar) tbody tr:hover td { background: var(--bo-surface2); }
+  .layout:has(app-sidebar) tbody tr:hover td { background: var(--bo-row-hover); }
 
   .layout:has(app-sidebar) .table-card table thead th:first-child,
   .layout:has(app-sidebar) .table-card table tbody td:first-child {
@@ -490,7 +493,7 @@ table {
   .layout:has(app-sidebar) .badge-inactive { background: rgba(239,68,68,.10); color: var(--bo-red); }
 
   .layout:has(app-sidebar) .btn-primary {
-    background: var(--bo-blue);
+    background: linear-gradient(180deg, #202A39 0%, #111827 100%);
     color: #fff;
     border: none;
     padding: 0 20px;
@@ -507,10 +510,10 @@ table {
     transition: opacity .15s, transform .15s, box-shadow .15s;
   }
 
-  .layout:has(app-sidebar) .btn-primary:hover { opacity: .95; transform: translateY(-1px); box-shadow: 0 12px 24px rgba(59,130,246,.16); }
+  .layout:has(app-sidebar) .btn-primary:hover { opacity: .96; transform: translateY(-1px); box-shadow: 0 12px 24px rgba(15, 23, 42, .14); }
 
   .layout:has(app-sidebar) .btn-secondary {
-    background: transparent;
+    background: var(--bo-surface);
     color: var(--bo-text-2);
     border: 1px solid var(--bo-border);
     padding: 0 16px;
@@ -537,7 +540,7 @@ table {
     align-items: center;
     justify-content: center;
     font-size: 1.15rem;
-    background: var(--bo-surface2);
+    background: var(--bo-surface);
     color: var(--bo-text-2);
   }
 
@@ -546,7 +549,7 @@ table {
   .layout:has(app-sidebar) .btn-toggle-inactive { color: var(--bo-green); border-color: rgba(34,197,94,.25); background: rgba(34,197,94,.12); }
 
   .layout:has(app-sidebar) .modal-overlay {
-    background: rgba(17, 24, 39, 0.72);
+    background: rgba(15, 23, 42, 0.36);
     z-index: 1000;
   }
 
@@ -554,7 +557,7 @@ table {
     background: var(--bo-surface);
     border: 1px solid var(--bo-border);
     color: var(--bo-text-1);
-    box-shadow: 0 16px 50px rgba(0,0,0,.45);
+    box-shadow: 0 24px 56px rgba(15, 23, 42, .16);
 
     h2 {
       color: var(--bo-text-1);
@@ -566,9 +569,10 @@ table {
   .layout:has(app-sidebar) .form-group input,
   .layout:has(app-sidebar) .form-group select,
   .layout:has(app-sidebar) select {
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface);
     border-color: var(--bo-border);
     color: var(--bo-text-1);
+    color-scheme: light;
   }
 
   .layout:has(app-sidebar) .form-group input:focus,

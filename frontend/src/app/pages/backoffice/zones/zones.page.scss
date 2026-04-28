@@ -19,7 +19,7 @@
     td {
       padding: 0.75rem 1rem;
       color: var(--bo-text-1);
-      border-bottom: 1px solid rgba(45,59,82,.5);
+      border-bottom: 1px solid var(--bo-row-border, rgba(24,33,47,.06));
     }
   }
 }
@@ -58,7 +58,7 @@
     border: 1px solid var(--bo-border);
     border-radius: 8px;
     font-size: 0.875rem;
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     color: var(--bo-text-1);
     box-sizing: border-box;
   }

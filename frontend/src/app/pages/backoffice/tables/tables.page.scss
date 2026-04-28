@@ -56,8 +56,8 @@
 .table-tile {
   aspect-ratio: 1;
   min-height: 130px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(78, 97, 127, 0.35);
+  background: var(--bo-surface2, #F8FAFC);
+  border: 1px solid var(--bo-border, #E5EAF0);
   border-radius: 14px;
   padding: 0.85rem;
   display: flex;
@@ -70,8 +70,8 @@
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba(96, 165, 250, 0.45);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    border-color: rgba(24, 33, 47, 0.14);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   }
 }
 
@@ -123,7 +123,7 @@
     border: 1px solid var(--bo-border);
     border-radius: 8px;
     font-size: 0.875rem;
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     color: var(--bo-text-1);
     box-sizing: border-box;
   }

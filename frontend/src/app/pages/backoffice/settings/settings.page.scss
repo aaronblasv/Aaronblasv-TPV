@@ -1,29 +1,29 @@
-$bg:           #0C0F14;
-$card:         #161B24;
-$surface:      #1C2230;
-$surface-2:    #243044;
-$border:       #1E2533;
-$border-light: #2A3344;
-$text-primary: #E8ECF1;
-$text-muted:   #6B7A8D;
-$text-dim:     #8D9BAD;
-$accent:       #7CB9E8;
-$green:        #6BCB8B;
+$bg:           #F5F7FA;
+$card:         #FFFFFF;
+$surface:      #F8FAFC;
+$surface-2:    #EEF2F6;
+$border:       #E5EAF0;
+$border-light: #D6DEE7;
+$text-primary: #18212F;
+$text-muted:   #5C6B7D;
+$text-dim:     #8391A2;
+$accent:       #1F2937;
+$green:        #22C55E;
 
 :host {
   display: block;
 }
 
 ion-content {
-  --background: #0A0D12;
+  --background: #F5F7FA;
 }
 
 .main-content {
   min-height: 100vh;
   padding: 28px 30px 40px;
   background:
-    radial-gradient(circle at top right, rgba($accent, .10), transparent 24%),
-    linear-gradient(180deg, #0A0D12 0%, $bg 100%);
+    radial-gradient(circle at top right, rgba(124, 185, 232, .12), transparent 24%),
+    linear-gradient(180deg, #FCFDFE 0%, $bg 100%);
 }
 
 .page-header {
@@ -72,10 +72,10 @@ ion-content {
 
 .settings-card {
   background: linear-gradient(180deg, rgba($card, .98) 0%, rgba($surface, .94) 100%);
-  border: 1px solid rgba(255,255,255,.05);
+  border: 1px solid $border;
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 18px 38px rgba(0,0,0,.24);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, .08);
 }
 
 .settings-card__header {
@@ -178,7 +178,7 @@ ion-content {
   padding: 16px;
   border-radius: 18px;
   background: rgba($surface-2, .44);
-  border: 1px solid rgba(255,255,255,.04);
+  border: 1px solid $border;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -234,7 +234,7 @@ ion-content {
   padding: 18px;
   border-radius: 20px;
   background: rgba($surface-2, .40);
-  border: 1px solid rgba(255,255,255,.04);
+  border: 1px solid $border;
   margin-bottom: 18px;
   overflow: hidden;
 }
@@ -248,7 +248,7 @@ ion-content {
   padding: 18px;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba($card, 1) 0%, rgba($surface, .96) 100%);
-  border: 1px solid rgba(255,255,255,.05);
+  border: 1px solid $border;
 }
 
 .scale-preview__title {

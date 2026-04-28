@@ -21,7 +21,7 @@
     td {
       padding: 1rem 1.5rem;
       color: var(--bo-text-1, #F1F5F9);
-      border-bottom: 1px solid rgba(45,59,82,.5);
+      border-bottom: 1px solid var(--bo-row-border, rgba(24,33,47,.06));
     }
 
     tr:last-child td {
@@ -58,7 +58,7 @@
 }
 
 .btn-edit {
-  background: var(--bo-surface2, #243044);
+  background: var(--bo-surface2, #F8FAFC);
   color: var(--bo-text-2, #94A3B8);
   border: 1px solid var(--bo-border, #2D3B52);
   padding: 0.375rem 0.75rem;
@@ -126,7 +126,7 @@
     box-sizing: border-box;
     appearance: none;
     -webkit-appearance: none;
-    background: rgba(255,255,255,.02);
+    background: var(--bo-surface, #FFFFFF);
     color: var(--bo-text-1, #F1F5F9);
 
     &:focus {
