@@ -12,6 +12,8 @@ import { createOutline, trashOutline, pauseCircleOutline, playCircleOutline } fr
   imports: [CommonModule, IonIcon]
 })
 export class ActionButtonsComponent {
+  @Input() showEdit: boolean = true;
+  @Input() showDelete: boolean = true;
   @Input() showToggle: boolean = false;
   @Input() isActive: boolean = true;
 

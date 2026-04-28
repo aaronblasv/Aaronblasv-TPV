@@ -22,7 +22,11 @@
               <small>Admin, supervisor y sala</small>
             </div>
           </div>
-          <button class="btn-primary" (click)="openForm()">+ Nuevo Usuario</button>
+          @if (canManageUsers) {
+            <button class="btn-primary" (click)="openForm()">+ Nuevo Usuario</button>
+          } @else {
+            <div class="users-access-note">Modo supervisor: solo lectura</div>
+          }
         </div>
       </section>
 
@@ -52,9 +56,11 @@
                 <td>{{ user.role === 'admin' ? 'Administrador' : user.role === 'supervisor' ? 'Supervisor' : 'Camarero' }}</td>
                 <td>
                   <app-action-buttons
+                    [showEdit]="canManageUsers"
+                    [showDelete]="canManageUsers"
                     [showToggle]="false"
                     (onEdit)="openForm(user)"
-                    (onDelete)="requestDelete(user.id)"
+                    (onDelete)="requestDelete(user.uuid)"
                   />
                 </td>
               </tr>
@@ -113,7 +119,7 @@
 
         <div class="form-group">
           <label>Rol</label>
-          <select [(ngModel)]="form.role" [class.input-error]="errors['role']">
+          <select [(ngModel)]="form.role" [class.input-error]="errors['role']" [disabled]="!canManageUsers">
             @for (role of roles; track role.value) {
               <option [value]="role.value">{{ role.label }}</option>
             }

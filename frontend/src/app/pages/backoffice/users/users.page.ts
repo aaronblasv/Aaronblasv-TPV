@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
+import { AuthService } from '../../../services/api/auth.service';
 import { UserService } from '../../../services/api/user.service';
 import { UploadService } from '../../../services/api/upload.service';
 import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
@@ -21,12 +22,14 @@ export class UsersPage implements OnInit {
 
   private userService = inject(UserService);
   private uploadService = inject(UploadService);
+  private authService = inject(AuthService);
 
   users: any[] = [];
   showForm = false;
   showConfirm = false;
   editingUser: any = null;
   pendingDeleteUuid: string | null = null;
+  canManageUsers = false;
   errors: { [key: string]: string } = {};
 
   form = {
@@ -44,6 +47,7 @@ export class UsersPage implements OnInit {
   ];
 
   ngOnInit() {
+    this.canManageUsers = this.authService.getRole() === 'admin';
     this.loadUsers();
   }
 
@@ -55,6 +59,10 @@ export class UsersPage implements OnInit {
   }
 
   openForm(user?: any) {
+    if (!this.canManageUsers) {
+      return;
+    }
+
     this.editingUser = user ?? null;
     this.form = {
       name: user?.name ?? '',
@@ -73,6 +81,10 @@ export class UsersPage implements OnInit {
   }
 
   save() {
+    if (!this.canManageUsers) {
+      return;
+    }
+
     this.errors = {};
     const action = this.editingUser
       ? this.userService.update(this.editingUser.uuid, this.form)
@@ -101,12 +113,16 @@ export class UsersPage implements OnInit {
   }
 
   requestDelete(uuid: string) {
+    if (!this.canManageUsers) {
+      return;
+    }
+
     this.pendingDeleteUuid = uuid;
     this.showConfirm = true;
   }
 
   confirmDelete() {
-    if (!this.pendingDeleteUuid) return;
+    if (!this.pendingDeleteUuid || !this.canManageUsers) return;
     this.userService.delete(this.pendingDeleteUuid).subscribe({
       next: () => { this.loadUsers(); this.closeConfirm(); },
       error: (err: any) => console.error(err)

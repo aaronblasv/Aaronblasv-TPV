@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/api/auth.service';
+import { BackofficeSessionService } from '../../services/backoffice-session.service';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { homeOutline, settingsOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, barChartOutline, walletOutline, chevronDownOutline, arrowForwardOutline } from 'ionicons/icons';
+import { homeOutline, settingsOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, barChartOutline, chevronDownOutline, arrowForwardOutline } from 'ionicons/icons';
 
 type SidebarItem = {
   label: string;
@@ -27,7 +28,6 @@ export class SidebarComponent implements OnInit {
 
   menuItems: SidebarItem[] = [
     { label: 'General', route: '/dashboard', icon: 'home-outline', meta: 'Resumen' },
-    { label: 'Caja', route: '/cash-shifts', icon: 'wallet-outline', meta: 'Turnos' },
     { label: 'Informes', route: '/reports', icon: 'bar-chart-outline', meta: 'Ventas' },
     { label: 'Registro', route: '/logs', icon: 'document-text-outline', meta: 'Actividad' },
     { label: 'Ajustes', route: '/settings', icon: 'settings-outline', meta: 'Sistema' },
@@ -44,9 +44,10 @@ export class SidebarComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private backofficeSessionService: BackofficeSessionService,
     private router: Router,
 ) {
-  addIcons({ homeOutline, settingsOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, barChartOutline, walletOutline, chevronDownOutline, arrowForwardOutline });
+  addIcons({ homeOutline, settingsOutline, receiptOutline, folderOutline, cubeOutline, locationOutline, gridOutline, peopleOutline, logOutOutline, restaurantOutline, documentTextOutline, barChartOutline, chevronDownOutline, arrowForwardOutline });
 }
 
   ngOnInit() {
@@ -68,10 +69,19 @@ export class SidebarComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: () => {
+        this.backofficeSessionService.clearActingUser();
         localStorage.removeItem('token');
+        localStorage.removeItem('role');
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  goToTpv(event: Event) {
+    event.preventDefault();
+    this.onNavItemClick(event);
+    this.backofficeSessionService.clearActingUser();
+    this.router.navigate(['/tpv']);
   }
 
   onNavItemClick(event: Event) {

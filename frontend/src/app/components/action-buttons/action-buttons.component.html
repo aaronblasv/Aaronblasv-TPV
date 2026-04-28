@@ -4,10 +4,14 @@
       <ion-icon [name]="isActive ? 'pause-circle-outline' : 'play-circle-outline'"></ion-icon>
     </button>
   }
-  <button class="btn-edit" (click)="onEdit.emit()">
-    <ion-icon name="create-outline"></ion-icon>
-  </button>
-  <button class="btn-delete" (click)="onDelete.emit()">
-    <ion-icon name="trash-outline"></ion-icon>
-  </button>
+  @if (showEdit) {
+    <button class="btn-edit" (click)="onEdit.emit()">
+      <ion-icon name="create-outline"></ion-icon>
+    </button>
+  }
+  @if (showDelete) {
+    <button class="btn-delete" (click)="onDelete.emit()">
+      <ion-icon name="trash-outline"></ion-icon>
+    </button>
+  }
 </div>
