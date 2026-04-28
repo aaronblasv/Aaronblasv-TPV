@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
         $middleware->alias([
             'backoffice' => \App\User\Infrastructure\Http\Middleware\RequireBackofficeRole::class,
+            'effective.backoffice' => \App\User\Infrastructure\Http\Middleware\ResolveEffectiveBackofficeUser::class,
             'require.role' => \App\Shared\Infrastructure\Http\Middleware\RequireRoleMiddleware::class,
         ]);
     })

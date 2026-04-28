@@ -31,6 +31,50 @@ export interface SaleLine {
   refunded_quantity: number;
 }
 
+export interface SaleServiceWindowLine {
+  uuid: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  tax_percentage: number;
+  discount_type: 'amount' | 'percentage' | null;
+  discount_value: number;
+  discount_amount: number;
+  line_subtotal: number;
+  tax_amount: number;
+  line_total: number;
+}
+
+export interface SaleServiceWindow {
+  uuid: string;
+  window_number: number;
+  sent_at: string;
+  sent_by_user_name: string;
+  lines: SaleServiceWindowLine[];
+}
+
+export interface SaleReceipt {
+  restaurant_name: string;
+  restaurant_legal_name: string;
+  restaurant_tax_id: string;
+  ticket_number: number;
+  value_date: string;
+  table_name: string;
+  opened_at: string;
+  closed_at: string | null;
+  open_user_name: string;
+  close_user_name: string;
+  subtotal: number;
+  tax_amount: number;
+  line_discount_total: number;
+  order_discount_total: number;
+  total: number;
+  refunded_total: number;
+  net_total: number;
+  lines: SaleLine[];
+  service_windows: SaleServiceWindow[];
+}
+
 export interface RefundPayload {
   method: 'cash' | 'card' | 'bizum';
   reason?: string;

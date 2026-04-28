@@ -15,6 +15,7 @@ class SaleLine
         private RestaurantId $restaurantId,
         private Uuid $saleId,
         private Uuid $orderLineId,
+        private string $productName,
         private Uuid $userId,
         private Quantity $quantity,
         private int $price,
@@ -33,6 +34,7 @@ class SaleLine
         int $restaurantId,
         Uuid $saleId,
         Uuid $orderLineId,
+        string $productName,
         Uuid $userId,
         int $quantity,
         int $price,
@@ -44,7 +46,7 @@ class SaleLine
         int $discountAmount,
         int $lineTotal,
     ): self {
-        return new self($uuid, RestaurantId::create($restaurantId), $saleId, $orderLineId, $userId, Quantity::create($quantity), $price, $taxPercentage, $lineSubtotal, $taxAmount, $discountType, $discountValue, $discountAmount, $lineTotal, Quantity::create(0));
+        return new self($uuid, RestaurantId::create($restaurantId), $saleId, $orderLineId, $productName, $userId, Quantity::create($quantity), $price, $taxPercentage, $lineSubtotal, $taxAmount, $discountType, $discountValue, $discountAmount, $lineTotal, Quantity::create(0));
     }
 
     public static function fromPersistence(
@@ -52,6 +54,7 @@ class SaleLine
         int $restaurantId,
         string $saleId,
         string $orderLineId,
+        string $productName,
         string $userId,
         int $quantity,
         int $price,
@@ -69,6 +72,7 @@ class SaleLine
             RestaurantId::create($restaurantId),
             Uuid::create($saleId),
             Uuid::create($orderLineId),
+            $productName,
             Uuid::create($userId),
             Quantity::create($quantity),
             $price,
@@ -92,6 +96,7 @@ class SaleLine
     public function restaurantId(): int { return $this->restaurantId->getValue(); }
     public function saleId(): Uuid { return $this->saleId; }
     public function orderLineId(): Uuid { return $this->orderLineId; }
+    public function productName(): string { return $this->productName; }
     public function userId(): Uuid { return $this->userId; }
     public function quantity(): int { return $this->quantity->getValue(); }
     public function price(): int { return $this->price; }

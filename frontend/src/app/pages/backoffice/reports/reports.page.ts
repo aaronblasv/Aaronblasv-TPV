@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { SaleService } from '../../../services/api/sale.service';
-import { RefundPayload, Sale, SaleLine, SalesReport } from '../../../types/sale.model';
+import { RefundPayload, Sale, SaleLine, SaleReceipt, SaleServiceWindow, SalesReport } from '../../../types/sale.model';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -27,6 +27,7 @@ export class ReportsPage implements OnInit {
   activeTab: 'sales' | 'day' | 'zone' | 'product' | 'user' = 'sales';
 
   selectedSale: Sale | null = null;
+  selectedReceipt: SaleReceipt | null = null;
   saleLines: SaleLine[] = [];
   linesLoading = false;
   refundMethod: 'cash' | 'card' | 'bizum' = 'cash';
@@ -73,12 +74,14 @@ export class ReportsPage implements OnInit {
 
   openDetail(sale: Sale) {
     this.selectedSale = sale;
+    this.selectedReceipt = null;
     this.saleLines = [];
     this.linesLoading = true;
-    this.saleService.getLines(sale.uuid).subscribe({
-      next: (lines) => {
-        this.saleLines = lines;
-        this.refundQuantities = Object.fromEntries(lines.map(line => [line.uuid, Math.max(1, line.quantity - line.refunded_quantity)]));
+    this.saleService.getReceipt(sale.uuid).subscribe({
+      next: (receipt) => {
+        this.selectedReceipt = receipt;
+        this.saleLines = receipt.lines;
+        this.refundQuantities = Object.fromEntries(receipt.lines.map(line => [line.uuid, Math.max(1, line.quantity - line.refunded_quantity)]));
         this.linesLoading = false;
       },
       error: () => { this.linesLoading = false; },
@@ -87,7 +90,154 @@ export class ReportsPage implements OnInit {
 
   closeDetail() {
     this.selectedSale = null;
+    this.selectedReceipt = null;
     this.saleLines = [];
+  }
+
+  printReceipt() {
+    if (!this.selectedReceipt) {
+      return;
+    }
+
+    const popup = window.open('', '_blank', 'width=420,height=820');
+    if (!popup) {
+      return;
+    }
+
+    popup.document.open();
+    popup.document.write(this.buildReceiptHtml(this.selectedReceipt));
+    popup.document.close();
+    popup.focus();
+    popup.print();
+  }
+
+  getServiceWindowTotal(window: SaleServiceWindow): number {
+    return window.lines.reduce((sum, line) => sum + line.line_total, 0);
+  }
+
+  getDisplayedSaleLineTotal(line: SaleLine): number {
+    if (line.quantity <= 0) {
+      return line.line_total;
+    }
+
+    return line.line_total - Math.round((line.line_total / line.quantity) * line.refunded_quantity);
+  }
+
+  getReceiptItemsCount(receipt: SaleReceipt): number {
+    return receipt.lines.reduce((sum, line) => sum + line.quantity, 0);
+  }
+
+  private buildReceiptHtml(receipt: SaleReceipt): string {
+    const itemCount = receipt.lines.reduce((sum, line) => sum + line.quantity, 0);
+    const linesHtml = receipt.lines.map((line) => {
+      const detail = `${line.quantity.toFixed(1)} x ${this.formatCurrency(line.price)}`;
+      const discount = line.discount_amount > 0 ? `<div class="line-meta">Descuento: ${this.formatCurrency(line.discount_amount)}</div>` : '';
+      const refunded = line.refunded_quantity > 0 ? `<div class="line-meta refund">Devueltas: ${line.refunded_quantity}</div>` : '';
+
+      return `
+        <div class="receipt-line">
+          <div class="receipt-line__top">
+            <span>${this.escapeHtml(line.product_name)}</span>
+            <strong>${this.formatCurrency(line.line_total - Math.round((line.line_total / line.quantity) * line.refunded_quantity))}</strong>
+          </div>
+          <div class="receipt-line__bottom">${detail}</div>
+          <div class="line-meta">IVA ${line.tax_percentage}%</div>
+          ${discount}
+          ${refunded}
+        </div>
+      `;
+    }).join('');
+
+    return `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ticket #${receipt.ticket_number}</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 12px; font-family: 'SFMono-Regular', 'Menlo', 'Consolas', monospace; color: #111827; background: #ffffff; }
+      .receipt { width: 302px; margin: 0 auto; padding: 10px 8px 16px; background: #fff; }
+      .center { text-align: center; }
+      .muted { color: #4b5563; font-size: 11px; }
+      h1 { font-size: 18px; margin: 0 0 3px; letter-spacing: 0.04em; }
+      .ticket-number { margin-top: 6px; font-size: 16px; font-weight: 700; }
+      .divider { border-top: 1px dashed #6b7280; margin: 10px 0; }
+      .meta, .totals { display: grid; gap: 4px; font-size: 12px; }
+      .meta-row, .total-row, .tax-row { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+      .receipt-line { padding: 6px 0; }
+      .receipt-line__top, .receipt-line__bottom { display: flex; justify-content: space-between; gap: 10px; }
+      .receipt-line__top { font-size: 13px; font-weight: 700; text-transform: uppercase; }
+      .receipt-line__bottom, .line-meta { font-size: 11px; color: #374151; margin-top: 1px; }
+      .refund { color: #b45309; }
+      .totals { margin-top: 6px; }
+      .total-row strong { font-size: 16px; }
+      .tax-box { margin-top: 8px; font-size: 11px; }
+      .tax-box__header { display: flex; justify-content: space-between; color: #4b5563; margin-bottom: 4px; }
+      .summary { display: flex; justify-content: space-between; font-weight: 700; margin-top: 8px; }
+      .footer { margin-top: 14px; font-size: 11px; color: #4b5563; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <main class="receipt">
+      <header class="center">
+        <h1>${this.escapeHtml(receipt.restaurant_name)}</h1>
+        <div class="muted">${this.escapeHtml(receipt.restaurant_legal_name)}</div>
+        <div class="muted">CIF: ${this.escapeHtml(receipt.restaurant_tax_id)}</div>
+        <div class="ticket-number">TICKET · ${receipt.ticket_number}</div>
+      </header>
+
+      <div class="divider"></div>
+
+      <section class="meta">
+        <div class="meta-row"><span>Fecha</span><strong>${this.formatDateTime(receipt.value_date)}</strong></div>
+        <div class="meta-row"><span>Sala-Mesa</span><strong>${this.escapeHtml(receipt.table_name)}</strong></div>
+        <div class="meta-row"><span>Camarero</span><strong>${this.escapeHtml(receipt.close_user_name)}</strong></div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>${linesHtml}</section>
+
+      <div class="divider"></div>
+
+      <div class="summary">
+        <span>${itemCount} artículos</span>
+        <span>TOTAL ${this.formatCurrency(receipt.net_total)}</span>
+      </div>
+
+      <section class="totals">
+        ${receipt.line_discount_total > 0 ? `<div class="total-row"><span>Dto. líneas</span><span>-${this.formatCurrency(receipt.line_discount_total)}</span></div>` : ''}
+        ${receipt.order_discount_total > 0 ? `<div class="total-row"><span>Dto. pedido</span><span>-${this.formatCurrency(receipt.order_discount_total)}</span></div>` : ''}
+        ${receipt.refunded_total > 0 ? `<div class="total-row"><span>Devuelto</span><span>-${this.formatCurrency(receipt.refunded_total)}</span></div>` : ''}
+      </section>
+
+      <section class="tax-box">
+        <div class="muted">Impuestos incluidos</div>
+        <div class="tax-box__header">
+          <span></span>
+          <span>Base</span>
+          <span>Cuota</span>
+        </div>
+        <div class="tax-row">
+          <span>IVA AL 10%</span>
+          <span>${this.formatCurrency(receipt.subtotal)}</span>
+          <span>${this.formatCurrency(receipt.tax_amount)}</span>
+        </div>
+      </section>
+
+      <div class="footer">Gracias por su visita</div>
+    </main>
+  </body>
+</html>`;
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   get netLineTotal(): number {

@@ -18,6 +18,7 @@ class EloquentSaleLine extends Model
         'restaurant_id',
         'sale_id',
         'order_line_id',
+        'product_name',
         'user_id',
         'quantity',
         'price',

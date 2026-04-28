@@ -24,8 +24,10 @@ use App\Log\Domain\Interfaces\LogRepositoryInterface;
 use App\Log\Infrastructure\Persistence\Repositories\EloquentLogRepository;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
+use App\Order\Domain\Interfaces\ServiceWindowRepositoryInterface;
 use App\Order\Infrastructure\Persistence\Repositories\EloquentOrderLineRepository;
 use App\Order\Infrastructure\Persistence\Repositories\EloquentOrderRepository;
+use App\Order\Infrastructure\Persistence\Repositories\EloquentServiceWindowRepository;
 use App\Payment\Application\RegisterPayment\RegisterPayment;
 use App\Payment\Domain\Interfaces\PaymentRepositoryInterface;
 use App\Payment\Infrastructure\Persistence\Repositories\EloquentPaymentRepository;
@@ -103,6 +105,7 @@ class AppServiceProvider extends ServiceProvider
         // Order
         $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
         $this->app->bind(OrderLineRepositoryInterface::class, EloquentOrderLineRepository::class);
+        $this->app->bind(ServiceWindowRepositoryInterface::class, EloquentServiceWindowRepository::class);
 
         // Sale
         $this->app->bind(SaleWriteRepositoryInterface::class, EloquentSaleWriteRepository::class);

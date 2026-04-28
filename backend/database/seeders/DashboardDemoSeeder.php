@@ -184,6 +184,7 @@ class DashboardDemoSeeder extends Seeder
                         'restaurant_id' => $restaurant->id,
                         'sale_id' => $saleId,
                         'order_line_id' => $orderLineIds[$index],
+                        'product_name' => $lineDraft['product']->name,
                         'user_id' => $user->id,
                         'quantity' => $lineDraft['quantity'],
                         'price' => $lineDraft['price'],

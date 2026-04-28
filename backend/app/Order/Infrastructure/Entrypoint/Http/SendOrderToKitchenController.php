@@ -15,10 +15,12 @@ class SendOrderToKitchenController
 
     public function __invoke(Request $request, string $orderUuid): JsonResponse
     {
+        $sentByUserId = $request->input('sent_by_user_id');
+
         ($this->useCase)(
             new AuditContext(
                 $request->user()->restaurant_id,
-                $request->user()->uuid,
+                is_string($sentByUserId) && $sentByUserId !== '' ? $sentByUserId : $request->user()->uuid,
                 $request->ip(),
             ),
             $orderUuid,

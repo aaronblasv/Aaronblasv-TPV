@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Sale;
 
 use App\Order\Domain\Event\OrderClosed;
+use App\Product\Domain\Entity\Product;
+use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 use App\Sale\Application\CreateSaleOnOrderClosed\CreateSaleOnOrderClosed;
 use App\Sale\Domain\Entity\Sale;
 use App\Sale\Domain\Entity\SaleLine;
@@ -49,23 +51,36 @@ class CreateSaleOnOrderClosedTest extends TestCase
                 if (!$line instanceof SaleLine) {
                     return false;
                 }
+
+                if ($line->productName() !== 'Café') {
+                    return false;
+                }
             }
 
             return true;
         }));
 
+        $productRepository = Mockery::mock(ProductRepositoryInterface::class);
+        $productRepository->shouldReceive('findById')->twice()->andReturn(
+            Product::fromPersistence(Uuid::generate()->getValue(), 'Café', 1000, 10, true, Uuid::generate()->getValue(), Uuid::generate()->getValue(), 1, null),
+            Product::fromPersistence(Uuid::generate()->getValue(), 'Café', 1000, 10, true, Uuid::generate()->getValue(), Uuid::generate()->getValue(), 1, null),
+        );
+
         $cacheRepository = Mockery::mock(CacheRepositoryInterface::class);
         $cacheRepository->shouldReceive('forgetByPrefix')->once()->with('dashboard:1:');
 
-        $listener = new CreateSaleOnOrderClosed($repository, $cacheRepository);
+        $listener = new CreateSaleOnOrderClosed($repository, $productRepository, $cacheRepository);
 
         $listener->handle($event);
     }
 
     private function orderLineMock(): object
     {
+        $productUuid = Uuid::generate();
+
         $line = Mockery::mock();
         $line->shouldReceive('uuid')->andReturn(Uuid::generate());
+        $line->shouldReceive('productId')->andReturn($productUuid);
         $line->shouldReceive('userId')->andReturn(Uuid::generate());
         $line->shouldReceive('quantity')->andReturn(new class
         {

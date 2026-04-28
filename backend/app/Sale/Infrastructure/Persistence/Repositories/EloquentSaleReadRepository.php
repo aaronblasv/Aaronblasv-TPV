@@ -98,11 +98,13 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
         $query = $this->saleLineModel->newQuery()
             ->join('sales', 'sales_lines.sale_id', '=', 'sales.id')
             ->join('order_lines', 'sales_lines.order_line_id', '=', 'order_lines.id')
+            ->leftJoin('products', 'order_lines.product_id', '=', 'products.id')
             ->join('users', 'sales_lines.user_id', '=', 'users.id')
             ->where('sales_lines.sale_id', $sale->id)
             ->where('sales_lines.restaurant_id', $restaurantId)
             ->select(
                 'sales_lines.*',
+                \Illuminate\Support\Facades\DB::raw("COALESCE(sales_lines.product_name, products.name, 'Producto eliminado') as resolved_product_name"),
                 'sales.uuid as sale_uuid',
                 'order_lines.uuid as order_line_uuid',
                 'users.uuid as user_uuid',
@@ -122,6 +124,7 @@ class EloquentSaleReadRepository implements SaleReadRepositoryInterface
                 $model->restaurant_id,
                 $model->sale_uuid,
                 $model->order_line_uuid,
+                $model->resolved_product_name,
                 $model->user_uuid,
                 (int) $model->quantity,
                 (int) $model->price,

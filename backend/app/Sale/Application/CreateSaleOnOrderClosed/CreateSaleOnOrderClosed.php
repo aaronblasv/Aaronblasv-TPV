@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sale\Application\CreateSaleOnOrderClosed;
 
 use App\Order\Domain\Event\OrderClosed;
+use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 use App\Sale\Domain\Entity\Sale;
 use App\Sale\Domain\Entity\SaleLine;
 use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
@@ -15,6 +16,7 @@ class CreateSaleOnOrderClosed
 {
     public function __construct(
         private SaleWriteRepositoryInterface $saleRepository,
+        private ProductRepositoryInterface $productRepository,
         private CacheRepositoryInterface $cacheRepository,
     ) {}
 
@@ -39,11 +41,18 @@ class CreateSaleOnOrderClosed
         $saleLines = [];
 
         foreach ($event->lines as $line) {
+            $product = $this->productRepository->findById($line->productId()->getValue(), $event->restaurantId);
+
+            if ($product === null) {
+                throw new \RuntimeException(sprintf('Product %s not found while creating sale.', $line->productId()->getValue()));
+            }
+
             $saleLines[] = SaleLine::dddCreate(
                 Uuid::generate(),
                 $event->restaurantId,
                 $saleUuid,
                 $line->uuid(),
+                $product->name()->getValue(),
                 $line->userId(),
                 $line->quantity()->getValue(),
                 $line->price(),

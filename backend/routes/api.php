@@ -36,6 +36,7 @@ use App\Product\Infrastructure\Entrypoint\Http\UpdateProductController;
 use App\Refund\Infrastructure\Entrypoint\Http\CreateRefundController;
 use App\Sale\Infrastructure\Entrypoint\Http\GetAllSalesController;
 use App\Sale\Infrastructure\Entrypoint\Http\GetSaleLinesController;
+use App\Sale\Infrastructure\Entrypoint\Http\GetSaleReceiptController;
 use App\Sale\Infrastructure\Entrypoint\Http\GetSalesReportController;
 use App\Shared\Infrastructure\Entrypoint\Http\UploadImageController;
 use App\Table\Infrastructure\Entrypoint\Http\CreateTableController;
@@ -66,7 +67,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/login', LoginController::class);
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'effective.backoffice'])->group(function () {
     Route::post('/auth/logout', LogoutController::class);
     Route::get('/auth/me', GetAuthenticatedUserController::class);
     Route::post('/upload-image', UploadImageController::class);
@@ -135,15 +136,16 @@ Route::middleware(['auth:sanctum', 'backoffice'])->group(function () {
 
     Route::get('/users', GetAllUsersController::class);
     Route::get('/users/{uuid}', GetUserByIdController::class);
-    Route::post('/users', CreateUserController::class);
-    Route::put('/users/{uuid}', UpdateUserController::class);
-    Route::delete('/users/{uuid}', DeleteUserController::class);
+    Route::post('/users', CreateUserController::class)->middleware('require.role:admin');
+    Route::put('/users/{uuid}', UpdateUserController::class)->middleware('require.role:admin');
+    Route::delete('/users/{uuid}', DeleteUserController::class)->middleware('require.role:admin');
 
     Route::get('/logs', GetLogsController::class);
 
     Route::get('/sales', GetAllSalesController::class);
     Route::get('/sales/report', GetSalesReportController::class);
     Route::get('/sales/{uuid}/lines', GetSaleLinesController::class);
+    Route::get('/sales/{uuid}/receipt', GetSaleReceiptController::class);
     Route::post('/sales/{saleUuid}/refunds', CreateRefundController::class);
 
     Route::post('/cash-shifts', OpenCashShiftController::class)->middleware('require.role:admin,supervisor');

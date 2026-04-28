@@ -242,12 +242,16 @@
           <div class="modal-panel" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <h2>Ticket #{{ selectedSale.ticket_number }}</h2>
-              <button class="modal-close" (click)="closeDetail()">✕</button>
+              <div class="modal-header-actions">
+                <button class="btn-print-ticket" (click)="printReceipt()" [disabled]="!selectedReceipt">Imprimir ticket</button>
+                <button class="modal-close" (click)="closeDetail()">✕</button>
+              </div>
             </div>
 
             <div class="modal-meta">
               <span>Mesa: <strong>{{ selectedSale.table_name }}</strong></span>
-              <span>Camarero: <strong>{{ selectedSale.close_user_name }}</strong></span>
+              <span>Apertura: <strong>{{ selectedReceipt?.open_user_name || selectedSale.open_user_name }}</strong></span>
+              <span>Cierre: <strong>{{ selectedReceipt?.close_user_name || selectedSale.close_user_name }}</strong></span>
               <span>Fecha: <strong>{{ formatDateTime(selectedSale.value_date) }}</strong></span>
             </div>
 
@@ -264,6 +268,108 @@
             @if (linesLoading) {
               <div class="modal-loading">Cargando líneas...</div>
             } @else {
+              @if (selectedReceipt) {
+                <section class="receipt-preview">
+                  <div class="receipt-preview__paper">
+                    <div class="receipt-preview__header receipt-preview__header--ticket">
+                      <div>
+                        <span class="receipt-preview__eyebrow">Ticket restaurante</span>
+                        <h3>{{ selectedReceipt.restaurant_name }}</h3>
+                        <p>{{ selectedReceipt.restaurant_legal_name }}</p>
+                        <p>CIF {{ selectedReceipt.restaurant_tax_id }}</p>
+                      </div>
+                      <div class="receipt-preview__badge">#{{ selectedReceipt.ticket_number }}</div>
+                    </div>
+
+                    <div class="receipt-preview__divider"></div>
+
+                    <div class="receipt-preview__meta receipt-preview__meta--ticket">
+                      <span>Fecha <strong>{{ formatDateTime(selectedReceipt.value_date) }}</strong></span>
+                      <span>Sala-Mesa <strong>{{ selectedReceipt.table_name }}</strong></span>
+                      <span>Camarero <strong>{{ selectedReceipt.close_user_name }}</strong></span>
+                    </div>
+
+                    <div class="receipt-preview__divider"></div>
+
+                    <div class="receipt-preview__items">
+                      @for (line of selectedReceipt.lines; track line.uuid) {
+                        <div class="receipt-preview__item">
+                          <div class="receipt-preview__item-top">
+                            <strong>{{ line.product_name }}</strong>
+                            <strong>{{ formatCurrency(getDisplayedSaleLineTotal(line)) }}</strong>
+                          </div>
+                          <div class="receipt-preview__item-subline">
+                            <span>{{ line.quantity.toFixed(1) }} × {{ formatCurrency(line.price) }}</span>
+                            <span>IVA {{ line.tax_percentage }}%</span>
+                          </div>
+                          @if (line.discount_amount > 0) {
+                            <div class="receipt-preview__item-note">Descuento: {{ formatCurrency(line.discount_amount) }}</div>
+                          }
+                          @if (line.refunded_quantity > 0) {
+                            <div class="receipt-preview__item-note receipt-preview__item-note--refund">Devueltas: {{ line.refunded_quantity }}</div>
+                          }
+                        </div>
+                      }
+                    </div>
+
+                    <div class="receipt-preview__divider"></div>
+
+                    <div class="receipt-preview__summary">
+                      <span>{{ getReceiptItemsCount(selectedReceipt) }} artículos</span>
+                      <strong>TOTAL {{ formatCurrency(selectedReceipt.net_total) }}</strong>
+                    </div>
+
+                    <div class="receipt-preview__taxes">
+                      <div class="receipt-preview__taxes-title">Impuestos incluidos</div>
+                      <div class="receipt-preview__taxes-head">
+                        <span></span>
+                        <span>Base</span>
+                        <span>Cuota</span>
+                      </div>
+                      <div class="receipt-preview__taxes-row">
+                        <span>IVA AL 10%</span>
+                        <span>{{ formatCurrency(selectedReceipt.subtotal) }}</span>
+                        <span>{{ formatCurrency(selectedReceipt.tax_amount) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="service-windows-card">
+                  <div class="service-windows-card__header">
+                    <h3>Historial de servicio</h3>
+                    <span>{{ selectedReceipt.service_windows.length }} registros · no se imprime en el ticket</span>
+                  </div>
+
+                  @if (selectedReceipt.service_windows.length > 0) {
+                    <div class="service-window-list">
+                      @for (window of selectedReceipt.service_windows; track window.uuid) {
+                        <article class="service-window-item">
+                          <div class="service-window-item__head">
+                            <div>
+                              <strong>Pedido {{ window.window_number }}</strong>
+                              <span>{{ window.sent_by_user_name }} · {{ formatDateTime(window.sent_at) }}</span>
+                            </div>
+                            <strong>{{ formatCurrency(getServiceWindowTotal(window)) }}</strong>
+                          </div>
+
+                          <div class="service-window-item__lines">
+                            @for (line of window.lines; track line.uuid) {
+                              <div class="service-window-item__line">
+                                <span>{{ line.quantity }} × {{ line.product_name }}</span>
+                                <strong>{{ formatCurrency(line.line_total) }}</strong>
+                              </div>
+                            }
+                          </div>
+                        </article>
+                      }
+                    </div>
+                  } @else {
+                    <div class="modal-loading">Sin pedidos registrados</div>
+                  }
+                </section>
+              }
+
               <table class="lines-table">
                 <thead>
                   <tr>
