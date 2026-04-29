@@ -66,6 +66,21 @@ class EloquentProductRepository implements ProductRepositoryInterface
         return $product ? $this->toDomain($product) : null;
     }
 
+    public function findByIds(array $productUuids, int $restaurantId): array
+    {
+        if ($productUuids === []) {
+            return [];
+        }
+
+        return $this->model->newQuery()
+            ->with(['family', 'tax'])
+            ->where('restaurant_id', $restaurantId)
+            ->whereIn('uuid', array_values(array_unique($productUuids)))
+            ->get()
+            ->mapWithKeys(fn (EloquentProduct $product) => [$product->uuid => $this->toDomain($product)])
+            ->all();
+    }
+
     public function delete(string $productUuid, int $restaurantId): void
     {
         $this->model->newQuery()

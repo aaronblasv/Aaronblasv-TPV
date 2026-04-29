@@ -12,6 +12,11 @@ interface ProductRepositoryInterface
 
     public function findById(string $productUuid, int $restaurantId): ?Product;
 
+    /**
+     * @return array<string, Product>
+     */
+    public function findByIds(array $productUuids, int $restaurantId): array;
+
     public function findAll(int $restaurantId): array;
 
     public function delete(string $productUuid, int $restaurantId): void;
