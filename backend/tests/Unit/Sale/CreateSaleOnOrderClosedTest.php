@@ -30,7 +30,6 @@ class CreateSaleOnOrderClosedTest extends TestCase
             orderUuid: Uuid::generate(),
             restaurantId: 1,
             closedByUserUuid: Uuid::generate(),
-            ticketNumber: 15,
             subtotal: 2000,
             taxAmount: 200,
             lineDiscountTotal: 0,
@@ -40,6 +39,7 @@ class CreateSaleOnOrderClosedTest extends TestCase
         );
 
         $repository = Mockery::mock(SaleWriteRepositoryInterface::class);
+        $repository->shouldReceive('getNextTicketNumber')->once()->with(1)->andReturn(15);
         $repository->shouldReceive('save')->once()->with(Mockery::type(Sale::class));
         $repository->shouldNotReceive('saveLine');
         $repository->shouldReceive('saveLinesBatch')->once()->with(Mockery::on(function (array $lines): bool {
@@ -61,10 +61,10 @@ class CreateSaleOnOrderClosedTest extends TestCase
         }));
 
         $productRepository = Mockery::mock(ProductRepositoryInterface::class);
-        $productRepository->shouldReceive('findById')->twice()->andReturn(
-            Product::fromPersistence(Uuid::generate()->getValue(), 'Café', 1000, 10, true, Uuid::generate()->getValue(), Uuid::generate()->getValue(), 1, null),
-            Product::fromPersistence(Uuid::generate()->getValue(), 'Café', 1000, 10, true, Uuid::generate()->getValue(), Uuid::generate()->getValue(), 1, null),
-        );
+        $productRepository->shouldReceive('findByIds')->once()->with(Mockery::type('array'), 1)->andReturn([
+            $lineA->productId()->getValue() => Product::fromPersistence($lineA->productId()->getValue(), 'Café', 1000, 10, true, Uuid::generate()->getValue(), Uuid::generate()->getValue(), 1, null),
+            $lineB->productId()->getValue() => Product::fromPersistence($lineB->productId()->getValue(), 'Café', 1000, 10, true, Uuid::generate()->getValue(), Uuid::generate()->getValue(), 1, null),
+        ]);
 
         $cacheRepository = Mockery::mock(CacheRepositoryInterface::class);
         $cacheRepository->shouldReceive('forgetByPrefix')->once()->with('dashboard:1:');

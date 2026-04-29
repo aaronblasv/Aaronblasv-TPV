@@ -23,13 +23,21 @@ class CreateSaleOnOrderClosed
     public function handle(OrderClosed $event): void
     {
         $saleUuid = Uuid::generate();
+        $ticketNumber = $this->saleRepository->getNextTicketNumber($event->restaurantId);
+        $productsById = $this->productRepository->findByIds(
+            array_map(
+                static fn ($line) => $line->productId()->getValue(),
+                $event->lines,
+            ),
+            $event->restaurantId,
+        );
 
         $sale = Sale::dddCreate(
             $saleUuid,
             $event->restaurantId,
             $event->orderUuid,
             $event->closedByUserUuid,
-            $event->ticketNumber,
+            $ticketNumber,
             $event->subtotal,
             $event->taxAmount,
             $event->lineDiscountTotal,
@@ -41,7 +49,7 @@ class CreateSaleOnOrderClosed
         $saleLines = [];
 
         foreach ($event->lines as $line) {
-            $product = $this->productRepository->findById($line->productId()->getValue(), $event->restaurantId);
+            $product = $productsById[$line->productId()->getValue()] ?? null;
 
             if ($product === null) {
                 throw new \RuntimeException(sprintf('Product %s not found while creating sale.', $line->productId()->getValue()));

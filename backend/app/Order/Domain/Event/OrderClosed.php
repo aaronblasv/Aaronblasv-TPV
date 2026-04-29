@@ -12,7 +12,6 @@ class OrderClosed
         public readonly Uuid $orderUuid,
         public readonly int $restaurantId,
         public readonly Uuid $closedByUserUuid,
-        public readonly int $ticketNumber,
         public readonly int $subtotal,
         public readonly int $taxAmount,
         public readonly int $lineDiscountTotal,

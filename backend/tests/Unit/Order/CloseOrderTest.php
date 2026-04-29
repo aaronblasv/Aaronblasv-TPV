@@ -9,7 +9,6 @@ use App\Order\Domain\Entity\Order;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
 use App\Order\Domain\ValueObject\Diners;
-use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
 use App\Shared\Application\Context\AuditContext;
 use App\Shared\Domain\Event\ActionLogged;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
@@ -63,10 +62,6 @@ class CloseOrderTest extends TestCase
 
         $lineRepository = Mockery::mock(OrderLineRepositoryInterface::class);
         $lineRepository->shouldReceive('findAllByOrderId')->once()->with($orderUuid, $restaurantId)->andReturn([$line]);
-
-        $saleRepository = Mockery::mock(SaleWriteRepositoryInterface::class);
-        $saleRepository->shouldReceive('getNextTicketNumber')->once()->with($restaurantId)->andReturn(12);
-
         $domainEventBus = Mockery::mock(DomainEventBusInterface::class);
         $domainEventBus->shouldReceive('dispatch')->once()->withArgs(function (...$events) use ($closedByUserUuid, $orderUuid) {
             foreach ($events as $event) {
@@ -83,7 +78,6 @@ class CloseOrderTest extends TestCase
         $useCase = new CloseOrder(
             $orderRepository,
             $lineRepository,
-            $saleRepository,
             $this->transactionManager(),
             $domainEventBus,
         );
@@ -127,24 +121,23 @@ class CloseOrderTest extends TestCase
 
         $lineRepository = Mockery::mock(OrderLineRepositoryInterface::class);
         $lineRepository->shouldReceive('findAllByOrderId')->once()->with($orderUuid, $restaurantId)->andReturn([$line]);
-
-        $saleRepository = Mockery::mock(SaleWriteRepositoryInterface::class);
-        $saleRepository->shouldReceive('getNextTicketNumber')->once()->with($restaurantId)->andReturn(42);
-
         $domainEventBus = Mockery::mock(DomainEventBusInterface::class);
         $domainEventBus->shouldReceive('dispatch')->once();
 
         $useCase = new CloseOrder(
             $orderRepository,
             $lineRepository,
-            $saleRepository,
             $this->transactionManager(),
             $domainEventBus,
         );
 
         $response = $useCase($auditContext, $orderUuid, $closedByUserUuid);
 
-        $this->assertSame(42, $response->ticketNumber);
+        $this->assertSame($orderUuid, $response->uuid);
+        $this->assertSame('closed', $response->status);
+        $this->assertSame(1100, $response->total);
+        $this->assertSame($closedByUserUuid, $response->closedByUserId);
+        $this->assertArrayNotHasKey('ticket_number', $response->toArray());
     }
 
     private function transactionManager(): TransactionManagerInterface

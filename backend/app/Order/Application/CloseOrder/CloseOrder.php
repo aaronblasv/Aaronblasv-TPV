@@ -9,7 +9,6 @@ use App\Order\Domain\Exception\CannotCloseOrderWithNoLinesException;
 use App\Order\Domain\Exception\OrderNotFoundException;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Order\Domain\Interfaces\OrderRepositoryInterface;
-use App\Sale\Domain\Interfaces\SaleWriteRepositoryInterface;
 use App\Shared\Application\Context\AuditContext;
 use App\Shared\Domain\Event\ActionLogged;
 use App\Shared\Domain\Interfaces\DomainEventBusInterface;
@@ -21,7 +20,6 @@ class CloseOrder
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
         private OrderLineRepositoryInterface $lineRepository,
-        private SaleWriteRepositoryInterface $saleRepository,
         private TransactionManagerInterface $transactionManager,
         private DomainEventBusInterface $domainEventBus,
     ) {}
@@ -40,7 +38,6 @@ class CloseOrder
             }
 
             $totals = $order->computeTotals($lines);
-            $ticketNumber = $this->saleRepository->getNextTicketNumber($order->restaurantId());
 
             $order->close(Uuid::create($closedByUserUuid));
             $this->orderRepository->update($order);
@@ -49,7 +46,6 @@ class CloseOrder
                 orderUuid: $order->uuid(),
                 restaurantId: $order->restaurantId(),
                 closedByUserUuid: Uuid::create($closedByUserUuid),
-                ticketNumber: $ticketNumber,
                 subtotal: $totals->subtotal->getValue(),
                 taxAmount: $totals->taxAmount->getValue(),
                 lineDiscountTotal: $totals->lineDiscounts->getValue(),
@@ -70,7 +66,7 @@ class CloseOrder
 
             $this->domainEventBus->dispatch(...$order->pullDomainEvents());
 
-            return CloseOrderResponse::create($order, $totals->total->getValue(), $ticketNumber);
+            return CloseOrderResponse::create($order, $totals->total->getValue());
         });
     }
 }
