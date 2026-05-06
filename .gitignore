@@ -12,6 +12,7 @@ Thumbs.db
 .nova/
 .zed/
 .phpactor.json
+.claude/
 
 # Env (no subir secretos; .env.example sí se versiona)
 .env
