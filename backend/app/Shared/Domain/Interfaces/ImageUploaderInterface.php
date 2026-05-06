@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain\Interfaces;
 
-use Illuminate\Http\UploadedFile;
+use App\Shared\Domain\ValueObject\ImageUpload;
 
 interface ImageUploaderInterface
 {
-    public function upload(UploadedFile $file): string;
+    public function upload(ImageUpload $image): string;
 }

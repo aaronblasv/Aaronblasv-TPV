@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Shared\Application\UploadImage;
 
 use App\Shared\Domain\Interfaces\ImageUploaderInterface;
-use Illuminate\Http\UploadedFile;
+use App\Shared\Domain\ValueObject\ImageUpload;
 
 class UploadImage
 {
     public function __construct(private ImageUploaderInterface $imageUploader) {}
 
-    public function __invoke(UploadedFile $file): string
+    public function __invoke(ImageUpload $image): string
     {
-        return $this->imageUploader->upload($file);
+        return $this->imageUploader->upload($image);
     }
 }
