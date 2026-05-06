@@ -6,6 +6,7 @@ namespace Tests\Unit\Sale;
 
 use App\Order\Domain\Event\OrderClosed;
 use App\Product\Domain\Entity\Product;
+use App\Product\Domain\Exception\ProductNotFoundException;
 use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 use App\Sale\Application\CreateSaleOnOrderClosed\CreateSaleOnOrderClosed;
 use App\Sale\Domain\Entity\Sale;
@@ -48,7 +49,7 @@ class CreateSaleOnOrderClosedTest extends TestCase
             }
 
             foreach ($lines as $line) {
-                if (!$line instanceof SaleLine) {
+                if (! $line instanceof SaleLine) {
                     return false;
                 }
 
@@ -70,6 +71,42 @@ class CreateSaleOnOrderClosedTest extends TestCase
         $cacheRepository->shouldReceive('forgetByPrefix')->once()->with('dashboard:1:');
 
         $listener = new CreateSaleOnOrderClosed($repository, $productRepository, $cacheRepository);
+
+        $listener->handle($event);
+    }
+
+    public function test_handle_throws_domain_exception_when_product_is_missing(): void
+    {
+        $line = $this->orderLineMock();
+
+        $event = new OrderClosed(
+            orderUuid: Uuid::generate(),
+            restaurantId: 1,
+            closedByUserUuid: Uuid::generate(),
+            subtotal: 1000,
+            taxAmount: 100,
+            lineDiscountTotal: 0,
+            orderDiscountTotal: 0,
+            total: 1100,
+            lines: [$line],
+        );
+
+        $repository = Mockery::mock(SaleWriteRepositoryInterface::class);
+        $repository->shouldReceive('getNextTicketNumber')->once()->with(1)->andReturn(15);
+        $repository->shouldReceive('save')->once()->with(Mockery::type(Sale::class));
+        $repository->shouldNotReceive('saveLine');
+        $repository->shouldNotReceive('saveLinesBatch');
+
+        $productRepository = Mockery::mock(ProductRepositoryInterface::class);
+        $productRepository->shouldReceive('findByIds')->once()->with(Mockery::type('array'), 1)->andReturn([]);
+
+        $cacheRepository = Mockery::mock(CacheRepositoryInterface::class);
+        $cacheRepository->shouldNotReceive('forgetByPrefix');
+
+        $listener = new CreateSaleOnOrderClosed($repository, $productRepository, $cacheRepository);
+
+        $this->expectException(ProductNotFoundException::class);
+        $this->expectExceptionMessage("Product '{$line->productId()->getValue()}' not found.");
 
         $listener->handle($event);
     }

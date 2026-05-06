@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sale\Application\CreateSaleOnOrderClosed;
 
 use App\Order\Domain\Event\OrderClosed;
+use App\Product\Domain\Exception\ProductNotFoundException;
 use App\Product\Domain\Interfaces\ProductRepositoryInterface;
 use App\Sale\Domain\Entity\Sale;
 use App\Sale\Domain\Entity\SaleLine;
@@ -52,7 +53,7 @@ class CreateSaleOnOrderClosed
             $product = $productsById[$line->productId()->getValue()] ?? null;
 
             if ($product === null) {
-                throw new \RuntimeException(sprintf('Product %s not found while creating sale.', $line->productId()->getValue()));
+                throw new ProductNotFoundException($line->productId()->getValue());
             }
 
             $saleLines[] = SaleLine::dddCreate(
