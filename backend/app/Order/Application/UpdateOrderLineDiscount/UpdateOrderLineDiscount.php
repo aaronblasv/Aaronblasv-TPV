@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Order\Application\UpdateOrderLineDiscount;
 
+use App\Order\Domain\Exception\CannotModifyPaidOrderLineException;
 use App\Order\Domain\Exception\OrderLineNotFoundException;
 use App\Order\Domain\Interfaces\OrderLineRepositoryInterface;
 use App\Shared\Application\Context\AuditContext;
@@ -25,6 +26,10 @@ class UpdateOrderLineDiscount
             $line = $this->orderLineRepository->findById($lineUuid, $auditContext->restaurantId);
             if (!$line) {
                 throw new OrderLineNotFoundException($lineUuid);
+            }
+
+            if ($line->isPaid()) {
+                throw new CannotModifyPaidOrderLineException($lineUuid);
             }
 
             $line->applyDiscount($discountType, $discountValue);

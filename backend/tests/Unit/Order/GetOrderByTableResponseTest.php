@@ -42,8 +42,9 @@ class GetOrderByTableResponseTest extends TestCase
             10,
         );
 
-        $response = GetOrderByTableResponse::create($order, [$line]);
+        $response = GetOrderByTableResponse::create($order, [$line], 250);
 
         $this->assertSame(100, $response->discountAmount);
+        $this->assertSame(250, $response->totalPaid);
     }
 }

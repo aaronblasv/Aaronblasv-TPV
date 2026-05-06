@@ -15,6 +15,8 @@ interface OrderLineRepositoryInterface
 
     public function findAllByOrderId(string $orderUuid, int $restaurantId): array;
 
+    public function findAllByIdsForUpdate(array $lineUuids, string $orderUuid, int $restaurantId): array;
+
     public function findAllByOrderIds(array $orderUuids, int $restaurantId): array;
 
     public function bulkMarkSentToKitchen(array $lineUuids, int $restaurantId, DomainDateTime $sentAt): void;

@@ -323,6 +323,23 @@ app-order {
         transition: background .12s;
         &:hover { background: $surface; }
       }
+
+      .summary-table-row--selectable {
+        cursor: pointer;
+      }
+
+      .summary-table-row--selected {
+        background: rgba($accent, .1);
+      }
+
+      .summary-table-row--paid {
+        opacity: .5;
+
+        td {
+          color: $text-muted;
+        }
+      }
+
       td {
         padding: 12px;
         font-size: 15px;
@@ -361,6 +378,29 @@ app-order {
     background: $accent-dim;
     color: $text-primary;
     border: 1px solid $border-light;
+  }
+
+  .summary-line-status--paid {
+    background: rgba($green, .12);
+    color: $green;
+    border: 1px solid rgba($green, .22);
+  }
+
+  .summary-line-name-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .summary-line-selection-badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba($accent, .12);
+    color: $text-primary;
+    font-size: 11px;
+    font-weight: 700;
   }
 
   .summary-line-action {
@@ -557,6 +597,39 @@ app-order {
   .pay-totals-pending { color: $amber; span { color: $amber; } }
 
   .pay-section { display: flex; flex-direction: column; gap: 10px; }
+
+  .pay-selection-card,
+  .pay-hint-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid $border;
+    background: $surface;
+
+    small,
+    span {
+      color: $text-muted;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+  }
+
+  .pay-selection-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: $text-primary;
+
+    strong {
+      font-family: 'Geist Mono', monospace;
+    }
+  }
+
+  .pay-selection-row--extra {
+    color: $amber;
+  }
 
   .pay-section-title {
     font-family: 'Funnel Sans', sans-serif;

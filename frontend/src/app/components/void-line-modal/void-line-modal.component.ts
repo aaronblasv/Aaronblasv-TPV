@@ -10,8 +10,11 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 })
 export class VoidLineModalComponent implements OnChanges {
   @Input() visible = false;
+  @Input() title = 'Quitar unidades';
   @Input() productName = 'Producto';
   @Input() maxQuantity = 1;
+  @Input() actionVerb = 'quitar';
+  @Input() confirmLabel = 'Quitar';
   @Output() onConfirm = new EventEmitter<number>();
   @Output() onCancel = new EventEmitter<void>();
 

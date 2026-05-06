@@ -9,6 +9,8 @@ export interface OrderLine {
   discount_value: number;
   discount_amount: number;
   sent_to_kitchen?: boolean;
+  paid?: boolean;
+  paid_at?: string | null;
 }
 
 export interface Order {
@@ -20,6 +22,7 @@ export interface Order {
   discount_type: 'amount' | 'percentage' | null;
   discount_value: number;
   discount_amount: number;
+  total_paid?: number;
   subtotal?: number;
   tax_amount?: number;
   total?: number;

@@ -47,6 +47,7 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
             'discount_value' => $line->discountValue(),
             'discount_amount' => $line->discountAmount(),
             'sent_to_kitchen_at' => $line->sentToKitchenAt()?->format('Y-m-d H:i:s'),
+            'paid_at' => $line->paidAt()?->format('Y-m-d H:i:s'),
         ];
 
         $this->model->newQuery()->create($attributes);
@@ -69,6 +70,24 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
         return $this->newQueryWithRelations()
             ->where('order_id', $orderId)
             ->where('restaurant_id', $restaurantId)
+            ->get()
+            ->map(fn (EloquentOrderLine $model) => $this->toDomain($model))
+            ->toArray();
+    }
+
+    public function findAllByIdsForUpdate(array $lineUuids, string $orderUuid, int $restaurantId): array
+    {
+        if ($lineUuids === []) {
+            return [];
+        }
+
+        $orderId = $this->resolveOrderId($orderUuid);
+
+        return $this->newQueryWithRelations()
+            ->where('restaurant_id', $restaurantId)
+            ->where('order_id', $orderId)
+            ->whereIn('uuid', $lineUuids)
+            ->lockForUpdate()
             ->get()
             ->map(fn (EloquentOrderLine $model) => $this->toDomain($model))
             ->toArray();
@@ -127,6 +146,7 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
             'discount_value' => $line->discountValue(),
             'discount_amount' => $line->discountAmount(),
             'sent_to_kitchen_at' => $line->sentToKitchenAt()?->format('Y-m-d H:i:s'),
+            'paid_at' => $line->paidAt()?->format('Y-m-d H:i:s'),
         ];
 
         try {
@@ -172,6 +192,9 @@ class EloquentOrderLineRepository implements OrderLineRepositoryInterface
             (int) $model->discount_amount,
             $model->sent_to_kitchen_at
                 ? $this->toDateTimeImmutable($model->sent_to_kitchen_at)
+                : null,
+            $model->paid_at
+                ? $this->toDateTimeImmutable($model->paid_at)
                 : null,
         );
     }

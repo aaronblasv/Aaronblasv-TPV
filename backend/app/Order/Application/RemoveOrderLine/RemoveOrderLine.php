@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Order\Application\RemoveOrderLine;
 
+use App\Order\Domain\Exception\CannotModifyPaidOrderLineException;
 use App\Order\Domain\Exception\CannotRemoveSentToKitchenOrderLineException;
 use App\Order\Domain\Exception\OrderLineNotFoundException;
 use App\Order\Domain\Exception\OrderLineNotFoundInOrderContextException;
@@ -24,6 +25,10 @@ class RemoveOrderLine
 
         if ($line->orderId()->getValue() !== $orderUuid) {
             throw new OrderLineNotFoundInOrderContextException($lineUuid, $orderUuid);
+        }
+
+        if ($line->isPaid()) {
+            throw new CannotModifyPaidOrderLineException($lineUuid);
         }
 
         if ($line->isSentToKitchen()) {

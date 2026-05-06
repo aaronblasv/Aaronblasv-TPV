@@ -30,6 +30,7 @@ class EloquentOrderLine extends Model
         'discount_value',
         'discount_amount',
         'sent_to_kitchen_at',
+        'paid_at',
     ];
 
     public function order(): BelongsTo

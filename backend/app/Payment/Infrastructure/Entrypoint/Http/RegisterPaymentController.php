@@ -21,6 +21,9 @@ class RegisterPaymentController
             'paid_by_user_id' => 'required|uuid',
             'amount' => 'required|integer|min:1',
             'method' => 'required|string',
+            'line_allocations' => 'sometimes|array',
+            'line_allocations.*.line_uuid' => 'required_with:line_allocations|uuid',
+            'line_allocations.*.quantity' => 'required_with:line_allocations|integer|min:1',
             'description' => 'nullable|string|max:255',
         ]);
 
@@ -34,6 +37,7 @@ class RegisterPaymentController
             $validated['paid_by_user_id'],
             $validated['amount'],
             $validated['method'],
+            $validated['line_allocations'] ?? [],
             $validated['description'] ?? null,
         );
 

@@ -34,6 +34,7 @@ class OrderLine implements HasDomainEventsInterface
         private int $discountValue,
         private Money $discountAmount,
         private ?DomainDateTime $sentToKitchenAt,
+        private ?DomainDateTime $paidAt,
     ) {}
 
     public static function fromPersistence(
@@ -49,6 +50,7 @@ class OrderLine implements HasDomainEventsInterface
         int $discountValue,
         int $discountAmount,
         ?\DateTimeImmutable $sentToKitchenAt,
+        ?\DateTimeImmutable $paidAt,
     ): self {
         return new self(
             Uuid::create($uuid),
@@ -63,6 +65,7 @@ class OrderLine implements HasDomainEventsInterface
             $discountValue,
             Money::create($discountAmount),
             $sentToKitchenAt ? DomainDateTime::create($sentToKitchenAt) : null,
+            $paidAt ? DomainDateTime::create($paidAt) : null,
         );
     }
 
@@ -79,6 +82,7 @@ class OrderLine implements HasDomainEventsInterface
         int $discountValue = 0,
         int $discountAmount = 0,
         ?DomainDateTime $sentToKitchenAt = null,
+        ?DomainDateTime $paidAt = null,
     ): self {
         $line = new self(
             $uuid,
@@ -93,6 +97,7 @@ class OrderLine implements HasDomainEventsInterface
             $discountValue,
             Money::create($discountAmount),
             $sentToKitchenAt,
+            $paidAt,
         );
 
         $line->recalculateDiscountAmount();
@@ -133,6 +138,55 @@ class OrderLine implements HasDomainEventsInterface
         }
 
         $this->sentToKitchenAt = DomainDateTime::now();
+    }
+
+    public function markPaid(): void
+    {
+        if ($this->paidAt !== null) {
+            return;
+        }
+
+        $this->paidAt = DomainDateTime::now();
+    }
+
+    public function splitOffPaidQuantity(int $paidQuantity, Uuid $paidLineUuid): array
+    {
+        $currentQuantity = $this->quantity->getValue();
+
+        if ($paidQuantity <= 0 || $paidQuantity > $currentQuantity) {
+            throw new \InvalidArgumentException('Invalid paid quantity for order line split.');
+        }
+
+        if ($paidQuantity === $currentQuantity) {
+            $this->markPaid();
+
+            return [$this, null];
+        }
+
+        $remainingQuantity = $currentQuantity - $paidQuantity;
+        [$paidDiscountValue, $remainingDiscountValue] = $this->splitDiscountValue($paidQuantity, $currentQuantity);
+
+        $paidLine = self::dddCreate(
+            $paidLineUuid,
+            $this->restaurantId(),
+            $this->orderId,
+            $this->productId,
+            $this->userId,
+            Quantity::create($paidQuantity),
+            $this->price(),
+            $this->taxPercentage,
+            $this->discountType(),
+            $paidDiscountValue,
+            0,
+            $this->sentToKitchenAt,
+            DomainDateTime::now(),
+        );
+
+        $this->quantity = Quantity::create($remainingQuantity);
+        $this->discountValue = $remainingDiscountValue;
+        $this->recalculateDiscountAmount();
+
+        return [$paidLine, $this];
     }
 
     public function id(): Uuid
@@ -200,9 +254,19 @@ class OrderLine implements HasDomainEventsInterface
         return $this->sentToKitchenAt;
     }
 
+    public function paidAt(): ?DomainDateTime
+    {
+        return $this->paidAt;
+    }
+
     public function isSentToKitchen(): bool
     {
         return $this->sentToKitchenAt !== null;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->paidAt !== null;
     }
 
     public function subtotal(): int
@@ -240,5 +304,17 @@ class OrderLine implements HasDomainEventsInterface
             DiscountType::AMOUNT => new AmountDiscount($this->discountValue),
             DiscountType::PERCENTAGE => new PercentageDiscount($this->discountValue),
         };
+    }
+
+    private function splitDiscountValue(int $paidQuantity, int $currentQuantity): array
+    {
+        if ($this->discountType !== DiscountType::AMOUNT || $this->discountValue <= 0) {
+            return [$this->discountValue, $this->discountValue];
+        }
+
+        $paidDiscountValue = (int) floor($this->discountValue * $paidQuantity / $currentQuantity);
+        $remainingDiscountValue = $this->discountValue - $paidDiscountValue;
+
+        return [$paidDiscountValue, $remainingDiscountValue];
     }
 }

@@ -2,12 +2,12 @@
   <div class="void-line-modal-overlay" (click)="cancel()">
     <div class="void-line-modal" (click)="$event.stopPropagation()">
       <div class="void-line-modal__header">
-        <h3>Quitar unidades</h3>
+        <h3>{{ title }}</h3>
         <button class="void-line-modal__close" (click)="cancel()">✕</button>
       </div>
 
       <p class="void-line-modal__description">
-        Indica cuántas unidades de <strong>{{ productName }}</strong> quieres quitar.
+        Indica cuántas unidades de <strong>{{ productName }}</strong> quieres {{ actionVerb }}.
       </p>
 
       <div class="void-line-modal__field">
@@ -29,7 +29,7 @@
 
       <div class="void-line-modal__actions">
         <button class="void-line-modal__btn void-line-modal__btn--ghost" (click)="cancel()">Cancelar</button>
-        <button class="void-line-modal__btn void-line-modal__btn--confirm" (click)="confirm()">Quitar</button>
+        <button class="void-line-modal__btn void-line-modal__btn--confirm" (click)="confirm()">{{ confirmLabel }}</button>
       </div>
     </div>
   </div>

@@ -116,6 +116,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PaymentRepositoryInterface::class, EloquentPaymentRepository::class);
         $this->app->bind(RegisterPayment::class, fn($app) => new RegisterPayment(
             $app->make(PaymentRepositoryInterface::class),
+            $app->make(OrderLineRepositoryInterface::class),
             $app->make(TransactionManagerInterface::class),
             $app->make(DomainEventBusInterface::class),
         ));

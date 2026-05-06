@@ -33,7 +33,6 @@
         <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span>Resumen</span>
       </button>
-      <button class="session-exit-button" (click)="logoutTpvSession()">Salir de la sesión</button>
     </nav>
 
     <!-- ═══ TAB: SUMMARY ═══ -->
@@ -56,22 +55,39 @@
               <tbody>
                 @if (order) {
                   @for (line of summaryOrderLines; track line.uuid) {
-                    <tr>
-                      <td class="col-name">{{ getProductName(line.product_id) }}</td>
+                    <tr
+                      [class.summary-table-row--paid]="line.paid"
+                      [class.summary-table-row--selected]="isLineSelectedForPayment(line)"
+                      [class.summary-table-row--selectable]="paymentScope === 'amount' && !line.paid"
+                      (click)="onSummaryLineClicked(line)"
+                    >
+                      <td class="col-name">
+                        <div class="summary-line-name-wrap">
+                          <span>{{ getProductName(line.product_id) }}</span>
+                          @if (paymentScope === 'amount' && getSelectedPaymentQuantity(line) > 0) {
+                            <span class="summary-line-selection-badge">
+                              Pagar {{ getSelectedPaymentQuantity(line) }} uds.
+                              @if (isActivePaymentLine(line)) {
+                                · editando
+                              }
+                            </span>
+                          }
+                        </div>
+                      </td>
                       <td class="col-status">
-                        <span class="summary-line-status" [class.summary-line-status--sent]="line.sent_to_kitchen" [class.summary-line-status--pending]="!line.sent_to_kitchen">
-                          {{ line.sent_to_kitchen ? 'Enviado' : 'Pendiente' }}
+                        <span class="summary-line-status" [class.summary-line-status--paid]="line.paid" [class.summary-line-status--sent]="!line.paid && line.sent_to_kitchen" [class.summary-line-status--pending]="!line.paid && !line.sent_to_kitchen">
+                          {{ line.paid ? 'Pagado' : line.sent_to_kitchen ? 'Enviado' : 'Pendiente' }}
                         </span>
                       </td>
                       <td class="col-qty">{{ line.quantity }}</td>
                       <td class="col-price">{{ line.price / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
-                      <td class="col-total">{{ getLineSubtotal(line) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
+                      <td class="col-total">{{ getSummaryLineDisplayTotal(line) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
                       <td class="col-actions">
-                        @if (line.sent_to_kitchen) {
+                        @if (!line.paid && line.sent_to_kitchen) {
                           <div class="summary-line-actions">
                             <button
                               class="summary-line-action summary-line-action--compact"
-                              (click)="promptVoidSentLine(line)"
+                              (click)="promptVoidSentLine(line); $event.stopPropagation()"
                               [disabled]="totalPaid > 0"
                               [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Quitar una cantidad de esta línea'"
                             >
@@ -79,7 +95,7 @@
                             </button>
                             <button
                               class="summary-line-action summary-line-action--danger"
-                              (click)="voidEntireSentLine(line)"
+                              (click)="voidEntireSentLine(line); $event.stopPropagation()"
                               [disabled]="totalPaid > 0"
                               [title]="totalPaid > 0 ? 'No se puede anular con pagos registrados' : 'Anular toda la línea enviada'"
                             >
@@ -140,8 +156,8 @@
 
           <!-- Payment mode tabs -->
           <div class="pay-mode-tabs">
-            <button class="pay-mode-tab" [class.active]="payMode === 'payment'" (click)="switchToPayment()">Pago</button>
-            <button class="pay-mode-tab" [class.active]="payMode === 'split'" (click)="switchToSplit()">Dividir</button>
+            <button class="pay-mode-tab" [class.active]="paymentScope === 'amount'" (click)="setPaymentScope('amount')">Importe</button>
+            <button class="pay-mode-tab" [class.active]="paymentScope === 'split'" (click)="setPaymentScope('split')">Dividir cuenta</button>
           </div>
 
           <!-- Totals bar -->
@@ -162,32 +178,29 @@
             }
           </div>
 
-          <!-- ═══ MODE: SPLIT ═══ -->
-          @if (payMode === 'split') {
-            <div class="pay-section split-shares">
-              @for (share of splitShares; track share.index) {
-                <div class="split-share-card" [class.paid]="share.paid">
-                  <div class="split-share-header">
-                    <span class="split-share-label">Comensal {{ share.index + 1 }}</span>
-                    <span class="split-share-amount">{{ share.amount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-                  </div>
-                  @if (!share.paid) {
-                    <div class="split-share-actions">
-                      <button class="split-method-btn" [class.active]="share.method === 'cash'" (click)="share.method = 'cash'">Efectivo</button>
-                      <button class="split-method-btn" [class.active]="share.method === 'card'" (click)="share.method = 'card'">Tarjeta</button>
-                      <button class="split-method-btn" [class.active]="share.method === 'bizum'" (click)="share.method = 'bizum'">Bizum</button>
-                      <button class="split-pay-btn" (click)="paySplitShare(share)">Cobrar</button>
-                    </div>
-                  } @else {
-                    <div class="split-paid-badge">✓ Pagado · {{ share.method === 'cash' ? 'Efectivo' : share.method === 'card' ? 'Tarjeta' : 'Bizum' }}</div>
-                  }
+          @if (paymentScope === 'amount' && hasSelectedProductsForPayment) {
+            <div class="pay-section pay-selection-section">
+              <div class="pay-selection-card">
+                <div class="pay-selection-row">
+                  <span>Productos seleccionados</span>
+                  <strong>{{ selectedProductsTotal / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
                 </div>
-              }
+                @if (selectedProductsExtraAmount > 0) {
+                  <div class="pay-selection-row pay-selection-row--extra">
+                    <span>Extra a cuenta</span>
+                    <strong>{{ selectedProductsExtraAmount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+                  </div>
+                }
+                @if (activePaymentLine) {
+                  <small>
+                    {{ getProductName(activePaymentLine.product_id) }} · {{ getSelectedPaymentQuantity(activePaymentLine) }}/{{ activePaymentLine.quantity }} uds.
+                  </small>
+                }
+              </div>
             </div>
           }
 
-          <!-- ═══ MODE: PAYMENT ═══ -->
-          @if (payMode === 'payment') {
+          @if (paymentScope === 'amount') {
             <div class="pay-section">
               <h4 class="pay-section-title">Método de Pago</h4>
               <div class="summary-pay-methods">
@@ -208,8 +221,14 @@
 
             <!-- Amount display -->
             <div class="pay-amount-display">
-              <span class="pay-amount-value">{{ payInputDisplay }} €</span>
-              <button class="pay-amount-clear" (click)="payInput = ''; updatePayInputDisplay()">
+              <span class="pay-amount-value">
+                @if (activePaymentLine) {
+                  {{ getSelectedPaymentQuantity(activePaymentLine) }} uds.
+                } @else {
+                  {{ payInputDisplay }} €
+                }
+              </span>
+              <button class="pay-amount-clear" (click)="clearPayEntry()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -218,10 +237,10 @@
               <div class="pay-quick-amounts">
                 <button
                   class="pay-quick-btn"
-                  [class.active]="payInputCents === pendingAmount"
-                  (click)="setPayAmount(pendingAmount)"
+                  [class.active]="payInputCents === (hasSelectedProductsForPayment ? selectedProductsTotal : pendingAmount)"
+                  (click)="setPayAmount(hasSelectedProductsForPayment ? selectedProductsTotal : pendingAmount)"
                 >
-                  Total {{ pendingAmount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}
+                  {{ hasSelectedProductsForPayment ? 'Selección' : 'Total' }} {{ (hasSelectedProductsForPayment ? selectedProductsTotal : pendingAmount) / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}
                 </button>
               </div>
             }
@@ -246,10 +265,41 @@
               }
             </div>
 
-            <button class="pay-confirm-btn" (click)="payCustomAmount()" [disabled]="payInputCents <= 0 || pendingAmount <= 0">
+            <button class="pay-confirm-btn" (click)="payCustomAmount()" [disabled]="!canSubmitPayment">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-              Cobrar
+              {{ hasSelectedProductsForPayment ? 'Cobrar selección' : 'Cobrar' }}
             </button>
+          }
+
+          @if (paymentScope === 'split') {
+            <div class="pay-section">
+              <h4 class="pay-section-title">Dividir por comensales</h4>
+              <div class="pay-selection-card">
+                <small>La cuenta pendiente se divide entre {{ splitShareCount }} comensales. Cada bloque se puede cobrar por separado.</small>
+              </div>
+            </div>
+
+            <div class="split-shares">
+              @for (share of splitShares; track share.index) {
+                <div class="split-share-card" [class.paid]="share.paid">
+                  <div class="split-share-header">
+                    <span class="split-share-label">Comensal {{ share.index + 1 }}</span>
+                    <span class="split-share-amount">{{ share.amount / 100 | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                  </div>
+
+                  @if (!share.paid) {
+                    <div class="split-share-actions">
+                      <button class="split-method-btn" [class.active]="share.method === 'cash'" (click)="setSplitShareMethod(share.index, 'cash')">Efectivo</button>
+                      <button class="split-method-btn" [class.active]="share.method === 'card'" (click)="setSplitShareMethod(share.index, 'card')">Tarjeta</button>
+                      <button class="split-method-btn" [class.active]="share.method === 'bizum'" (click)="setSplitShareMethod(share.index, 'bizum')">Bizum</button>
+                    </div>
+                    <button class="split-pay-btn" (click)="paySplitShare(share)">Cobrar comensal</button>
+                  } @else {
+                    <div class="split-paid-badge">✓ Pagado</div>
+                  }
+                </div>
+              }
+            </div>
           }
 
           <!-- Bottom actions (always visible) -->
@@ -397,4 +447,4 @@
 <app-discount-modal [visible]="showDiscountModal" [title]="discountModalTitle" [currentType]="discountModalCurrentType" [currentValue]="discountModalCurrentValue" (onConfirm)="onDiscountConfirmed($event)" (onCancel)="onDiscountCancelled()"></app-discount-modal>
 <app-diners-modal [visible]="showChangeDinersModal" (onConfirm)="onChangeDinersConfirmed($event)" (onCancel)="onChangeDinersCancelled()"></app-diners-modal>
 <app-confirm-modal [visible]="showVoidLineConfirmModal" title="¿Anular toda la línea?" [message]="voidLineConfirmTarget ? 'Se anularán las ' + voidLineConfirmTarget.quantity + ' uds. de ' + getProductName(voidLineConfirmTarget.product_id) + '.' : 'Esta acción no se puede deshacer.'" (onConfirm)="confirmVoidEntireSentLine()" (onCancel)="closeVoidLineConfirmModal()"></app-confirm-modal>
-<app-void-line-modal [visible]="showVoidSentLineModal" [productName]="voidSentLineTarget ? getProductName(voidSentLineTarget.product_id) : 'Producto'" [maxQuantity]="voidSentLineTarget?.quantity ?? 1" (onConfirm)="onVoidSentLineQuantityConfirmed($event)" (onCancel)="closeVoidSentLineModal()"></app-void-line-modal>
+<app-void-line-modal [visible]="showVoidSentLineModal" [productName]="voidSentLineTarget ? getProductName(voidSentLineTarget.product_id) : 'Producto'" [maxQuantity]="voidSentLineTarget?.quantity ?? 1" title="Quitar unidades" actionVerb="quitar" confirmLabel="Quitar" (onConfirm)="onVoidSentLineQuantityConfirmed($event)" (onCancel)="closeVoidSentLineModal()"></app-void-line-modal>

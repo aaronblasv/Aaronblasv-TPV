@@ -25,10 +25,17 @@ import { Family } from '../../../types/family.model';
 import { Tax } from '../../../types/tax.model';
 import { Table } from '../../../types/table.model';
 import { User } from '../../../types/user.model';
-import { PaymentData } from '../../../types/payment.model';
+import { PaymentData, PaymentLineAllocation, PaymentMethod } from '../../../types/payment.model';
 import localeEs from '@angular/common/locales/es';
 
 registerLocaleData(localeEs);
+
+interface SplitShare {
+  index: number;
+  amount: number;
+  method: PaymentMethod;
+  paid: boolean;
+}
 
 @Component({
   selector: 'app-order',
@@ -79,16 +86,22 @@ export class OrderPage implements OnInit {
   lastInvoiceNumber = '';
   lastTotalAmount = 0;
 
-  // Payment view state
-  payMode: 'payment' | 'split' = 'payment';
+  paymentScope: 'amount' | 'split' = 'amount';
   payMethod: 'cash' | 'card' | 'bizum' = 'cash';
   payInput = '';
-  splitShares: { index: number; amount: number; method: 'cash' | 'card' | 'bizum'; paid: boolean }[] = [];
   payInputDisplay = '0.00';
   payInputCents = 0;
   numpadKeys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'];
   private locallySentToKitchenLineIds = new Set<string>();
   readonly peopleOutlineIcon = peopleOutline;
+  selectedPaymentLines: Record<string, number> = {};
+  activePaymentLineUuid: string | null = null;
+  paymentLineQuantityInput = '';
+  replacePaymentLineQuantityOnNextDigit = false;
+  splitShares: SplitShare[] = [];
+  private pendingSplitShareIndex: number | null = null;
+  private splitSharesBasePendingAmount = 0;
+  private splitSharesBaseDiners = 0;
 
   constructor() {
     addIcons({ peopleOutline });
@@ -120,6 +133,11 @@ export class OrderPage implements OnInit {
   }
 
   onNumpadKey(key: string) {
+    if (this.paymentScope === 'amount' && this.activePaymentLineUuid) {
+      this.onPaymentLineQuantityKey(key);
+      return;
+    }
+
     if (key === 'back') {
       this.payInput = this.payInput.slice(0, -1);
     } else if (key === '.') {
@@ -139,50 +157,73 @@ export class OrderPage implements OnInit {
   }
 
   goToPayment() {
-    this.payMode = 'payment';
+    this.paymentScope = 'amount';
     this.currentTab = 'summary';
   }
 
   payCustomAmount() {
+    if (this.paymentScope === 'split') {
+      return;
+    }
+
+    if (this.hasSelectedProductsForPayment) {
+      this.paySelectedProducts();
+      return;
+    }
+
     if (this.payInputCents <= 0 || this.pendingAmount <= 0) return;
     const amount = Math.min(this.payInputCents, this.pendingAmount);
-    this.onPaymentRegistered({ amount, method: this.payMethod, description: 'Pago' });
+    this.onPaymentRegistered({ amount, method: this.payMethod, description: 'Pago libre a cuenta' });
     this.payInput = '';
     this.updatePayInputDisplay();
   }
 
-  switchToSplit() {
-    this.payMode = 'split';
-    this.buildSplitShares();
-  }
+  setPaymentScope(scope: 'amount' | 'split') {
+    this.paymentScope = scope;
 
-  switchToPayment() {
-    this.payMode = 'payment';
+    if (scope === 'amount') {
+      this.syncPayInputWithSelection();
+      return;
+    }
+
+    this.clearSelectedPaymentLines();
     this.payInput = '';
     this.updatePayInputDisplay();
+    this.ensureSplitShares();
   }
 
-  buildSplitShares() {
-    const count = Math.max(1, this.order?.diners || 1);
-    const pending = this.pendingAmount;
-    const base = Math.floor(pending / count);
-    const remainder = pending % count;
-    this.splitShares = Array.from({ length: count }, (_, i) => ({
-      index: i,
-      amount: base + (i < remainder ? 1 : 0),
-      method: 'cash' as const,
-      paid: false,
-    }));
+  clearSelectedPaymentLines() {
+    this.selectedPaymentLines = {};
+    this.activePaymentLineUuid = null;
+    this.paymentLineQuantityInput = '';
+    this.replacePaymentLineQuantityOnNextDigit = false;
   }
 
-  paySplitShare(share: { index: number; amount: number; method: 'cash' | 'card' | 'bizum'; paid: boolean }) {
-    if (share.paid || share.amount <= 0) return;
-    share.paid = true;
-    this.onPaymentRegistered({
-      amount: share.amount,
-      method: share.method,
-      description: `Comensal ${share.index + 1}/${this.splitShares.length}`,
-    });
+  onSummaryLineClicked(line: OrderLine) {
+    if (this.paymentScope !== 'amount' || line.paid) {
+      return;
+    }
+
+    if (this.isActivePaymentLine(line)) {
+      const nextSelectedLines = { ...this.selectedPaymentLines };
+      delete nextSelectedLines[line.uuid];
+      this.selectedPaymentLines = nextSelectedLines;
+      this.activePaymentLineUuid = null;
+      this.paymentLineQuantityInput = '';
+      this.replacePaymentLineQuantityOnNextDigit = false;
+      this.syncPayInputWithSelection();
+
+      return;
+    }
+
+    this.selectedPaymentLines = {
+      ...this.selectedPaymentLines,
+      [line.uuid]: this.getSelectedPaymentQuantity(line) || 1,
+    };
+    this.activePaymentLineUuid = line.uuid;
+    this.paymentLineQuantityInput = String(this.selectedPaymentLines[line.uuid]);
+    this.replacePaymentLineQuantityOnNextDigit = true;
+    this.syncPayInputWithSelection();
   }
 
   ngOnInit() {
@@ -216,6 +257,11 @@ export class OrderPage implements OnInit {
     this.showKitchenSentModal = false;
     this.closeVoidLineConfirmModal();
     this.closeVoidSentLineModal();
+    this.clearSelectedPaymentLines();
+    this.splitShares = [];
+    this.pendingSplitShareIndex = null;
+    this.splitSharesBasePendingAmount = 0;
+    this.splitSharesBaseDiners = 0;
     this.order = null;
     this.locallySentToKitchenLineIds.clear();
   }
@@ -256,6 +302,7 @@ export class OrderPage implements OnInit {
             sent_to_kitchen: line.sent_to_kitchen || this.locallySentToKitchenLineIds.has(line.uuid),
           })),
         };
+        this.totalPaid = order.total_paid ?? 0;
       },
       error: () => {
         this.router.navigate(['/tpv']);
@@ -273,11 +320,15 @@ export class OrderPage implements OnInit {
   }
 
   get pendingOrderLines(): OrderLine[] {
-    return this.summaryOrderLines.filter(line => !line.sent_to_kitchen);
+    return this.summaryOrderLines.filter(line => !line.sent_to_kitchen && !line.paid);
   }
 
   get sentOrderLines(): OrderLine[] {
-    return this.summaryOrderLines.filter(line => line.sent_to_kitchen);
+    return this.summaryOrderLines.filter(line => line.sent_to_kitchen && !line.paid);
+  }
+
+  get hasSelectedProductsForPayment(): boolean {
+    return Object.keys(this.selectedPaymentLines).length > 0;
   }
 
   selectFamily(uuid: string | null) {
@@ -313,6 +364,10 @@ export class OrderPage implements OnInit {
     return this.getLineSubtotal(line) + this.getLineTax(line);
   }
 
+  getSummaryLineDisplayTotal(line: OrderLine): number {
+    return this.getLineTotal(line);
+  }
+
   get pendingSubtotal(): number {
     return this.pendingOrderLines.reduce((sum, line) => sum + this.getLineSubtotal(line), 0);
   }
@@ -345,46 +400,116 @@ export class OrderPage implements OnInit {
     return this.orderSubtotal + this.orderTax;
   }
 
+  get orderDiscountRatio(): number {
+    const lineSubtotal = this.summaryOrderLines.reduce((sum, line) => sum + this.getLineSubtotal(line), 0);
+
+    if (lineSubtotal <= 0) {
+      return 1;
+    }
+
+    return Math.max(0, (lineSubtotal - this.getOrderDiscountAmount()) / lineSubtotal);
+  }
+
+  get selectedProductsTotal(): number {
+    const ratio = this.orderDiscountRatio;
+    const selectedSubtotal = this.summaryOrderLines.reduce((sum, line) => sum + this.getSelectedLineSubtotal(line), 0);
+    const selectedTax = this.summaryOrderLines.reduce((sum, line) => sum + this.getSelectedLineTax(line), 0);
+
+    return Math.round(selectedSubtotal * ratio) + Math.round(selectedTax * ratio);
+  }
+
+  get selectedProductsExtraAmount(): number {
+    return Math.max(0, this.payInputCents - this.selectedProductsTotal);
+  }
+
+  get canSubmitPayment(): boolean {
+    if (this.pendingAmount <= 0) {
+      return false;
+    }
+
+    if (this.hasSelectedProductsForPayment) {
+      return this.selectedProductsTotal > 0 && this.payInputCents >= this.selectedProductsTotal;
+    }
+
+    return this.payInputCents > 0;
+  }
+
+  get splitShareCount(): number {
+    return Math.max(1, this.order?.diners ?? 1);
+  }
+
   addProduct(product: Product) {
+    if (!this.order?.uuid || !this.currentUser?.uuid) {
+      this.logger.error('Cannot add product without an active order or current user');
+      return;
+    }
+
     const existingLine = this.pendingOrderLines.find(line => line.product_id === product.uuid);
 
     if (existingLine) {
       const newQty = existingLine.quantity + 1;
-      this.orderService.updateLineQuantity(this.order!.uuid, existingLine.uuid, newQty).subscribe({
-        next: () => { this.loadOrder(); },
+      this.orderService.updateLineQuantity(this.order.uuid, existingLine.uuid, newQty).subscribe({
+        next: () => {
+          this.updateLineQuantityLocally(existingLine.uuid, newQty);
+          this.loadOrder();
+        },
         error: (err) => this.logger.error('Error updating line:', err),
       });
     } else {
-      this.orderService.addLine(this.order!.uuid, product.uuid, this.currentUser!.uuid, 1).subscribe({
-        next: () => { this.loadOrder(); },
+      this.orderService.addLine(this.order.uuid, product.uuid, this.currentUser.uuid, 1).subscribe({
+        next: (line) => {
+          this.appendPendingLineLocally(line);
+          this.loadOrder();
+        },
         error: (err) => this.logger.error('Error adding line:', err),
       });
     }
   }
 
   incrementLine(line: OrderLine) {
+    if (!this.order?.uuid) {
+      return;
+    }
+
     const newQty = line.quantity + 1;
-    this.orderService.updateLineQuantity(this.order!.uuid, line.uuid, newQty).subscribe({
-      next: () => { this.loadOrder(); },
+    this.orderService.updateLineQuantity(this.order.uuid, line.uuid, newQty).subscribe({
+      next: () => {
+        this.updateLineQuantityLocally(line.uuid, newQty);
+        this.loadOrder();
+      },
       error: (err) => this.logger.error('Error updating line:', err),
     });
   }
 
   decrementLine(line: OrderLine) {
+    if (!this.order?.uuid) {
+      return;
+    }
+
     if (line.quantity <= 1) {
       this.removeLine(line);
       return;
     }
     const newQty = line.quantity - 1;
-    this.orderService.updateLineQuantity(this.order!.uuid, line.uuid, newQty).subscribe({
-      next: () => { this.loadOrder(); },
+    this.orderService.updateLineQuantity(this.order.uuid, line.uuid, newQty).subscribe({
+      next: () => {
+        this.updateLineQuantityLocally(line.uuid, newQty);
+        this.loadOrder();
+      },
       error: (err) => this.logger.error('Error updating line:', err),
     });
   }
 
   removeLine(line: OrderLine) {
-    this.orderService.removeLine(this.order!.uuid, line.uuid).subscribe({
-      next: () => { this.loadOrder(); },
+    if (!this.order?.uuid) {
+      return;
+    }
+
+    this.orderService.removeLine(this.order.uuid, line.uuid).subscribe({
+      next: () => {
+        this.removeLineLocally(line.uuid);
+        this.loadOrder();
+      },
       error: (err) => {
         this.logger.error('Error removing line:', err);
         alert(err?.error?.message ?? 'No se ha podido quitar la línea del pedido.');
@@ -566,6 +691,54 @@ export class OrderPage implements OnInit {
   closeTransferModal() {
     this.showTransferModal = false;
     this.availableTransferTables = [];
+  }
+
+  private updateLineQuantityLocally(lineUuid: string, quantity: number) {
+    if (!this.order) {
+      return;
+    }
+
+    this.order = {
+      ...this.order,
+      lines: (this.order.lines ?? []).map((line) =>
+        line.uuid === lineUuid
+          ? {
+              ...line,
+              quantity,
+            }
+          : line,
+      ),
+    };
+  }
+
+  private appendPendingLineLocally(line: OrderLine) {
+    if (!this.order) {
+      return;
+    }
+
+    this.order = {
+      ...this.order,
+      lines: [
+        ...(this.order.lines ?? []),
+        {
+          ...line,
+          sent_to_kitchen: line.sent_to_kitchen ?? false,
+          paid: line.paid ?? false,
+          paid_at: line.paid_at ?? null,
+        },
+      ],
+    };
+  }
+
+  private removeLineLocally(lineUuid: string) {
+    if (!this.order) {
+      return;
+    }
+
+    this.order = {
+      ...this.order,
+      lines: (this.order.lines ?? []).filter((line) => line.uuid !== lineUuid),
+    };
   }
 
   printProvisionalTicket() {
@@ -832,10 +1005,18 @@ export class OrderPage implements OnInit {
       Math.round(payment.amount),
       payment.method,
       payment.description,
+      payment.lineAllocations ?? [],
     ).subscribe({
-      next: () => {
+      next: (response) => {
         this.logger.log('Payment registered successfully');
-        this.totalPaid += Math.round(payment.amount);
+        this.totalPaid = response.total_paid;
+        this.markPendingSplitShareAsPaid();
+        this.loadOrder();
+        this.clearSelectedPaymentLines();
+        if (this.paymentScope === 'amount') {
+          this.payInput = '';
+          this.updatePayInputDisplay();
+        }
         this.logger.log('totalPaid:', this.totalPaid, '/ orderTotal:', this.orderTotal);
         if (this.totalPaid >= this.orderTotal) {
           this.logger.log('Order fully paid — proceeding to close');
@@ -909,6 +1090,209 @@ export class OrderPage implements OnInit {
     this.tpvSessionService.clear();
     this.currentUser = null;
     this.router.navigate(['/tpv'], { replaceUrl: true });
+  }
+
+  isLineSelectedForPayment(line: OrderLine): boolean {
+    return this.getSelectedPaymentQuantity(line) > 0;
+  }
+
+  isActivePaymentLine(line: OrderLine): boolean {
+    return this.activePaymentLineUuid === line.uuid;
+  }
+
+  get activePaymentLine(): OrderLine | null {
+    if (!this.activePaymentLineUuid) {
+      return null;
+    }
+
+    return this.summaryOrderLines.find((line) => line.uuid === this.activePaymentLineUuid) ?? null;
+  }
+
+  getSelectedPaymentQuantity(line: OrderLine): number {
+    return this.selectedPaymentLines[line.uuid] ?? 0;
+  }
+
+  getSelectedLineSubtotal(line: OrderLine): number {
+    const selectedQuantity = this.getSelectedPaymentQuantity(line);
+
+    if (selectedQuantity <= 0) {
+      return 0;
+    }
+
+    const baseAmount = line.price * selectedQuantity;
+    const discountAmount = this.getSelectedLineDiscountAmount(line, selectedQuantity);
+
+    return Math.max(0, baseAmount - discountAmount);
+  }
+
+  getSelectedLineTax(line: OrderLine): number {
+    const subtotal = this.getSelectedLineSubtotal(line);
+
+    if (subtotal <= 0) {
+      return 0;
+    }
+
+    return Math.round(subtotal * line.tax_percentage / 100);
+  }
+
+  private getSelectedLineDiscountAmount(line: OrderLine, selectedQuantity: number): number {
+    if (!line.discount_type || line.discount_value <= 0) {
+      return 0;
+    }
+
+    if (line.discount_type === 'amount') {
+      return Math.floor(line.discount_value * selectedQuantity / line.quantity);
+    }
+
+    return Math.round((line.price * selectedQuantity) * line.discount_value / 100);
+  }
+
+  private syncPayInputWithSelection() {
+    if (this.paymentScope !== 'amount') {
+      return;
+    }
+
+    if (!this.hasSelectedProductsForPayment) {
+      this.payInput = '';
+      this.updatePayInputDisplay();
+      return;
+    }
+
+    this.payInput = (this.selectedProductsTotal / 100).toFixed(2);
+    this.updatePayInputDisplay();
+  }
+
+  clearPayEntry() {
+    if (this.hasSelectedProductsForPayment) {
+      this.clearSelectedPaymentLines();
+      this.syncPayInputWithSelection();
+      return;
+    }
+
+    this.payInput = '';
+    this.updatePayInputDisplay();
+  }
+
+  private paySelectedProducts() {
+    if (this.selectedProductsTotal <= 0 || this.payInputCents < this.selectedProductsTotal) {
+      return;
+    }
+
+    const amount = Math.min(this.payInputCents, this.pendingAmount);
+    const lineAllocations: PaymentLineAllocation[] = Object.entries(this.selectedPaymentLines)
+      .map(([line_uuid, quantity]) => ({ line_uuid, quantity }))
+      .filter((allocation) => allocation.quantity > 0);
+
+    this.onPaymentRegistered({
+      amount,
+      method: this.payMethod,
+      description: this.selectedProductsExtraAmount > 0
+        ? 'Pago de productos + saldo a cuenta'
+        : 'Pago de productos seleccionados',
+      lineAllocations,
+    });
+  }
+
+  private onPaymentLineQuantityKey(key: string) {
+    const line = this.activePaymentLine;
+
+    if (!line) {
+      this.activePaymentLineUuid = null;
+      this.paymentLineQuantityInput = '';
+      this.replacePaymentLineQuantityOnNextDigit = false;
+      return;
+    }
+
+    let nextInput = this.paymentLineQuantityInput;
+
+    if (key === 'back') {
+      nextInput = nextInput.slice(0, -1);
+    } else if (key !== '.') {
+      nextInput = this.replacePaymentLineQuantityOnNextDigit ? key : `${nextInput}${key}`;
+    }
+
+    this.replacePaymentLineQuantityOnNextDigit = false;
+
+    if (nextInput === '') {
+      const nextSelectedLines = { ...this.selectedPaymentLines };
+      delete nextSelectedLines[line.uuid];
+      this.selectedPaymentLines = nextSelectedLines;
+      this.paymentLineQuantityInput = '';
+      this.activePaymentLineUuid = null;
+      this.syncPayInputWithSelection();
+      return;
+    }
+
+    const requestedQuantity = Number.parseInt(nextInput, 10);
+
+    if (!Number.isInteger(requestedQuantity) || requestedQuantity <= 0) {
+      return;
+    }
+
+    const clampedQuantity = Math.min(requestedQuantity, line.quantity);
+
+    this.selectedPaymentLines = {
+      ...this.selectedPaymentLines,
+      [line.uuid]: clampedQuantity,
+    };
+    this.paymentLineQuantityInput = String(clampedQuantity);
+    this.syncPayInputWithSelection();
+  }
+
+  setSplitShareMethod(shareIndex: number, method: PaymentMethod) {
+    this.splitShares = this.splitShares.map((share) =>
+      share.index === shareIndex ? { ...share, method } : share,
+    );
+  }
+
+  paySplitShare(share: SplitShare) {
+    if (share.paid || share.amount <= 0) {
+      return;
+    }
+
+    this.pendingSplitShareIndex = share.index;
+    this.onPaymentRegistered({
+      amount: share.amount,
+      method: share.method,
+      description: `Comensal ${share.index + 1}/${this.splitShares.length}`,
+      lineAllocations: [],
+    });
+  }
+
+  private ensureSplitShares() {
+    if (
+      this.splitShares.length > 0
+      && this.splitSharesBasePendingAmount === this.pendingAmount
+      && this.splitSharesBaseDiners === this.splitShareCount
+    ) {
+      return;
+    }
+
+    const count = this.splitShareCount;
+    const baseAmount = Math.floor(this.pendingAmount / count);
+    const remainder = this.pendingAmount % count;
+
+    this.splitShares = Array.from({ length: count }, (_, index) => ({
+      index,
+      amount: baseAmount + (index < remainder ? 1 : 0),
+      method: 'cash' as PaymentMethod,
+      paid: false,
+    }));
+
+    this.pendingSplitShareIndex = null;
+    this.splitSharesBasePendingAmount = this.pendingAmount;
+    this.splitSharesBaseDiners = count;
+  }
+
+  private markPendingSplitShareAsPaid() {
+    if (this.pendingSplitShareIndex === null) {
+      return;
+    }
+
+    this.splitShares = this.splitShares.map((share) =>
+      share.index === this.pendingSplitShareIndex ? { ...share, paid: true } : share,
+    );
+    this.pendingSplitShareIndex = null;
   }
 
   sendToKitchen() {

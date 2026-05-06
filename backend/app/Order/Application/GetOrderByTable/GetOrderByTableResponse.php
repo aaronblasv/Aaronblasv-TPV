@@ -15,6 +15,7 @@ final readonly class GetOrderByTableResponse
         public string $tableId,
         public string $openedByUserId,
         public int $diners,
+        public int $totalPaid,
         public ?string $discountType,
         public int $discountValue,
         public int $discountAmount,
@@ -23,7 +24,7 @@ final readonly class GetOrderByTableResponse
         public array $lines,
     ) {}
 
-    public static function create(Order $order, array $lines): self
+    public static function create(Order $order, array $lines, int $totalPaid): self
     {
         $totals = $order->computeTotals($lines);
 
@@ -33,6 +34,7 @@ final readonly class GetOrderByTableResponse
             $order->tableId()->getValue(),
             $order->openedByUserId()->getValue(),
             $order->diners()->getValue(),
+            $totalPaid,
             $order->discountType(),
             $order->discountValue(),
             $totals->orderDiscount->getValue(),
@@ -52,6 +54,7 @@ final readonly class GetOrderByTableResponse
             'table_id' => $this->tableId,
             'opened_by_user_id' => $this->openedByUserId,
             'diners' => $this->diners,
+            'total_paid' => $this->totalPaid,
             'discount_type' => $this->discountType,
             'discount_value' => $this->discountValue,
             'discount_amount' => $this->discountAmount,
@@ -67,6 +70,8 @@ final readonly class GetOrderByTableResponse
                 'discount_value' => $line->discountValue(),
                 'discount_amount' => $line->discountAmount(),
                 'sent_to_kitchen' => $line->isSentToKitchen(),
+                'paid' => $line->isPaid(),
+                'paid_at' => $line->paidAt()?->format('Y-m-d H:i:s'),
             ], $this->lines),
         ];
     }
