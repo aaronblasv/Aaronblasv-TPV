@@ -19,4 +19,9 @@ final readonly class SaleServiceWindowLine
         public int $taxAmount,
         public int $lineTotal,
     ) {}
+
+    public function taxPercentageAsPercentage(): float
+    {
+        return $this->taxPercentage / 100;
+    }
 }

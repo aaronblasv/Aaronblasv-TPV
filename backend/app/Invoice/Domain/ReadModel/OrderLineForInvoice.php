@@ -23,6 +23,6 @@ final readonly class OrderLineForInvoice
 
     public function taxAmount(): int
     {
-        return (int) round($this->subtotalAfterDiscount() * $this->taxPercentage / 100);
+        return (int) round($this->subtotalAfterDiscount() * $this->taxPercentage / 10000);
     }
 }

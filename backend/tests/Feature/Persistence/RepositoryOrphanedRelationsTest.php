@@ -71,7 +71,7 @@ class RepositoryOrphanedRelationsTest extends TestCase
             'user_id' => $openedByUserId,
             'quantity' => 1,
             'price' => 1200,
-            'tax_percentage' => 10,
+            'tax_percentage' => 1000,
             'discount_type' => null,
             'discount_value' => 0,
             'discount_amount' => 0,
@@ -188,7 +188,7 @@ class RepositoryOrphanedRelationsTest extends TestCase
         return DB::table('taxes')->insertGetId([
             'uuid' => (string) Str::uuid(),
             'name' => 'IVA 10%',
-            'percentage' => 10,
+            'percentage' => 1000,
             'restaurant_id' => $restaurantId,
             'created_at' => now(),
             'updated_at' => now(),

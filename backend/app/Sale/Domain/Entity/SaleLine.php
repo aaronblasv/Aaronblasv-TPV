@@ -101,6 +101,7 @@ class SaleLine
     public function quantity(): int { return $this->quantity->getValue(); }
     public function price(): int { return $this->price; }
     public function taxPercentage(): int { return $this->taxPercentage; }
+    public function taxPercentageAsPercentage(): float { return $this->taxPercentage / 100; }
     public function lineSubtotal(): int { return $this->lineSubtotal; }
     public function taxAmount(): int { return $this->taxAmount; }
     public function discountType(): ?string { return $this->discountType; }

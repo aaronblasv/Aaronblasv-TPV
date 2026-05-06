@@ -62,7 +62,7 @@ class AddOrderLineTest extends TestCase
         $tax = Tax::dddCreate(
             Uuid::generate(),
             TaxName::create('IVA 10%'),
-            TaxPercentage::create(10),
+            TaxPercentage::fromPercentage(10),
             $restaurantId,
         );
 
@@ -81,7 +81,7 @@ class AddOrderLineTest extends TestCase
                 && $line->productId()->getValue() === $productUuid
                 && $line->userId()->getValue() === $userUuid
                 && $line->price() === 450
-                && $line->taxPercentage() === 10
+                && $line->taxPercentage() === 1000
                 && $line->quantity()->getValue() === 3;
         }));
 
@@ -103,7 +103,7 @@ class AddOrderLineTest extends TestCase
         $this->assertSame($userUuid, $response->userId);
         $this->assertSame(3, $response->quantity);
         $this->assertSame(450, $response->price);
-        $this->assertSame(10, $response->taxPercentage);
+        $this->assertSame(10.0, $response->taxPercentage);
     }
 
     private function transactionManager(): TransactionManagerInterface

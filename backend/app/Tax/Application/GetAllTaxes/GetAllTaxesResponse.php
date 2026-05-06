@@ -11,7 +11,7 @@ final readonly class GetAllTaxesResponse
     private function __construct(
         public string $uuid,
         public string $name,
-        public int $percentage,
+        public float $percentage,
     ) {}
 
     public static function create(Tax $tax): self
@@ -19,12 +19,12 @@ final readonly class GetAllTaxesResponse
         return new self(
             $tax->uuid()->getValue(),
             $tax->name()->getValue(),
-            $tax->percentage()->getValue(),
+            $tax->percentage()->asPercentage(),
         );
     }
 
     /**
-     * @return array<string, string|int>
+     * @return array<string, string|float>
      */
     public function toArray(): array
     {

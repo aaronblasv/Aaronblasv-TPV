@@ -281,7 +281,12 @@ class OrderLine implements HasDomainEventsInterface
 
     public function taxAmount(): int
     {
-        return (int) round($this->subtotalAfterDiscount() * $this->taxPercentage / 100);
+        return (int) round($this->subtotalAfterDiscount() * $this->taxPercentage / 10000);
+    }
+
+    public function taxPercentageAsPercentage(): float
+    {
+        return $this->taxPercentage / 100;
     }
 
     public function total(): int

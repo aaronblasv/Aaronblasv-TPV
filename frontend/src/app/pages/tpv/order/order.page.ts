@@ -357,7 +357,7 @@ export class OrderPage implements OnInit {
   }
 
   getLineTax(line: OrderLine): number {
-    return this.getLineSubtotal(line) * line.tax_percentage / 100;
+    return Math.round(this.getLineSubtotal(line) * line.tax_percentage / 100);
   }
 
   getLineTotal(line: OrderLine): number {

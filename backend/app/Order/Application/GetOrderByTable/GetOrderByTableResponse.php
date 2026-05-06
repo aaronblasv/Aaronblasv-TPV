@@ -65,7 +65,7 @@ final readonly class GetOrderByTableResponse
                 'user_id' => $line->userId()->getValue(),
                 'quantity' => $line->quantity()->getValue(),
                 'price' => $line->price(),
-                'tax_percentage' => $line->taxPercentage(),
+                'tax_percentage' => $line->taxPercentageAsPercentage(),
                 'discount_type' => $line->discountType(),
                 'discount_value' => $line->discountValue(),
                 'discount_amount' => $line->discountAmount(),

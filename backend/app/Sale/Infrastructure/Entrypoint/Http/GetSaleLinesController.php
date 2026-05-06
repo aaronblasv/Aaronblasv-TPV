@@ -24,7 +24,7 @@ class GetSaleLinesController
                 'product_name' => $l->productName,
                 'quantity' => $l->quantity,
                 'price' => $l->price,
-                'tax_percentage' => $l->taxPercentage,
+                'tax_percentage' => $l->taxPercentageAsPercentage(),
                 'line_subtotal' => $l->lineSubtotal,
                 'tax_amount' => $l->taxAmount,
                 'discount_type' => $l->discountType,

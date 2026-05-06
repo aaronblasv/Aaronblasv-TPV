@@ -24,7 +24,7 @@ class UpdateTaxController
         $tax = ($this->useCase)(
             $uuid,
             $validated['name'],
-            $validated['percentage'],
+            (float) $validated['percentage'],
             $request->user()->restaurant_id,
         );
 

@@ -23,7 +23,7 @@ class CreateTaxController
 
         $tax = ($this->useCase)(
             $validated['name'],
-            $validated['percentage'],
+            (float) $validated['percentage'],
             $request->user()->restaurant_id,
         );
 

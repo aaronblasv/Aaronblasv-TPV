@@ -14,7 +14,7 @@ final readonly class AddOrderLineResponse
         public string $userId,
         public int $quantity,
         public int $price,
-        public int $taxPercentage,
+        public float $taxPercentage,
         public ?string $discountType,
         public int $discountValue,
         public int $discountAmount,
@@ -28,7 +28,7 @@ final readonly class AddOrderLineResponse
             $line->userId()->getValue(),
             $line->quantity()->getValue(),
             $line->price(),
-            $line->taxPercentage(),
+            $line->taxPercentageAsPercentage(),
             $line->discountType(),
             $line->discountValue(),
             $line->discountAmount(),
@@ -36,7 +36,7 @@ final readonly class AddOrderLineResponse
     }
 
     /**
-     * @return array<string, string|int>
+     * @return array<string, string|int|float|null>
      */
     public function toArray(): array
     {

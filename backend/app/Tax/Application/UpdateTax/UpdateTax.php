@@ -15,7 +15,7 @@ class UpdateTax
         private TaxRepositoryInterface $repository,
     ) {}
 
-    public function __invoke(string $uuid, string $name, int $percentage, int $restaurantId): UpdateTaxResponse
+    public function __invoke(string $uuid, string $name, float $percentage, int $restaurantId): UpdateTaxResponse
     {
         $tax = $this->repository->findById($uuid, $restaurantId);
 
@@ -25,7 +25,7 @@ class UpdateTax
 
         $tax->dddUpdate(
             TaxName::create($name),
-            TaxPercentage::create($percentage),
+            TaxPercentage::fromPercentage($percentage),
         );
 
         $this->repository->save($tax);

@@ -20,4 +20,9 @@ final readonly class SaleLineDetail
         public int $lineTotal,
         public int $refundedQuantity,
     ) {}
+
+    public function taxPercentageAsPercentage(): float
+    {
+        return $this->taxPercentage / 100;
+    }
 }

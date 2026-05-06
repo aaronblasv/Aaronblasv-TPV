@@ -16,12 +16,12 @@ class CreateTax
         private TaxRepositoryInterface $repository,
     ) {}
 
-    public function __invoke(string $name, int $percentage, int $restaurantId): CreateTaxResponse
+    public function __invoke(string $name, float $percentage, int $restaurantId): CreateTaxResponse
     {
         $tax = Tax::dddCreate(
             Uuid::generate(),
             TaxName::create($name),
-            TaxPercentage::create($percentage),
+            TaxPercentage::fromPercentage($percentage),
             $restaurantId,
         );
 

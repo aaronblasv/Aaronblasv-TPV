@@ -367,7 +367,7 @@ export class FloorPage implements OnInit, OnDestroy {
     }
 
     const taxBeforeOrderDiscount = lines.reduce(
-      (sum, line) => sum + this.getLineSubtotal(line.price, line.quantity, line.discount_amount) * line.tax_percentage / 100,
+      (sum, line) => sum + Math.round(this.getLineSubtotal(line.price, line.quantity, line.discount_amount) * line.tax_percentage / 100),
       0,
     );
 
