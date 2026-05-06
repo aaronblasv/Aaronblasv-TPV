@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tax\Application\UpdateTax;
 
+use App\Tax\Domain\Exception\TaxNameAlreadyExistsException;
 use App\Tax\Domain\Exception\TaxNotFoundException;
 use App\Tax\Domain\Interfaces\TaxRepositoryInterface;
 use App\Tax\Domain\ValueObject\TaxName;
@@ -21,6 +22,10 @@ class UpdateTax
 
         if ($tax === null) {
             throw new TaxNotFoundException($uuid);
+        }
+
+        if ($this->repository->existsByName($name, $restaurantId, $uuid)) {
+            throw new TaxNameAlreadyExistsException($name);
         }
 
         $tax->dddUpdate(

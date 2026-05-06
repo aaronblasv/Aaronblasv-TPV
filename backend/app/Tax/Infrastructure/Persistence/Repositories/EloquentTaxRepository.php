@@ -19,7 +19,7 @@ class EloquentTaxRepository implements TaxRepositoryInterface
         return $this->model->newQuery()
             ->where('restaurant_id', $restaurantId)
             ->get()
-            ->map(fn(EloquentTax $tax) => $this->toDomain($tax))
+            ->map(fn (EloquentTax $tax) => $this->toDomain($tax))
             ->toArray();
     }
 
@@ -33,6 +33,19 @@ class EloquentTaxRepository implements TaxRepositoryInterface
                 'restaurant_id' => $tax->restaurantId(),
             ]
         );
+    }
+
+    public function existsByName(string $name, int $restaurantId, ?string $excludeUuid = null): bool
+    {
+        $query = $this->model->newQuery()
+            ->where('restaurant_id', $restaurantId)
+            ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($name))]);
+
+        if ($excludeUuid !== null) {
+            $query->where('uuid', '!=', $excludeUuid);
+        }
+
+        return $query->exists();
     }
 
     public function findById(string $id, int $restaurantId): ?Tax

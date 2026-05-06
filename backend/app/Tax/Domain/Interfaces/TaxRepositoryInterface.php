@@ -10,6 +10,8 @@ interface TaxRepositoryInterface
 {
     public function save(Tax $tax): void;
 
+    public function existsByName(string $name, int $restaurantId, ?string $excludeUuid = null): bool;
+
     public function findById(string $id, int $restaurantId): ?Tax;
 
     public function findAll(int $restaurantId): array;
