@@ -24,7 +24,7 @@ La UI state no credencial se separa de la autenticación:
 - `backoffice_acting_user` pasa a `sessionStorage`.
 - `tpv-active-user-v1` pasa a `sessionStorage`.
 
-Durante la transición se mantiene el campo `token` en la respuesta de login para compatibilidad temporal, aunque el frontend ya no lo usa.
+El token legacy se sigue generando internamente en `LoginUser` para no romper la abstracción de dominio y conservar una salida futura para clientes no-cookie, pero ya no se expone en el body HTTP del login.
 
 ## Consequences
 ### Positivas
@@ -42,3 +42,4 @@ Durante la transición se mantiene el campo `token` en la respuesta de login par
 - Mantener Bearer en `localStorage`: descartado por exposición a XSS.
 - JWT/cookie custom: descartado por duplicar responsabilidades ya resueltas por Sanctum.
 - Mover también el UI state a cookie HttpOnly: descartado porque la UI necesita leer ese estado desde JS.
+- Eliminar `LaravelTokenGenerator`: descartado por ahora; mantenerlo cuesta poco y deja abierta la opción de clientes nativos o integraciones no basadas en cookie sin rehacer el dominio.

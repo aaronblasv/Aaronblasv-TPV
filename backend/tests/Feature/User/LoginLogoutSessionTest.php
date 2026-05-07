@@ -17,7 +17,7 @@ class LoginLogoutSessionTest extends TestCase
 
     private const FRONTEND_URL = 'http://localhost:4200';
 
-    public function test_login_creates_session_and_returns_role_and_token_for_transition(): void
+    public function test_login_creates_session_and_returns_exact_role_payload(): void
     {
         $user = $this->createAdmin();
 
@@ -34,8 +34,7 @@ class LoginLogoutSessionTest extends TestCase
             ]);
 
         $response->assertOk()
-            ->assertJsonStructure(['role', 'token'])
-            ->assertJson(['role' => 'admin']);
+            ->assertExactJson(['role' => 'admin']);
 
         $this->assertAuthenticatedAs($user, 'web');
         $response->assertCookie(config('session.cookie'));

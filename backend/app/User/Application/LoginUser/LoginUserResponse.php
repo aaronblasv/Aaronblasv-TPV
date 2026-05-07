@@ -27,7 +27,6 @@ final readonly class LoginUserResponse
     public function toArray(): array
     {
         return [
-            'token' => $this->token,
             'role' => $this->role,
         ];
     }
