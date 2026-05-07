@@ -17,11 +17,7 @@ export class NoAccessPage {
   logout() {
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/login']),
-      error: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        this.router.navigate(['/login']);
-      }
+      error: () => this.router.navigate(['/login'])
     });
   }
 }

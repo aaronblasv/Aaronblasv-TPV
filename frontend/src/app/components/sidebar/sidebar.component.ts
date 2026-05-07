@@ -51,27 +51,26 @@ export class SidebarComponent implements OnInit {
 }
 
   ngOnInit() {
-    const role = this.authService.getRole();
-    this.canSwitchToTpv = role === 'admin' || role === 'supervisor';
-
     this.isTpvMenuOpen = this.isTpvRouteActive();
 
     this.authService.me().subscribe({
-      next: (user) => this.currentUser = user,
+      next: (user) => {
+        this.currentUser = user;
+        this.canSwitchToTpv = user?.role === 'admin' || user?.role === 'supervisor';
+      },
       error: () => {}
-    });  
+    });
   }
 
   logout() {
     this.releaseFocus();
     this.authService.logout().subscribe({
       next: () => {
+        this.backofficeSessionService.clearActingUser();
         this.router.navigate(['/login']);
       },
       error: () => {
         this.backofficeSessionService.clearActingUser();
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
         this.router.navigate(['/login']);
       }
     });

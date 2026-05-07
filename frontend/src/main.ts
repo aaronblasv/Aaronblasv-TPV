@@ -8,6 +8,7 @@ import localeEs from '@angular/common/locales/es';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
+import { CredentialsInterceptor } from './app/providers/credentials.interceptor';
 import { InterceptorProvider } from './app/providers/interceptor';
 
 registerLocaleData(localeEs);
@@ -15,6 +16,7 @@ registerLocaleData(localeEs);
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: HTTP_INTERCEPTORS, useClass: CredentialsInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: InterceptorProvider, multi: true },
     { provide: LOCALE_ID, useValue: 'es' },
     provideIonicAngular({ mode: 'ios', animated: false }),

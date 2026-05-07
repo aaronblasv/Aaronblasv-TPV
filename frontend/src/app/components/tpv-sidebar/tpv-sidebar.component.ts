@@ -158,8 +158,14 @@ export class TpvSidebarComponent implements OnInit, OnDestroy {
   }
 
   private syncRoleFlags(): void {
-    const role = this.authService.getAuthenticatedRole();
-    this.canGoBackoffice = role === 'admin' || role === 'supervisor';
+    this.authService.me().subscribe({
+      next: (user: { role?: string }) => {
+        this.canGoBackoffice = user?.role === 'admin' || user?.role === 'supervisor';
+      },
+      error: () => {
+        this.canGoBackoffice = false;
+      },
+    });
   }
 
   private showFeedback(message: string): void {

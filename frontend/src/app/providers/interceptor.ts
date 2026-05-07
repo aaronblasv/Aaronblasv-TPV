@@ -8,20 +8,20 @@ export class InterceptorProvider implements HttpInterceptor {
   constructor(private backofficeSessionService: BackofficeSessionService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(this.setHeader(request));
+    return next.handle(this.setHeaders(request));
   }
 
-  private setHeader(request: HttpRequest<any>): HttpRequest<any> {
-    const token = localStorage.getItem('token');
+  private setHeaders(request: HttpRequest<any>): HttpRequest<any> {
     const actingUserUuid = this.backofficeSessionService.getActingUserUuid();
+    const xsrfToken = this.readXsrfToken();
 
-    const headers: any = {
+    const headers: Record<string, string> = {
       Accept: 'application/json',
       'Accept-Language': 'es',
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (xsrfToken) {
+      headers['X-XSRF-TOKEN'] = xsrfToken;
     }
 
     if (actingUserUuid) {
@@ -29,5 +29,11 @@ export class InterceptorProvider implements HttpInterceptor {
     }
 
     return request.clone({ setHeaders: headers });
+  }
+
+  private readXsrfToken(): string | null {
+    const match = document.cookie.match(/(^|;)\s*XSRF-TOKEN=([^;]+)/);
+
+    return match ? decodeURIComponent(match[2]) : null;
   }
 }

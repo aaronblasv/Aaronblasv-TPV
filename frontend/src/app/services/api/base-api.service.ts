@@ -62,7 +62,7 @@ export abstract class BaseApiService {
    *
    */
   private postHttpCall(endpoint: string, params: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(this.apiUrl + endpoint, params)
+    return this.http.post<ApiResponse>(this.apiUrl + endpoint, params, { withCredentials: true })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
@@ -72,7 +72,7 @@ export abstract class BaseApiService {
    *
    */
   private putHttpCall(endpoint: string, params: any): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(this.apiUrl + endpoint, params)
+    return this.http.put<ApiResponse>(this.apiUrl + endpoint, params, { withCredentials: true })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
@@ -82,7 +82,7 @@ export abstract class BaseApiService {
    *
    */
   private patchHttpCall(endpoint: string, params?: any): Observable<ApiResponse> {
-    return this.http.patch<ApiResponse>(this.apiUrl + endpoint, params)
+    return this.http.patch<ApiResponse>(this.apiUrl + endpoint, params, { withCredentials: true })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
@@ -92,7 +92,7 @@ export abstract class BaseApiService {
    *
    */
   private deleteHttpCall(endpoint: string, params?: any): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(this.apiUrl + endpoint, {params})
+    return this.http.delete<ApiResponse>(this.apiUrl + endpoint, { params, withCredentials: true })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
@@ -102,7 +102,7 @@ export abstract class BaseApiService {
    *
    */
   private getHttpCall(endpoint: string, params?: any): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(this.apiUrl + endpoint, {params})
+    return this.http.get<ApiResponse>(this.apiUrl + endpoint, { params, withCredentials: true })
       .pipe(catchError((error) => this.handleError(error)));
   }
 

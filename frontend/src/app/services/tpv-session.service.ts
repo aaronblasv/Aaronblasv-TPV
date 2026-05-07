@@ -9,7 +9,7 @@ export class TpvSessionService {
 
   getUser(): User | null {
     try {
-      const raw = localStorage.getItem(this.storageKey);
+      const raw = sessionStorage.getItem(this.storageKey);
       return raw ? JSON.parse(raw) as User : null;
     } catch {
       return null;
@@ -18,7 +18,7 @@ export class TpvSessionService {
 
   setUser(user: User) {
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(user));
+      sessionStorage.setItem(this.storageKey, JSON.stringify(user));
     } catch {
       // no-op
     }
@@ -26,7 +26,7 @@ export class TpvSessionService {
 
   clear() {
     try {
-      localStorage.removeItem(this.storageKey);
+      sessionStorage.removeItem(this.storageKey);
     } catch {
       // no-op
     }

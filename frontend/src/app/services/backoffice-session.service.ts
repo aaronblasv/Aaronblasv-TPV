@@ -8,11 +8,11 @@ export class BackofficeSessionService {
   private readonly actingUserStorageKey = 'backoffice_acting_user';
 
   setActingUser(user: User): void {
-    localStorage.setItem(this.actingUserStorageKey, JSON.stringify(user));
+    sessionStorage.setItem(this.actingUserStorageKey, JSON.stringify(user));
   }
 
   getActingUser(): User | null {
-    const rawValue = localStorage.getItem(this.actingUserStorageKey);
+    const rawValue = sessionStorage.getItem(this.actingUserStorageKey);
 
     if (!rawValue) {
       return null;
@@ -32,10 +32,10 @@ export class BackofficeSessionService {
   }
 
   getEffectiveRole(): string | null {
-    return this.getActingUser()?.role ?? localStorage.getItem('role');
+    return this.getActingUser()?.role ?? null;
   }
 
   clearActingUser(): void {
-    localStorage.removeItem(this.actingUserStorageKey);
+    sessionStorage.removeItem(this.actingUserStorageKey);
   }
 }

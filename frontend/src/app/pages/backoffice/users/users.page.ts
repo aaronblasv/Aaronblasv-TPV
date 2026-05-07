@@ -47,7 +47,14 @@ export class UsersPage implements OnInit {
   ];
 
   ngOnInit() {
-    this.canManageUsers = this.authService.getRole() === 'admin';
+    this.authService.me().subscribe({
+      next: (user: { role?: string }) => {
+        this.canManageUsers = user?.role === 'admin';
+      },
+      error: () => {
+        this.canManageUsers = false;
+      },
+    });
     this.loadUsers();
   }
 
