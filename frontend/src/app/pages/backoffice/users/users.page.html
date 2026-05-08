@@ -13,7 +13,7 @@
           <div class="bo-mini-stats">
             <div class="bo-mini-stat">
               <span>Usuarios</span>
-              <strong>{{ users.length }}</strong>
+              <strong>{{ items.length }}</strong>
               <small>Personal del restaurante</small>
             </div>
             <div class="bo-mini-stat">
@@ -30,6 +30,10 @@
         </div>
       </section>
 
+      <div class="table-card search-card">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar usuario, email o rol..."></app-search-input>
+      </div>
+
       <div class="table-card">
         <table>
           <thead>
@@ -42,13 +46,13 @@
             </tr>
           </thead>
           <tbody>
-            @for (user of users; track user.uuid) {
+            @for (user of filteredItems; track user.uuid) {
               <tr>
                 <td>
                   @if (user.image_src) {
                     <img [src]="user.image_src" alt="" class="user-avatar-img" />
                   } @else {
-                    <div class="user-avatar-placeholder">{{ user.name?.charAt(0) | uppercase }}</div>
+                    <div class="user-avatar-placeholder">{{ user.name.charAt(0) | uppercase }}</div>
                   }
                 </td>
                 <td>{{ user.name }}</td>
@@ -71,7 +75,7 @@
 
       <app-form-modal
         [visible]="showForm"
-        [title]="editingUser ? 'Editar Usuario' : 'Nuevo Usuario'"
+        [title]="editingItem ? 'Editar Usuario' : 'Nuevo Usuario'"
         [errors]="errors"
         (onSave)="save()"
         (onCancel)="closeForm()"
@@ -102,7 +106,7 @@
           }
         </div>
 
-        @if (!editingUser) {
+        @if (!editingItem) {
           <div class="form-group">
             <label>Contraseña</label>
             <input

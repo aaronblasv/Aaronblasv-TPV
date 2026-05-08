@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Table } from '../../types/table.model';
+import { Table, TableFormData } from '../../types/table.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,11 +16,11 @@ export class TableService {
     return this.http.get<Table[]>(this.apiUrl);
   }
 
-  create(data: Partial<Table>): Observable<Table> {
+  create(data: TableFormData): Observable<Table> {
     return this.http.post<Table>(this.apiUrl, data);
   }
 
-  update(uuid: string, data: Partial<Table>): Observable<Table> {
+  update(uuid: string, data: TableFormData): Observable<Table> {
     return this.http.put<Table>(`${this.apiUrl}/${uuid}`, data);
   }
 

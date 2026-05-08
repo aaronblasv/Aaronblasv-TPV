@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User } from '../../types/user.model';
+import { User, UserFormData } from '../../types/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,11 +20,11 @@ export class UserService {
     return this.http.get<User[]>(`${environment.apiUrl}/tpv/users`);
   }
 
-  create(data: Partial<User> & { password: string }): Observable<User> {
+  create(data: UserFormData): Observable<User> {
     return this.http.post<User>(this.apiUrl, data);
   }
 
-  update(uuid: string, data: Partial<User>): Observable<User> {
+  update(uuid: string, data: Partial<UserFormData>): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${uuid}`, data);
   }
 

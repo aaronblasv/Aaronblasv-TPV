@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Tax } from '../../types/tax.model';
+import { Tax, TaxFormData } from '../../types/tax.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,12 +20,12 @@ export class TaxService {
     return this.http.get<Tax[]>(`${environment.apiUrl}/tpv/taxes`);
   }
 
-  create(name: string, percentage: number): Observable<Tax> {
-    return this.http.post<Tax>(this.apiUrl, { name, percentage });
+  create(data: TaxFormData): Observable<Tax> {
+    return this.http.post<Tax>(this.apiUrl, data);
   }
 
-  update(uuid: string, name: string, percentage: number): Observable<Tax> {
-    return this.http.put<Tax>(`${this.apiUrl}/${uuid}`, { name, percentage });
+  update(uuid: string, data: TaxFormData): Observable<Tax> {
+    return this.http.put<Tax>(`${this.apiUrl}/${uuid}`, data);
   }
 
   delete(uuid: string): Observable<void> {

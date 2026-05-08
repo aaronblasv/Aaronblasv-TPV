@@ -1,16 +1,21 @@
-import { Component, OnInit, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { IonContent } from '@ionic/angular/standalone';
+import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
+import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+import { SearchInputComponent } from '../../../components/search-input/search-input.component';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
-import { ProductService } from '../../../services/api/product.service';
 import { FamilyService } from '../../../services/api/family.service';
+import { ProductService } from '../../../services/api/product.service';
 import { TaxService } from '../../../services/api/tax.service';
 import { UploadService } from '../../../services/api/upload.service';
-import { forkJoin } from 'rxjs';
-import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
-import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
-import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
+import { Family } from '../../../types/family.model';
+import { Product, ProductFormData } from '../../../types/product.model';
+import { Tax } from '../../../types/tax.model';
+import { BaseCrudPage } from '../shared/base-crud-page';
 
 @Component({
   selector: 'app-products',
@@ -18,137 +23,132 @@ import { ActionButtonsComponent } from '../../../components/action-buttons/actio
   styleUrls: ['./products.page.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, FormModalComponent, ConfirmModalComponent, ActionButtonsComponent]
+  imports: [
+    IonContent,
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    FormModalComponent,
+    ConfirmModalComponent,
+    ActionButtonsComponent,
+    SearchInputComponent,
+  ]
 })
-export class ProductsPage implements OnInit {
+export class ProductsPage extends BaseCrudPage<Product, ProductFormData> {
 
-  private productService = inject(ProductService);
-  private familyService = inject(FamilyService);
-  private taxService = inject(TaxService);
-  private uploadService = inject(UploadService);
+  private readonly productService = inject(ProductService);
+  private readonly familyService = inject(FamilyService);
+  private readonly taxService = inject(TaxService);
+  private readonly uploadService = inject(UploadService);
 
-  products: any[] = [];
-  families: any[] = [];
-  taxes: any[] = [];
-  showForm = false;
-  editingProduct: any = null;
-  errors: { [key: string]: string } = {};
-  pendingDeleteUuid: string | null = null;
-  showConfirm = false;
+  protected entityLabel = 'Producto';
 
-  form = {
-    name: '',
-    price: 0,
-    stock: 0,
-    family_id: '',
-    tax_id: '',
-    image_src: '' as string | null,
-  };
+  families: Family[] = [];
+  taxes: Tax[] = [];
 
-  ngOnInit() {
-    this.loadData();
+  protected emptyForm(): ProductFormData {
+    return {
+      name: '',
+      price: 0,
+      stock: 0,
+      family_id: '',
+      tax_id: '',
+      image_src: null,
+    };
   }
 
-  requestDelete(uuid: string) {
-    this.pendingDeleteUuid = uuid;
-    this.showConfirm = true;
+  protected toForm(product: Product): ProductFormData {
+    return {
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      family_id: product.family_id,
+      tax_id: product.tax_id,
+      image_src: product.image_src,
+    };
   }
 
+  protected loadData(): void {
+    this.loading = true;
 
-  loadData() {
     forkJoin({
       products: this.productService.getAll(),
       families: this.familyService.getAll(),
       taxes: this.taxService.getAll(),
     }).subscribe({
       next: ({ products, families, taxes }) => {
-        console.log('products:', products);
-        console.log('families:', families);
-        console.log('taxes:', taxes);
-        this.products = products;
+        this.items = products;
         this.families = families;
         this.taxes = taxes;
+        this.loading = false;
       },
-      error: (err: any) => console.error('forkJoin error:', err)
+      error: () => this.handleLoadError('No se pudieron cargar los productos.')
     });
   }
 
-  get productsByFamily(): { family: any, products: any[] }[] {
-    return this.families.map(family => ({
-      family,
-      products: this.products.filter(p => p.family_id === family.uuid)
-    })).filter(group => group.products.length > 0);
+  protected createRequest(formData: ProductFormData) {
+    return this.productService.create(formData);
   }
 
-  openForm(product?: any) {
-    this.editingProduct = product ?? null;
-    this.form = {
-      name: product?.name ?? '',
-      price: product?.price ?? 0,
-      stock: product?.stock ?? 0,
-      family_id: product?.family_id ?? '',
-      tax_id: product?.tax_id ?? '',
-      image_src: product?.image_src ?? '',
-    };
-        this.showForm = true;
+  protected updateRequest(uuid: string, formData: ProductFormData) {
+    return this.productService.update(uuid, formData);
   }
 
-  closeForm() {
-    this.showForm = false;
-    this.editingProduct = null;
-    this.errors = {};
+  protected deleteRequest(uuid: string) {
+    return this.productService.delete(uuid);
   }
 
-  save() {
-    this.errors = {};
-    const action = this.editingProduct
-      ? this.productService.update(this.editingProduct.uuid, this.form)
-      : this.productService.create(this.form);
-
-    action.subscribe({
-      next: () => { this.loadData(); this.closeForm(); },
-      error: (err: any) => {
-        if (err.status === 422) {
-          Object.keys(err.error.errors).forEach(key => {
-            this.errors[key] = err.error.errors[key][0];
-          });
-        }
-      }
-    });
+  protected searchableFields(product: Product): Array<string | number | null | undefined> {
+    return [
+      product.name,
+      product.stock,
+      this.families.find((family) => family.uuid === product.family_id)?.name,
+      this.taxes.find((tax) => tax.uuid === product.tax_id)?.name,
+    ];
   }
 
+  get productsByFamily(): Array<{ family: Family; products: Product[] }> {
+    return this.families
+      .map((family) => ({
+        family,
+        products: this.filteredItems.filter((product) => product.family_id === family.uuid),
+      }))
+      .filter((group) => group.products.length > 0);
+  }
 
-  onFileSelected(event: Event) {
+  onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+
+    if (!file) {
+      return;
+    }
+
     this.uploadService.uploadImage(file).subscribe({
-      next: (url) => this.form.image_src = url,
-      error: (err: any) => console.error('Upload error:', err),
+      next: (url) => {
+        this.form.image_src = url;
+        this.alerts.success('Imagen subida correctamente.');
+      },
+      error: () => this.alerts.error('No se pudo subir la imagen.'),
     });
   }
 
-  toggle(uuid: string) {
-    const product = this.products.find(p => p.uuid === uuid);
+  toggle(uuid: string): void {
+    const product = this.items.find((item) => item.uuid === uuid);
+
+    if (!product) {
+      return;
+    }
+
     const action = product.active
       ? this.productService.deactivate(uuid)
       : this.productService.activate(uuid);
 
     action.subscribe({
-      next: () => this.loadData(),
-      error: (err: any) => console.error(err)
+      next: () => {
+        this.loadData();
+        this.alerts.success(product.active ? 'Producto desactivado.' : 'Producto activado.');
+      },
+      error: () => this.alerts.error('No se pudo actualizar el estado del producto.')
     });
-  }
-
-  confirmDelete() {
-    if (!this.pendingDeleteUuid) return;
-    this.productService.delete(this.pendingDeleteUuid).subscribe({
-      next: () => { this.loadData(); this.closeConfirm(); },
-      error: (err: any) => console.error(err)
-    });
-  }
-
-  closeConfirm() {
-    this.showConfirm = false;
-    this.pendingDeleteUuid = null;
   }
 }

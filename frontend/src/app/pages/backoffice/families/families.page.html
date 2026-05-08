@@ -13,7 +13,7 @@
           <div class="bo-mini-stats">
             <div class="bo-mini-stat">
               <span>Familias</span>
-              <strong>{{ families.length }}</strong>
+              <strong>{{ items.length }}</strong>
               <small>Grupos activos e inactivos</small>
             </div>
             <div class="bo-mini-stat">
@@ -26,6 +26,10 @@
         </div>
       </section>
 
+      <div class="table-card search-card">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar familia..."></app-search-input>
+      </div>
+
       <div class="table-card">
         <table>
           <thead>
@@ -36,7 +40,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (family of families; track family.uuid) {
+            @for (family of filteredItems; track family.uuid) {
               <tr>
                 <td>{{ family.name }}</td>
                 <td>
@@ -49,7 +53,7 @@
                     [showToggle]="true"
                     [isActive]="family.active"
                     (onEdit)="openForm(family)"
-                    (onDelete)="requestDelete(family)"
+                    (onDelete)="openDeleteConfirmation(family)"
                     (onToggle)="toggle(family)"
                   />
                 </td>
@@ -61,7 +65,7 @@
 
       <app-form-modal
         [visible]="showForm"
-        [title]="editingFamily ? 'Editar Familia' : 'Nueva Familia'"
+        [title]="editingItem ? 'Editar Familia' : 'Nueva Familia'"
         [errors]="errors"
         (onSave)="save()"
         (onCancel)="closeForm()"

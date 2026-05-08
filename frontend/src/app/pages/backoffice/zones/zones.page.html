@@ -13,7 +13,7 @@
           <div class="bo-mini-stats">
             <div class="bo-mini-stat">
               <span>Zonas</span>
-              <strong>{{ zones.length }}</strong>
+              <strong>{{ items.length }}</strong>
               <small>Áreas disponibles en sala</small>
             </div>
             <div class="bo-mini-stat">
@@ -26,6 +26,10 @@
         </div>
       </section>
 
+      <div class="table-card search-card">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar zona..."></app-search-input>
+      </div>
+
       <div class="table-card">
         <table>
           <thead>
@@ -35,14 +39,14 @@
             </tr>
           </thead>
           <tbody>
-            @for (zone of zones; track zone.uuid) {
+            @for (zone of filteredItems; track zone.uuid) {
               <tr>
                 <td>{{ zone.name }}</td>
                 <td>
                   <app-action-buttons
                     [showToggle]="false"
                     (onEdit)="openForm(zone)"
-                    (onDelete)="requestDelete(zone)"
+                    (onDelete)="openDeleteConfirmation(zone)"
                   />
                 </td>
               </tr>
@@ -53,7 +57,7 @@
 
       <app-form-modal
         [visible]="showForm"
-        [title]="editingZone ? 'Editar Zona' : 'Nueva Zona'"
+        [title]="editingItem ? 'Editar Zona' : 'Nueva Zona'"
         [errors]="errors"
         (onSave)="save()"
         (onCancel)="closeForm()"

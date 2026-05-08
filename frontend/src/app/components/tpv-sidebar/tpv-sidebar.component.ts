@@ -106,7 +106,7 @@ export class TpvSidebarComponent implements OnInit, OnDestroy {
     this.profileUser = user;
     this.showProfilePinModal = false;
     this.authService.me().subscribe({
-      next: (me: { restaurant_name?: string }) => {
+      next: (me: { restaurant_name?: string | null }) => {
         this.restaurantName = me.restaurant_name ?? '';
       },
       error: () => {

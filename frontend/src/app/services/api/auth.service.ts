@@ -1,9 +1,15 @@
 import { Injectable, Injector, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of, switchMap, tap } from 'rxjs';
+import { ApiResponse } from './base-api.service';
 import { BaseApiService } from './base-api.service';
 import { BackofficeSessionService } from '../backoffice-session.service';
 import { environment } from '../../../environments/environment';
+import { AuthenticatedUser, UserRole } from '../../types/user.model';
+
+interface LoginResponse {
+  role: UserRole | string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -25,10 +31,11 @@ export class AuthService extends BaseApiService {
     return this.rawHttp.get<void>(csrfUrl, { withCredentials: true });
   }
 
-  login(email: string, password: string): Observable<any> {
+  login(email: string, password: string): Observable<LoginResponse> {
     return this.csrfCookie().pipe(
       switchMap(() => this.httpCall('/auth/login', { email, password }, 'post')),
-      tap((response: any) => {
+      map((response) => response as unknown as LoginResponse),
+      tap((response: LoginResponse) => {
         this.backofficeSessionService.clearActingUser();
         if (response?.role) {
           this.authenticatedRoleSignal.set(response.role);
@@ -45,8 +52,9 @@ export class AuthService extends BaseApiService {
     return this.authenticatedRoleSignal();
   }
 
-  logout(): Observable<any> {
+  logout(): Observable<void> {
     return this.httpCall('/auth/logout', null, 'post').pipe(
+      map(() => undefined),
       tap(() => {
         this.backofficeSessionService.clearActingUser();
         this.authenticatedRoleSignal.set(null);
@@ -54,9 +62,10 @@ export class AuthService extends BaseApiService {
     );
   }
 
-  me(): Observable<any> {
+  me(): Observable<AuthenticatedUser> {
     return this.httpCall('/auth/me', null, 'get').pipe(
-      tap((user: any) => {
+      map((response) => response as unknown as AuthenticatedUser),
+      tap((user: AuthenticatedUser) => {
         if (user?.role) {
           this.authenticatedRoleSignal.set(user.role);
         }
@@ -71,7 +80,9 @@ export class AuthService extends BaseApiService {
     );
   }
 
-  register(name: string, email: string, password: string, passwordConfirmation: string): Observable<any> {
-    return this.httpCall('/users', { name, email, password, password_confirmation: passwordConfirmation }, 'post');
+  register(name: string, email: string, password: string, passwordConfirmation: string): Observable<AuthenticatedUser> {
+    return this.httpCall('/users', { name, email, password, password_confirmation: passwordConfirmation }, 'post').pipe(
+      map((response: ApiResponse) => response as unknown as AuthenticatedUser),
+    );
   }
 }

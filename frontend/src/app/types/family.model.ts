@@ -3,3 +3,7 @@ export interface Family {
   name: string;
   active: boolean;
 }
+
+export interface FamilyFormData {
+  name: string;
+}

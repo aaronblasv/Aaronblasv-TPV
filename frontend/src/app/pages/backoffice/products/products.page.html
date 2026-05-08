@@ -26,6 +26,10 @@
         </div>
       </section>
 
+      <div class="table-card search-card">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar producto, familia o impuesto..."></app-search-input>
+      </div>
+
       @for (group of productsByFamily; track group.family.uuid) {
         <div class="table-card">
           <h2 class="family-title">{{ group.family.name }}</h2>
@@ -68,7 +72,7 @@
 
       <app-form-modal
         [visible]="showForm"
-        [title]="editingProduct ? 'Editar Producto' : 'Nuevo Producto'"
+        [title]="editingItem ? 'Editar Producto' : 'Nuevo Producto'"
         [errors]="errors"
         (onSave)="save()"
         (onCancel)="closeForm()"

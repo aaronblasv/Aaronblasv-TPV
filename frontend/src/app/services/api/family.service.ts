@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Family } from '../../types/family.model';
+import { Family, FamilyFormData } from '../../types/family.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,12 +20,12 @@ export class FamilyService {
     return this.http.get<Family[]>(`${environment.apiUrl}/tpv/families`);
   }
 
-  create(name: string): Observable<Family> {
-    return this.http.post<Family>(this.apiUrl, { name, active: true });
+  create(data: FamilyFormData): Observable<Family> {
+    return this.http.post<Family>(this.apiUrl, { ...data, active: true });
   }
 
-  update(uuid: string, name: string): Observable<Family> {
-    return this.http.put<Family>(`${this.apiUrl}/${uuid}`, { name });
+  update(uuid: string, data: FamilyFormData): Observable<Family> {
+    return this.http.put<Family>(`${this.apiUrl}/${uuid}`, data);
   }
 
   activate(uuid: string): Observable<Family> {

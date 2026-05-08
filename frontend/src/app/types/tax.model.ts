@@ -3,3 +3,8 @@ export interface Tax {
   name: string;
   percentage: number;
 }
+
+export interface TaxFormData {
+  name: string;
+  percentage: number;
+}

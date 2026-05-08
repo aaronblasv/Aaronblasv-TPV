@@ -1,112 +1,87 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { IonContent } from '@ionic/angular/standalone';
+import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
+import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+import { SearchInputComponent } from '../../../components/search-input/search-input.component';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { TableService } from '../../../services/api/table.service';
 import { ZoneService } from '../../../services/api/zone.service';
-import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
-import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
-import { forkJoin } from 'rxjs';
-import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+import { Table, TableFormData } from '../../../types/table.model';
+import { Zone } from '../../../types/zone.model';
+import { BaseCrudPage } from '../shared/base-crud-page';
 
 @Component({
   selector: 'app-tables',
   templateUrl: './tables.page.html',
   styleUrls: ['./tables.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent]
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent, SearchInputComponent]
 })
-export class TablesPage implements OnInit {
+export class TablesPage extends BaseCrudPage<Table, TableFormData> {
 
-  private tableService = inject(TableService);
-  private zoneService = inject(ZoneService);
+  private readonly tableService = inject(TableService);
+  private readonly zoneService = inject(ZoneService);
 
-  tables: any[] = [];
-  zones: any[] = [];
-  showForm = false;
-  showConfirm = false;
-  editingTable: any = null;
-  pendingDeleteUuid: string | null = null;
-  errors: { [key: string]: string } = {};
+  protected entityLabel = 'Mesa';
 
-  form = {
-    name: '',
-    zone_id: '',
-  };
+  zones: Zone[] = [];
 
-  ngOnInit() {
-    this.loadData();
+  protected emptyForm(): TableFormData {
+    return {
+      name: '',
+      zone_id: '',
+    };
   }
 
-  loadData() {
+  protected toForm(table: Table): TableFormData {
+    return {
+      name: table.name,
+      zone_id: table.zone_id,
+    };
+  }
+
+  protected loadData(): void {
+    this.loading = true;
+
     forkJoin({
       tables: this.tableService.getAll(),
       zones: this.zoneService.getAll(),
     }).subscribe({
       next: ({ tables, zones }) => {
-        this.tables = tables;
+        this.items = tables;
         this.zones = zones;
+        this.loading = false;
       },
-      error: (err: any) => console.error(err)
+      error: () => this.handleLoadError('No se pudieron cargar las mesas.')
     });
   }
 
-  get tablesByZone(): { zone: any, tables: any[] }[] {
-    return this.zones.map(zone => ({
-      zone,
-      tables: this.tables.filter(t => t.zone_id === zone.uuid)
-    })).filter(group => group.tables.length > 0);
+  protected createRequest(formData: TableFormData) {
+    return this.tableService.create(formData);
   }
 
-  openForm(table?: any) {
-    this.editingTable = table ?? null;
-    this.form = {
-      name: table?.name ?? '',
-      zone_id: table?.zone_id ?? '',
-    };
-    this.showForm = true;
+  protected updateRequest(uuid: string, formData: TableFormData) {
+    return this.tableService.update(uuid, formData);
   }
 
-  closeForm() {
-    this.showForm = false;
-    this.editingTable = null;
-    this.errors = {};
+  protected deleteRequest(uuid: string) {
+    return this.tableService.delete(uuid);
   }
 
-  save() {
-    this.errors = {};
-    const action = this.editingTable
-      ? this.tableService.update(this.editingTable.uuid, this.form)
-      : this.tableService.create(this.form);
-
-    action.subscribe({
-      next: () => { this.loadData(); this.closeForm(); },
-      error: (err: any) => {
-        if (err.status === 422) {
-          Object.keys(err.error.errors).forEach(key => {
-            this.errors[key] = err.error.errors[key][0];
-          });
-        }
-      }
-    });
+  protected searchableFields(table: Table): Array<string | number | null | undefined> {
+    return [table.name, this.zones.find((zone) => zone.uuid === table.zone_id)?.name];
   }
 
-  requestDelete(uuid: string) {
-    this.pendingDeleteUuid = uuid;
-    this.showConfirm = true;
-  }
-
-  confirmDelete() {
-    if (!this.pendingDeleteUuid) return;
-    this.tableService.delete(this.pendingDeleteUuid).subscribe({
-      next: () => { this.loadData(); this.closeConfirm(); },
-      error: (err: any) => console.error(err)
-    });
-  }
-
-  closeConfirm() {
-    this.showConfirm = false;
-    this.pendingDeleteUuid = null;
+  get tablesByZone(): Array<{ zone: Zone; tables: Table[] }> {
+    return this.zones
+      .map((zone) => ({
+        zone,
+        tables: this.filteredItems.filter((table) => table.zone_id === zone.uuid),
+      }))
+      .filter((group) => group.tables.length > 0);
   }
 }

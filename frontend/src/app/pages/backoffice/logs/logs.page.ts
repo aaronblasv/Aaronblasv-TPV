@@ -5,6 +5,7 @@ import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { LogService } from '../../../services/api/log.service';
 import { UserService } from '../../../services/api/user.service';
+import { AlertService } from '../../../services/alert.service';
 import { Log } from '../../../types/log.model';
 import { User } from '../../../types/user.model';
 
@@ -19,6 +20,7 @@ export class LogsPage implements OnInit {
 
   private logService = inject(LogService);
   private userService = inject(UserService);
+  private alerts = inject(AlertService);
 
   logs: Log[] = [];
   users: User[] = [];
@@ -65,9 +67,9 @@ export class LogsPage implements OnInit {
         this.total = data.total ?? this.logs.length;
         this.loading = false;
       },
-      error: (err: any) => {
+      error: () => {
         this.loading = false;
-        console.error(err);
+        this.alerts.error('No se pudieron cargar los logs.');
       }
     });
   }
@@ -77,7 +79,7 @@ export class LogsPage implements OnInit {
       next: (users) => {
         this.users = users.filter(user => user.active).sort((left, right) => left.name.localeCompare(right.name, 'es'));
       },
-      error: (err) => console.error(err),
+      error: () => this.alerts.error('No se pudieron cargar los usuarios para filtrar logs.'),
     });
   }
 

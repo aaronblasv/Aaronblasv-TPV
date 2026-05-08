@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { DashboardService } from '../../../services/api/dashboard.service';
+import { DashboardResponse, DashboardStats, SaleByDay, SaleThisMonth, TopProduct } from '../../../types/dashboard.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,10 +19,10 @@ export class DashboardPage implements OnInit {
 
   loading = true;
 
-  stats = { products: 0, families: 0, taxes: 0, users: 0, sales_this_month: 0, revenue_this_month: 0 };
-  salesThisMonth: any[] = [];
-  topProducts: any[] = [];
-  salesByDay: any[] = [];
+  stats: DashboardStats = { products: 0, families: 0, taxes: 0, users: 0, sales_this_month: 0, revenue_this_month: 0 };
+  salesThisMonth: SaleThisMonth[] = [];
+  topProducts: TopProduct[] = [];
+  salesByDay: SaleByDay[] = [];
 
   quickActions = [
     { label: 'Nuevo producto', icon: 'PR', route: '/products' },
@@ -32,7 +33,7 @@ export class DashboardPage implements OnInit {
 
   ngOnInit() {
     this.dashboardService.getStats().subscribe({
-      next: (data: any) => {
+      next: (data: DashboardResponse) => {
         this.stats = data.stats;
         this.salesThisMonth = data.sales_this_month;
         this.topProducts = data.top_products;
@@ -111,8 +112,8 @@ export class DashboardPage implements OnInit {
     return this.chartPaddingTop + this.chartInnerHeight - (Number(total) / this.chartMaxTotal) * this.chartInnerHeight;
   }
 
-  getBarLabel(d: any): string {
-    const date = new Date(d.day);
+  getBarLabel(day: SaleByDay): string {
+    const date = new Date(day.day);
     return String(date.getDate());
   }
 
@@ -142,7 +143,7 @@ export class DashboardPage implements OnInit {
     return total / this.salesByDay.length;
   }
 
-  get bestSalesDay(): any | null {
+  get bestSalesDay(): SaleByDay | null {
     if (!this.salesByDay.length) {
       return null;
     }

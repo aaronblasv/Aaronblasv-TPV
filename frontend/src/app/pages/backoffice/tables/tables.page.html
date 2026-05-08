@@ -26,6 +26,10 @@
         </div>
       </section>
 
+      <div class="table-card search-card">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar mesa o zona..."></app-search-input>
+      </div>
+
       @if (tablesByZone.length === 0) {
         <div class="empty-state bo-empty-panel">
           <h2>No hay mesas creadas</h2>
@@ -64,7 +68,7 @@
 
       <app-form-modal
         [visible]="showForm"
-        [title]="editingTable ? 'Editar Mesa' : 'Nueva Mesa'"
+        [title]="editingItem ? 'Editar Mesa' : 'Nueva Mesa'"
         [errors]="errors"
         (onSave)="save()"
         (onCancel)="closeForm()"

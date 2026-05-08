@@ -13,7 +13,7 @@
           <div class="bo-mini-stats">
             <div class="bo-mini-stat">
               <span>Ventas</span>
-              <strong>{{ sales.length }}</strong>
+              <strong>{{ filteredSales.length }}</strong>
               <small>Tickets en el rango cargado</small>
             </div>
             <div class="bo-mini-stat">
@@ -27,6 +27,7 @@
 
       <div class="bo-toolbar-card">
       <div class="filter-bar">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar ticket, mesa o usuario..."></app-search-input>
         <div class="filter-group">
           <label>Desde</label>
           <input type="date" [(ngModel)]="from" />
@@ -57,7 +58,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (sale of sales; track sale.uuid) {
+              @for (sale of filteredSales; track sale.uuid) {
                 <tr class="clickable-row" (click)="openDetail(sale)">
                   <td class="ticket-cell">#{{ sale.ticket_number }}</td>
                   <td>{{ sale.table_name }}</td>
@@ -76,7 +77,7 @@
             </tbody>
           </table>
 
-          @if (sales.length === 0) {
+          @if (filteredSales.length === 0) {
             <div class="empty-state">No hay ventas en el rango seleccionado</div>
           }
         }

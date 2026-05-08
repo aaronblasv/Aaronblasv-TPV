@@ -13,7 +13,7 @@
           <div class="bo-mini-stats">
             <div class="bo-mini-stat">
               <span>Impuestos</span>
-              <strong>{{ taxes.length }}</strong>
+              <strong>{{ items.length }}</strong>
               <small>Tipos fiscales disponibles</small>
             </div>
             <div class="bo-mini-stat">
@@ -26,6 +26,10 @@
         </div>
       </section>
 
+      <div class="table-card search-card">
+        <app-search-input [(value)]="searchTerm" placeholder="Buscar impuesto o porcentaje..."></app-search-input>
+      </div>
+
       <div class="table-card">
         <table>
           <thead>
@@ -36,7 +40,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (tax of taxes; track tax.uuid) {
+            @for (tax of filteredItems; track tax.uuid) {
               <tr>
                 <td>{{ tax.name }}</td>
                 <td>{{ tax.percentage }}%</td>
@@ -55,7 +59,7 @@
 
       <app-form-modal
         [visible]="showForm"
-        [title]="editingTax ? 'Editar Impuesto' : 'Nuevo Impuesto'"
+        [title]="editingItem ? 'Editar Impuesto' : 'Nuevo Impuesto'"
         [errors]="errors"
         (onSave)="save()"
         (onCancel)="closeForm()"

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Zone } from '../../types/zone.model';
+import { Zone, ZoneFormData } from '../../types/zone.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,12 +16,12 @@ export class ZoneService {
     return this.http.get<Zone[]>(this.apiUrl);
   }
 
-  create(name: string): Observable<Zone> {
-    return this.http.post<Zone>(this.apiUrl, { name });
+  create(data: ZoneFormData): Observable<Zone> {
+    return this.http.post<Zone>(this.apiUrl, data);
   }
 
-  update(uuid: string, name: string): Observable<Zone> {
-    return this.http.put<Zone>(`${this.apiUrl}/${uuid}`, { name });
+  update(uuid: string, data: ZoneFormData): Observable<Zone> {
+    return this.http.put<Zone>(`${this.apiUrl}/${uuid}`, data);
   }
 
   delete(uuid: string): Observable<void> {

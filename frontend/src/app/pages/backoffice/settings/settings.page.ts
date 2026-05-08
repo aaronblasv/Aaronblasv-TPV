@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { AuthService } from '../../../services/api/auth.service';
+import { AuthenticatedUser } from '../../../types/user.model';
 
 @Component({
   selector: 'app-settings',
@@ -16,12 +17,12 @@ export class SettingsPage implements OnInit {
 
   private authService = inject(AuthService);
 
-  currentUser: any = null;
+  currentUser: AuthenticatedUser | null = null;
   uiScale = 100;
 
   ngOnInit() {
     this.authService.me().subscribe({
-      next: (user: any) => this.currentUser = user,
+      next: (user: AuthenticatedUser) => this.currentUser = user,
       error: () => {}
     });
 
@@ -48,6 +49,11 @@ export class SettingsPage implements OnInit {
       supervisor: 'Supervisor',
       waiter: 'Camarero',
     };
-    return roles[this.currentUser?.role] ?? this.currentUser?.role;
+
+    if (!this.currentUser?.role) {
+      return 'Sin rol';
+    }
+
+    return roles[this.currentUser.role] ?? this.currentUser.role;
   }
 }

@@ -2,8 +2,10 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
+import { SearchInputComponent } from '../../../components/search-input/search-input.component';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { SaleService } from '../../../services/api/sale.service';
+import { AlertService } from '../../../services/alert.service';
 import { RefundPayload, Sale, SaleLine } from '../../../types/sale.model';
 
 @Component({
@@ -11,13 +13,15 @@ import { RefundPayload, Sale, SaleLine } from '../../../types/sale.model';
   templateUrl: './sales.page.html',
   styleUrls: ['./sales.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent],
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, SearchInputComponent],
 })
 export class SalesPage implements OnInit {
   private saleService = inject(SaleService);
+  private alerts = inject(AlertService);
 
   sales: Sale[] = [];
   loading = false;
+  searchTerm = '';
 
   from = '';
   to = '';
@@ -33,11 +37,29 @@ export class SalesPage implements OnInit {
     this.loadSales();
   }
 
+  get filteredSales(): Sale[] {
+    const normalizedTerm = this.searchTerm.trim().toLowerCase();
+
+    if (!normalizedTerm) {
+      return this.sales;
+    }
+
+    return this.sales.filter((sale) => [
+      sale.ticket_number,
+      sale.table_name,
+      sale.open_user_name,
+      sale.close_user_name,
+    ].some((field) => String(field ?? '').toLowerCase().includes(normalizedTerm)));
+  }
+
   loadSales() {
     this.loading = true;
     this.saleService.getAll(this.from || undefined, this.to || undefined).subscribe({
       next: (data) => { this.sales = data; this.loading = false; },
-      error: () => { this.loading = false; },
+      error: () => {
+        this.loading = false;
+        this.alerts.error('No se pudieron cargar las ventas.');
+      },
     });
   }
 
@@ -61,7 +83,10 @@ export class SalesPage implements OnInit {
         this.refundQuantities = Object.fromEntries(lines.map(line => [line.uuid, Math.max(1, line.quantity - line.refunded_quantity)]));
         this.linesLoading = false;
       },
-      error: () => { this.linesLoading = false; },
+      error: () => {
+        this.linesLoading = false;
+        this.alerts.error('No se pudieron cargar las líneas de la venta.');
+      },
     });
   }
 
@@ -97,7 +122,9 @@ export class SalesPage implements OnInit {
       next: () => {
         this.loadSales();
         this.openDetail(this.selectedSale!);
+        this.alerts.success('Devolución completa registrada.');
       },
+      error: () => this.alerts.error('No se pudo registrar la devolución completa.'),
     });
   }
 
@@ -121,7 +148,9 @@ export class SalesPage implements OnInit {
       next: () => {
         this.loadSales();
         this.openDetail(this.selectedSale!);
+        this.alerts.success('Devolución parcial registrada.');
       },
+      error: () => this.alerts.error('No se pudo registrar la devolución.'),
     });
   }
 

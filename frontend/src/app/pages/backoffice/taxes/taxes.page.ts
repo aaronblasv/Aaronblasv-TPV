@@ -1,95 +1,68 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent } from '@ionic/angular/standalone';
+import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
+import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
+import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+import { SearchInputComponent } from '../../../components/search-input/search-input.component';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { TaxService } from '../../../services/api/tax.service';
-import { ConfirmModalComponent } from '../../../components/confirm-modal/confirm-modal.component';
-import { ActionButtonsComponent } from '../../../components/action-buttons/action-buttons.component';
-import { FormModalComponent } from '../../../components/form-modal/form-modal.component';
+import { Tax, TaxFormData } from '../../../types/tax.model';
+import { BaseCrudPage } from '../shared/base-crud-page';
 
 @Component({
   selector: 'app-taxes',
   templateUrl: './taxes.page.html',
   styleUrls: ['./taxes.page.scss'],
   standalone: true,
-  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent]
+  imports: [IonContent, CommonModule, FormsModule, SidebarComponent, ConfirmModalComponent, ActionButtonsComponent, FormModalComponent, SearchInputComponent]
 })
-export class TaxesPage implements OnInit {
+export class TaxesPage extends BaseCrudPage<Tax, TaxFormData> {
 
-  private taxService = inject(TaxService);
+  private readonly taxService = inject(TaxService);
 
-  taxes: any[] = [];
-  showForm = false;
-  showConfirm = false;
-  editingTax: any = null;
-  pendingDeleteUuid: string | null = null;
-  errors: { [key: string]: string } = {};
+  protected entityLabel = 'Impuesto';
 
-  form = {
-    name: '',
-    percentage: 0,
-  };
-
-  ngOnInit() {
-    this.loadTaxes();
+  protected emptyForm(): TaxFormData {
+    return {
+      name: '',
+      percentage: 0,
+    };
   }
 
-  loadTaxes() {
+  protected toForm(tax: Tax): TaxFormData {
+    return {
+      name: tax.name,
+      percentage: tax.percentage,
+    };
+  }
+
+  protected loadData(): void {
+    this.loading = true;
+
     this.taxService.getAll().subscribe({
-      next: (data: any) => this.taxes = data,
-      error: (err: any) => console.error(err)
+      next: (taxes) => {
+        this.items = taxes;
+        this.loading = false;
+      },
+      error: () => this.handleLoadError('No se pudieron cargar los impuestos.')
     });
   }
 
-  openForm(tax?: any) {
-    this.editingTax = tax ?? null;
-    this.form = { name: tax?.name ?? '', percentage: tax?.percentage ?? 0 };
-    this.showForm = true;
+  protected createRequest(formData: TaxFormData) {
+    return this.taxService.create(formData);
   }
 
-  closeForm() {
-    this.showForm = false;
-    this.editingTax = null;
-    this.errors = {};
+  protected updateRequest(uuid: string, formData: TaxFormData) {
+    return this.taxService.update(uuid, formData);
   }
 
-  save() {
-    this.errors = {};
-    const action = this.editingTax
-      ? this.taxService.update(this.editingTax.uuid, this.form.name, this.form.percentage)
-      : this.taxService.create(this.form.name, this.form.percentage);
-
-    action.subscribe({
-      next: () => { this.loadTaxes(); this.closeForm(); },
-      error: (err: any) => {
-        console.log('error completo:', err);
-        console.log('err.error:', err.error);
-        if (err.status === 422) {
-          const apiErrors = err.error.errors;
-          Object.keys(apiErrors).forEach(key => {
-            this.errors[key] = apiErrors[key][0];
-          });
-        }
-      }
-    });
+  protected deleteRequest(uuid: string) {
+    return this.taxService.delete(uuid);
   }
 
-  requestDelete(uuid: string) {
-    this.pendingDeleteUuid = uuid;
-    this.showConfirm = true;
-  }
-
-  confirmDelete() {
-    if (!this.pendingDeleteUuid) return;
-    this.taxService.delete(this.pendingDeleteUuid).subscribe({
-      next: () => { this.loadTaxes(); this.closeConfirm(); },
-      error: (err: any) => console.error(err)
-    });
-  }
-
-  closeConfirm() {
-    this.showConfirm = false;
-    this.pendingDeleteUuid = null;
+  protected searchableFields(tax: Tax): Array<string | number | null | undefined> {
+    return [tax.name, tax.percentage];
   }
 }
