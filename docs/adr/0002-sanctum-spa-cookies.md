@@ -43,3 +43,9 @@ El token legacy se sigue generando internamente en `LoginUser` para no romper la
 - JWT/cookie custom: descartado por duplicar responsabilidades ya resueltas por Sanctum.
 - Mover también el UI state a cookie HttpOnly: descartado porque la UI necesita leer ese estado desde JS.
 - Eliminar `LaravelTokenGenerator`: descartado por ahora; mantenerlo cuesta poco y deja abierta la opción de clientes nativos o integraciones no basadas en cookie sin rehacer el dominio.
+
+## Operational notes
+- Antes de una demo en entorno real, conviene validar el flujo bajo HTTPS en staging o producción: si frontend y API usan dominios distintos, `SESSION_SECURE_COOKIE=true` y `SESSION_DOMAIN` correcto son obligatorios para que la cookie de sesión funcione como se espera.
+- En local con HTTP, la combinación actual puede parecer más permisiva por ir sin `Secure` y con `SameSite=Lax`, así que ese comportamiento no debe darse por válido sin probarlo antes en un entorno HTTPS real.
+- `LaravelTokenGenerator` debe retirarse junto con la dependencia operativa de `personal_access_tokens` cuando ocurra cualquiera de estos triggers: (a) se decida explícitamente que la API solo servirá a clientes navegador de forma permanente, o (b) pasen 6 meses sin aparecer ningún cliente que necesite tokens Bearer. Lo que ocurra antes.
+- Operacional pendiente: cada login sigue generando una fila en `personal_access_tokens`. Si `LaravelTokenGenerator` permanece activo, conviene programar una limpieza periódica de tokens antiguos con un comando Artisan; si se retira, puede eliminarse también esa carga histórica según la estrategia de migración acordada.
